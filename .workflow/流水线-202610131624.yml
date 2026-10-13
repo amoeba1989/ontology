@@ -1,0 +1,69 @@
+version: "1.0"
+name: ontology-demo-deploy
+displayName: 知彼本体平台 · 编译检查并部署 ECS
+stages:
+  # ── 阶段一：编译检查（在 ECS 上执行，失败则中止，不发布不重启） ──
+  - stage:
+    name: build_check
+    displayName: 编译检查
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: deploy@agent
+        name: build_check
+        displayName: 编译检查（docker compose build）
+        script: |-
+          set -eu
+          export GIT_TERMINAL_PROMPT=0
+          unset GIT_ASKPASS SSH_ASKPASS
+          cd /opt/ontology
+          git -c credential.helper=store fetch origin master
+          git checkout --force --detach "${GITEE_COMMIT:-FETCH_HEAD}"
+          git log -1 --oneline
+          sh scripts/deploy/docker-build.sh
+        hostGroupID:
+          # 与 palantir 同一台 ECS，复用该主机组
+          ID: PALANTIR
+          hostID:
+            - 4e921954-15bd-45ef-a3c0-4ada766768ef
+        notify: []
+        strategy:
+          retry: "0"
+
+  # ── 阶段二：构建发布 + 重启服务 ──
+  - stage:
+    name: deploy_ecs
+    displayName: 部署到 ECS
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: deploy@agent
+        name: deploy
+        displayName: 构建发布并重启
+        script: |-
+          set -eu
+          export GIT_TERMINAL_PROMPT=0
+          unset GIT_ASKPASS SSH_ASKPASS
+          cd /opt/ontology
+          git -c credential.helper=store fetch origin master
+          git checkout --force --detach "${GITEE_COMMIT:-FETCH_HEAD}"
+          git log -1 --oneline
+          sh scripts/deploy/deploy-docker.sh
+        hostGroupID:
+          ID: PALANTIR
+          hostID:
+            - 4e921954-15bd-45ef-a3c0-4ada766768ef
+        notify: []
+        strategy:
+          retry: "0"
+
+triggers:
+  trigger: auto
+  push:
+    branches:
+      precise:
+        - master
+
+notify: []
+strategy:
+  blocking: true

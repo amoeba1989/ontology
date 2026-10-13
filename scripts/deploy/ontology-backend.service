@@ -1,0 +1,13 @@
+[Unit]
+Description=Ontology platform backend (uvicorn)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/ontology/backend
+ExecStart=/opt/ontology/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

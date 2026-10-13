@@ -1,0 +1,110 @@
+{
+  "scenario": {
+    "namespace": "mil_demo",
+    "domain": "military",
+    "display_name": "军事目标行为研判示例本体",
+    "description": "用于理解元枢本体建模流程的最小可导入模板：目标-传感器-行为事件-研判结论，映射 OODA 观察/判断/决策链路。"
+  },
+
+  "object_types": [
+    {
+      "name": "Target",
+      "display_name": "目标",
+      "tier": 1,
+      "primary_key": "target_id",
+      "description": "被侦察/研判的作战目标（平台、单位或设施）",
+      "properties": [
+        { "name": "target_id", "display_name": "目标编号", "type": "string", "required": true, "description": "唯一标识" },
+        { "name": "name", "display_name": "目标名称", "type": "string", "required": true, "description": "如 驱逐舰-舷号172" },
+        { "name": "target_type", "display_name": "目标类型", "type": "enum", "required": true, "description": "平台类别", "enum_values": ["ship", "aircraft", "vehicle", "facility", "personnel"], "enum_labels": ["舰船", "飞行器", "车辆", "设施", "人员"] },
+        { "name": "threat_level", "display_name": "威胁等级", "type": "enum", "required": false, "description": "综合威胁评估", "enum_values": ["low", "medium", "high", "critical"], "enum_labels": ["低", "中", "高", "极高"] },
+        { "name": "last_known_location", "display_name": "最后已知位置", "type": "string", "required": false, "description": "经纬度，如 24.5N,118.2E" },
+        { "name": "speed_knots", "display_name": "航速(节)", "type": "number", "required": false, "description": "当前速度" },
+        { "name": "heading_deg", "display_name": "航向(度)", "type": "number", "required": false, "description": "0-360" },
+        { "name": "updated_at", "display_name": "更新时间", "type": "datetime", "required": false, "description": "最近情报更新时间" }
+      ]
+    },
+    {
+      "name": "Sensor",
+      "display_name": "传感器",
+      "tier": 2,
+      "primary_key": "sensor_id",
+      "description": "情报来源（雷达、光电、电子侦察、卫星等）",
+      "properties": [
+        { "name": "sensor_id", "display_name": "传感器编号", "type": "string", "required": true, "description": "唯一标识" },
+        { "name": "name", "display_name": "传感器名称", "type": "string", "required": true, "description": "" },
+        { "name": "sensor_type", "display_name": "传感器类型", "type": "enum", "required": true, "description": "", "enum_values": ["radar", "eo", "sigint", "satellite", "sonar"], "enum_labels": ["雷达", "光电", "电子侦察", "卫星", "声呐"] },
+        { "name": "coverage_radius_km", "display_name": "覆盖半径(km)", "type": "number", "required": false, "description": "探测范围" },
+        { "name": "is_active", "display_name": "是否在线", "type": "boolean", "required": false, "description": "当前是否可用" }
+      ]
+    },
+    {
+      "name": "BehaviorEvent",
+      "display_name": "行为事件",
+      "tier": 3,
+      "primary_key": "event_id",
+      "description": "目标被观测到的一次具体行为（OODA 的 Observe 产物）",
+      "properties": [
+        { "name": "event_id", "display_name": "事件编号", "type": "string", "required": true, "description": "唯一标识" },
+        { "name": "event_type", "display_name": "事件类型", "type": "enum", "required": true, "description": "行为分类", "enum_values": ["move", "turn", "stop", "launch", "rendezvous", "emit_signal"], "enum_labels": ["机动", "转向", "停驻", "发射", "会合", "信号辐射"] },
+        { "name": "observed_at", "display_name": "观测时间", "type": "datetime", "required": true, "description": "事件发生时刻" },
+        { "name": "confidence", "display_name": "置信度", "type": "number", "required": false, "description": "0-1 之间" },
+        { "name": "description", "display_name": "事件描述", "type": "string", "required": false, "description": "自然语言描述" }
+      ]
+    },
+    {
+      "name": "Assessment",
+      "display_name": "研判结论",
+      "tier": 3,
+      "primary_key": "assessment_id",
+      "description": "对目标行为的研判输出（OODA 的 Orient/Decide 产物）",
+      "properties": [
+        { "name": "assessment_id", "display_name": "研判编号", "type": "string", "required": true, "description": "唯一标识" },
+        { "name": "threat_assessment", "display_name": "威胁研判", "type": "enum", "required": true, "description": "", "enum_values": ["benign", "suspicious", "hostile"], "enum_labels": ["无害", "可疑", "敌对"] },
+        { "name": "ooda_phase", "display_name": "OODA阶段", "type": "enum", "required": false, "description": "当前所处决策环节", "enum_values": ["observe", "orient", "decide", "act"], "enum_labels": ["观察", "判断", "决策", "行动"] },
+        { "name": "recommended_action", "display_name": "建议行动", "type": "string", "required": false, "description": "如 持续跟踪 / 提升战备 / 上报指挥部" },
+        { "name": "assessed_at", "display_name": "研判时间", "type": "datetime", "required": false, "description": "" },
+        { "name": "assessed_by", "display_name": "研判人/系统", "type": "string", "required": false, "description": "分析员或 Agent 名称" }
+      ]
+    }
+  ],
+
+  "link_types": [
+    {
+      "name": "sensor_observes_target",
+      "display_name": "传感器观测目标",
+      "source_type": "Sensor",
+      "target_type": "Target",
+      "cardinality": "N:N",
+      "directionality": "directed",
+      "description": "一个传感器可观测多个目标，一个目标可被多个传感器观测"
+    },
+    {
+      "name": "target_has_behavior",
+      "display_name": "目标产生行为",
+      "source_type": "Target",
+      "target_type": "BehaviorEvent",
+      "cardinality": "1:N",
+      "directionality": "directed",
+      "description": "一个目标可有多条行为事件"
+    },
+    {
+      "name": "event_from_sensor",
+      "display_name": "事件来源传感器",
+      "source_type": "BehaviorEvent",
+      "target_type": "Sensor",
+      "cardinality": "N:1",
+      "directionality": "directed",
+      "description": "每条行为事件由某个传感器上报"
+    },
+    {
+      "name": "assessment_of_target",
+      "display_name": "研判针对目标",
+      "source_type": "Assessment",
+      "target_type": "Target",
+      "cardinality": "N:1",
+      "directionality": "directed",
+      "description": "研判结论指向被研判的目标"
+    }
+  ]
+}

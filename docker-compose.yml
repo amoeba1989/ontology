@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: ontology-backend
+    environment:
+      - DATABASE_URL=sqlite:///./data/ontology.db
+      - DEMO_DB_DIR=/app/backend/data
+    volumes:
+      - ./data:/app/backend/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    container_name: ontology-web
+    ports:
+      - "${WEB_PORT:-8088}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

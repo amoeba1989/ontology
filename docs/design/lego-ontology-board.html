@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>本体积木图 · Ontology LEGO Board (设计图)</title>
+<style>
+  :root{
+    --t1:#d42027; --t1-d:#9c1419; --t1-l:#f0565c;
+    --t2:#1668c4; --t2-d:#0d4f97; --t2-l:#4d95e6;
+    --t3:#f2b01e; --t3-d:#c98d12; --t3-l:#ffd15c;
+    --plate:#e6ebf2; --plate-stud:#d3dbe6; --ink:#22303f; --line:#3a4757;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    background:radial-gradient(1200px 700px at 50% -10%, #26344a 0%, #161d28 55%, #0f141c 100%);
+    color:#e8eef6; min-height:100vh; padding:28px 20px 48px;
+  }
+  .wrap{max-width:1200px; margin:0 auto;}
+  header.top{ text-align:center; margin-bottom:22px;}
+  header.top h1{
+    font-size:26px; letter-spacing:1px; font-weight:800;
+    display:inline-flex; align-items:center; gap:12px;
+  }
+  header.top h1 .mini-brick{
+    width:34px;height:22px;border-radius:4px;background:var(--t1);
+    box-shadow:0 3px 0 var(--t1-d); position:relative; display:inline-block;
+  }
+  header.top h1 .mini-brick::before,header.top h1 .mini-brick::after{
+    content:"";position:absolute;top:-6px;width:9px;height:9px;border-radius:50%;
+    background:var(--t1-l);box-shadow:inset 0 -2px 2px rgba(0,0,0,.2);
+  }
+  header.top h1 .mini-brick::before{left:4px;} header.top h1 .mini-brick::after{right:4px;}
+  header.top p{margin-top:8px;color:#9fb0c4;font-size:14px;}
+  .tagline{display:inline-block;margin-top:6px;font-size:12px;color:#7f90a6;border:1px solid #33415a;border-radius:20px;padding:3px 12px;}
+
+  /* ---- baseplate ---- */
+  .board-scroll{width:100%;overflow-x:auto;padding-bottom:6px;}
+  .board{
+    position:relative; width:1160px; height:660px; margin:0 auto; border-radius:18px;
+    background:
+      radial-gradient(circle at 14px 14px, var(--plate-stud) 5.5px, transparent 6px) 0 0/28px 28px,
+      linear-gradient(180deg,#eef2f7,#dfe6ef);
+    box-shadow:0 24px 60px rgba(0,0,0,.45), inset 0 0 0 6px #cdd6e2, inset 0 2px 6px rgba(255,255,255,.7);
+    overflow:hidden;
+  }
+  .board .phase{
+    position:absolute; font-size:11px; font-weight:700; letter-spacing:2px;
+    color:#8a97a8; text-transform:uppercase;
+  }
+  svg.links{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+
+  /* ---- brick ---- */
+  .brick{position:absolute; cursor:pointer; transition:transform .18s ease, filter .18s ease;}
+  .brick:hover{transform:translateY(-6px) scale(1.02); filter:drop-shadow(0 14px 16px rgba(0,0,0,.35)); z-index:20;}
+  .studs{display:flex; gap:6px; padding:0 8px; height:14px; align-items:flex-end;}
+  .stud{width:16px;height:16px;border-radius:50%;flex:0 0 auto;
+    box-shadow:inset 0 -3px 3px rgba(0,0,0,.28), 0 1px 0 rgba(255,255,255,.35);}
+  .body{
+    position:relative; border-radius:8px; padding:12px 14px 14px; color:#fff;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.35), inset 0 -8px 14px rgba(0,0,0,.18),
+               0 7px 0 var(--edge), 0 12px 20px rgba(0,0,0,.35);
+  }
+  .body .cn{font-size:19px;font-weight:800;letter-spacing:.5px;text-shadow:0 1px 2px rgba(0,0,0,.3);}
+  .body .en{font-size:11px;opacity:.82;font-family:"SF Mono",Consolas,monospace;margin-top:2px;}
+  .body .pk{font-size:10.5px;margin-top:8px;opacity:.9;background:rgba(0,0,0,.18);
+    display:inline-block;padding:2px 8px;border-radius:10px;font-family:Consolas,monospace;}
+  .tier-badge{position:absolute;top:-9px;right:10px;font-size:10px;font-weight:800;
+    background:#fff;color:var(--ink);border-radius:9px;padding:2px 7px;box-shadow:0 2px 4px rgba(0,0,0,.3);}
+  .ooda{position:absolute;bottom:8px;right:12px;font-size:9.5px;letter-spacing:1px;opacity:.7;font-weight:700;}
+
+  .t1 .stud{background:var(--t1-l);} .t1 .body{background:linear-gradient(180deg,var(--t1-l),var(--t1));--edge:var(--t1-d);}
+  .t2 .stud{background:var(--t2-l);} .t2 .body{background:linear-gradient(180deg,var(--t2-l),var(--t2));--edge:var(--t2-d);}
+  .t3 .stud{background:var(--t3-l);} .t3 .body{background:linear-gradient(180deg,var(--t3-l),var(--t3));--edge:var(--t3-d);}
+
+  /* ---- link labels ---- */
+  .link-label{position:absolute;transform:translate(-50%,-50%);z-index:15;pointer-events:none;}
+  .link-label .plate{background:#fff;border:1.5px solid var(--line);border-radius:8px;
+    padding:4px 9px;box-shadow:0 4px 10px rgba(0,0,0,.25);text-align:center;white-space:nowrap;}
+  .link-label .cn{font-size:12.5px;font-weight:700;color:var(--ink);}
+  .link-label .card{display:inline-block;margin-top:2px;font-size:10px;font-weight:800;
+    color:#fff;background:var(--line);border-radius:8px;padding:1px 7px;font-family:Consolas,monospace;}
+
+  /* ---- legend ---- */
+  .legend{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+  .lg{background:rgba(255,255,255,.05);border:1px solid #33415a;border-radius:12px;padding:14px 16px;}
+  .lg h3{font-size:12px;color:#8fa2b8;letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;font-weight:700;}
+  .lg .row{display:flex;align-items:center;gap:10px;font-size:13px;color:#d5e0ec;margin:7px 0;}
+  .chip{width:20px;height:14px;border-radius:3px;flex:0 0 auto;box-shadow:0 2px 0 rgba(0,0,0,.3);}
+  .c1{background:var(--t1);} .c2{background:var(--t2);} .c3{background:var(--t3);}
+  .demo-studs{display:flex;gap:3px;}
+  .demo-studs i{width:11px;height:11px;border-radius:50%;background:#9fb0c4;display:block;}
+  .demo-line{width:34px;height:0;border-top:2.5px solid #cfd8e3;position:relative;}
+  .demo-line::after{content:"";position:absolute;right:-1px;top:-5px;border:4px solid transparent;border-left-color:#cfd8e3;}
+  .foot{margin-top:24px;text-align:center;color:#6f8098;font-size:12px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1><span class="mini-brick"></span>本体积木图 · Ontology LEGO Board</h1>
+    <p>军事目标行为研判示例本体（mil_demo）· 映射 OODA 观察 / 判断 / 决策链路</p>
+    <span class="tagline">设计图 v1 · 数据源 docs/templates/military-target-behavior.json</span>
+  </header>
+
+  <div class="board-scroll">
+  <div class="board" id="board">
+    <div class="phase" style="left:26px; top:22px;">Observe 观察</div>
+    <div class="phase" style="left:50%; top:22px; transform:translateX(-50%);">Orient / Decide 判断·决策</div>
+    <div class="phase" style="right:26px; top:22px;">Act 行动依据</div>
+    <svg class="links" id="links" viewBox="0 0 1160 660" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arrow" markerWidth="12" markerHeight="12" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0,0 L9,4 L0,8 Z" fill="#3a4757"></path>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+  </div>
+
+  <div class="legend">
+    <div class="lg">
+      <h3>颜色 = 语义层 tier</h3>
+      <div class="row"><span class="chip c1"></span>T1 · T-box 概念层（核心对象：目标）</div>
+      <div class="row"><span class="chip c2"></span>T2 · A-box 数据层（观测来源：传感器）</div>
+      <div class="row"><span class="chip c3"></span>T3 · R-box 规则/事件层（行为·研判）</div>
+    </div>
+    <div class="lg">
+      <h3>凸点数 = 属性个数</h3>
+      <div class="row"><span class="demo-studs"><i></i><i></i><i></i><i></i><i></i></span>每个凸点代表 1 个字段(property)</div>
+      <div class="row" style="color:#9fb0c4;font-size:12px;">积木越长 → 本体属性越多、结构越复杂</div>
+    </div>
+    <div class="lg">
+      <h3>连结件 = 关系 relation</h3>
+      <div class="row"><span class="demo-line"></span>箭头方向 = 关系有向性(directed)</div>
+      <div class="row"><span class="card" style="font-size:10px;font-weight:800;color:#fff;background:#3a4757;border-radius:8px;padding:1px 7px;">1:N</span>标签 = 基数 cardinality</div>
+      <div class="row" style="color:#9fb0c4;font-size:12px;">白色铭牌 = 中文关系名（动词短语）</div>
+    </div>
+  </div>
+
+  <p class="foot">
+    交互原型：鼠标悬停积木可抬起高亮。<br/>
+    下一步可将本设计落地为 Vue3 组件（复用 @vue-flow/core + OntologyNode.vue 自定义节点模式），并接 <code>GET /api/v1/entities/graph</code> 实时数据。
+  </p>
+</div>
+
+<script>
+  // ---- 数据（来自 military-target-behavior.json）----
+  const BOARD = {w:1160, h:660};
+  const ontologies = [
+    {name:"Sensor", cn:"传感器", tier:2, pk:"sensor_id", props:5, ooda:"OBSERVE", x:70,  y:150},
+    {name:"Target", cn:"目标",   tier:1, pk:"target_id", props:8, ooda:"SUBJECT", x:462, y:300},
+    {name:"BehaviorEvent", cn:"行为事件", tier:3, pk:"event_id", props:5, ooda:"OBSERVE", x:880, y:150},
+    {name:"Assessment", cn:"研判结论", tier:3, pk:"assessment_id", props:6, ooda:"ORIENT/DECIDE", x:470, y:520},
+  ];
+  const relations = [
+    {from:"Sensor", to:"Target", cn:"传感器观测目标", card:"N:N", fs:"right", ts:"left",  lx:340, ly:250},
+    {from:"Target", to:"BehaviorEvent", cn:"目标产生行为", card:"1:N", fs:"right", ts:"left", lx:800, ly:250},
+    {from:"BehaviorEvent", to:"Sensor", cn:"事件来源传感器", card:"N:1", fs:"top", ts:"top", lx:585, ly:78, arc:true},
+    {from:"Assessment", to:"Target", cn:"研判针对目标", card:"N:1", fs:"top", ts:"bottom", lx:600, ly:445},
+  ];
+
+  const STUD=22, GAP=6, PAD=16, BODY_H=96, STUD_H=14;
+  const brickW = p => PAD*2 + p*STUD + (p-1)*GAP;
+  const byName = Object.fromEntries(ontologies.map(o=>[o.name,o]));
+  const board = document.getElementById('board');
+  const svg = document.getElementById('links');
+  const SVGNS = "http://www.w3.org/2000/svg";
+
+  function anchor(o, side){
+    const w = brickW(o.props);
+    const bodyTop = o.y + STUD_H;
+    const midY = bodyTop + BODY_H/2;
+    switch(side){
+      case "left":   return {x:o.x,          y:midY};
+      case "right":  return {x:o.x+w,        y:midY};
+      case "top":    return {x:o.x+w/2,      y:o.y};
+      case "bottom": return {x:o.x+w/2,      y:bodyTop+BODY_H};
+    }
+  }
+
+  // render bricks
+  ontologies.forEach(o=>{
+    const w = brickW(o.props);
+    const el = document.createElement('div');
+    el.className = 'brick t'+o.tier;
+    el.style.left = o.x+'px'; el.style.top = o.y+'px'; el.style.width = w+'px';
+    let studs=''; for(let i=0;i<o.props;i++) studs+='<span class="stud"></span>';
+    el.innerHTML = `
+      <div class="studs">${studs}</div>
+      <div class="body">
+        <span class="tier-badge">T${o.tier}</span>
+        <div class="cn">${o.cn}</div>
+        <div class="en">${o.name}</div>
+        <div class="pk">🔑 ${o.pk}</div>
+        <div class="ooda">${o.ooda}</div>
+      </div>`;
+    el.title = `${o.cn} (${o.name}) · ${o.props} 个属性 · T${o.tier}`;
+    board.appendChild(el);
+  });
+
+  // render links + labels
+  relations.forEach(r=>{
+    const a = anchor(byName[r.from], r.fs);
+    const b = anchor(byName[r.to],   r.ts);
+    let d;
+    if(r.arc){
+      const topY = Math.min(a.y,b.y) - 96;
+      d = `M ${a.x} ${a.y} C ${a.x} ${topY}, ${b.x} ${topY}, ${b.x} ${b.y}`;
+    }else{
+      const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+      d = `M ${a.x} ${a.y} Q ${mx} ${a.y}, ${mx} ${my} T ${b.x} ${b.y}`;
+    }
+    const path=document.createElementNS(SVGNS,'path');
+    path.setAttribute('d',d); path.setAttribute('fill','none');
+    path.setAttribute('stroke','#3a4757'); path.setAttribute('stroke-width','2.5');
+    path.setAttribute('marker-end','url(#arrow)');
+    svg.appendChild(path);
+
+    const lab=document.createElement('div');
+    lab.className='link-label'; lab.style.left=r.lx+'px'; lab.style.top=r.ly+'px';
+    lab.innerHTML=`<div class="plate"><div class="cn">${r.cn}</div><div class="card">${r.card}</div></div>`;
+    board.appendChild(lab);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{
+  "scenario": {
+    "namespace": "shop_demo",
+    "domain": "shopping",
+    "display_name": "电商订单风控示例本体",
+    "description": "购物场景最小可导入模板：顾客-商品-订单，支撑高额/高风险订单的本体分析与风控处置演示。"
+  },
+
+  "object_types": [
+    {
+      "name": "Customer",
+      "display_name": "顾客",
+      "tier": 1,
+      "primary_key": "customer_id",
+      "description": "下单购买的注册用户",
+      "properties": [
+        { "name": "customer_id", "display_name": "顾客编号", "type": "string", "required": true, "description": "唯一标识" },
+        { "name": "name", "display_name": "顾客姓名", "type": "string", "required": true, "description": "" },
+        { "name": "member_level", "display_name": "会员等级", "type": "enum", "required": true, "description": "", "enum_values": ["normal", "silver", "gold", "vip"], "enum_labels": ["普通", "银卡", "金卡", "VIP"] },
+        { "name": "city", "display_name": "所在城市", "type": "string", "required": false, "description": "" },
+        { "name": "risk_score", "display_name": "风险分", "type": "number", "required": false, "description": "0-100，越高越可疑" },
+        { "name": "registered_at", "display_name": "注册时间", "type": "datetime", "required": false, "description": "" }
+      ]
+    },
+    {
+      "name": "Product",
+      "display_name": "商品",
+      "tier": 1,
+      "primary_key": "product_id",
+      "description": "可被购买在售商品",
+      "properties": [
+        { "name": "product_id", "display_name": "商品编号", "type": "string", "required": true, "description": "唯一标识" },
+        { "name": "name", "display_name": "商品名称", "type": "string", "required": true, "description": "" },
+        { "name": "category", "display_name": "类目", "type": "enum", "required": true, "description": "", "enum_values": ["electronics", "clothing", "food", "home"], "enum_labels": ["数码", "服饰", "食品", "家居"] },
+        { "name": "unit_price", "display_name": "单价(元)", "type": "number", "required": true, "description": "" },
+        { "name": "stock", "display_name": "库存", "type": "number", "required": false, "description": "当前可售数量" }
+      ]
+    },
+    {
+      "name": "Order",
+      "display_name": "订单",
+      "tier": 2,
+      "primary_key": "order_id",
+      "description": "顾客一次购买行为产生的订单（风控分析对象）",
+      "properties": [
+        { "name": "order_id", "display_name": "订单编号", "type": "string", "required": true, "description": "唯一标识" },
+        { "name": "customer_id", "display_name": "顾客编号", "type": "string", "required": true, "description": "下单顾客" },
+        { "name": "product_id", "display_name": "商品编号", "type": "string", "required": true, "description": "购买商品" },
+        { "name": "amount", "display_name": "订单金额(元)", "type": "number", "required": true, "description": "成交金额" },
+        { "name": "status", "display_name": "订单状态", "type": "enum", "required": true, "description": "", "enum_values": ["pending", "paid", "shipped", "completed", "cancelled"], "enum_labels": ["待支付", "已支付", "已发货", "已完成", "已取消"] },
+        { "name": "risk_flag", "display_name": "风险标记", "type": "enum", "required": false, "description": "风控结论", "enum_values": ["none", "suspicious", "confirmed_fraud"], "enum_labels": ["无", "可疑", "确认欺诈"] },
+        { "name": "channel", "display_name": "下单渠道", "type": "enum", "required": false, "description": "", "enum_values": ["app", "web", "store"], "enum_labels": ["APP", "网页", "门店"] },
+        { "name": "created_at", "display_name": "下单时间", "type": "datetime", "required": false, "description": "" }
+      ]
+    }
+  ],
+
+  "link_types": [
+    {
+      "name": "customer_places_order",
+      "display_name": "顾客下单",
+      "source_type": "Customer",
+      "target_type": "Order",
+      "cardinality": "1:N",
+      "directionality": "directed",
+      "description": "一个顾客可有多笔订单"
+    },
+    {
+      "name": "order_contains_product",
+      "display_name": "订单包含商品",
+      "source_type": "Order",
+      "target_type": "Product",
+      "cardinality": "N:1",
+      "directionality": "directed",
+      "description": "每笔订单对应一个商品"
+    }
+  ]
+}

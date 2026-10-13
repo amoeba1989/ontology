@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>本体积木图 3D · Ontology LEGO Board (Three.js)</title>
+<style>
+  :root{
+    --t1:#d42027; --t2:#1668c4; --t3:#f2b01e;
+    --ink:#22303f; --line:#3a4757;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    background:#eef2f7; color:var(--ink); overflow:hidden;
+  }
+  #app{position:fixed; inset:0;}
+  #app canvas{display:block;}
+  .css2d{position:absolute; inset:0; pointer-events:none; overflow:hidden;}
+
+  /* ---- overlay UI ---- */
+  .hud{position:absolute; z-index:10; pointer-events:none;}
+  .hud.card{pointer-events:auto;}
+  header.hud{top:16px; left:20px;}
+  header.hud h1{font-size:20px; font-weight:800; letter-spacing:.5px; display:flex; align-items:center; gap:10px;}
+  header.hud h1 .dot{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,var(--t1),var(--t3));box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  header.hud p{margin-top:4px; font-size:12.5px; color:#68788c;}
+
+  .panel{background:rgba(255,255,255,.86); backdrop-filter:blur(10px); border:1px solid #d7dfea;
+    border-radius:14px; box-shadow:0 10px 30px rgba(30,45,70,.14);}
+
+  /* left list */
+  #ontoList{top:96px; left:20px; width:210px; padding:12px 10px;}
+  #ontoList h3{font-size:11px; letter-spacing:1.5px; color:#7d8da1; text-transform:uppercase; padding:0 6px 8px;}
+  .onto-row{display:flex; align-items:center; gap:9px; padding:8px 8px; border-radius:9px; cursor:pointer; transition:background .15s;}
+  .onto-row:hover{background:#eef3f9;}
+  .onto-row.sel{background:#e3ecf7; box-shadow:inset 0 0 0 1px #bcd0e8;}
+  .onto-row .sw{width:14px;height:14px;border-radius:4px;flex:0 0 auto;box-shadow:0 2px 3px rgba(0,0,0,.25);}
+  .onto-row .nm{flex:1; min-width:0;}
+  .onto-row .nm b{display:block; font-size:13.5px;}
+  .onto-row .nm i{display:block; font-style:normal; font-size:10.5px; color:#8b9aab; font-family:Consolas,monospace;}
+  .onto-row .ct{font-size:11px; color:#7d8da1; background:#eef2f7; border-radius:8px; padding:1px 7px;}
+
+  /* right detail */
+  #detail{top:96px; right:20px; width:280px; max-height:calc(100% - 200px); overflow:auto; padding:16px;}
+  #detail .empty{color:#8b9aab; font-size:13px; text-align:center; padding:24px 0;}
+  #detail h2{font-size:17px; display:flex; align-items:center; gap:8px;}
+  #detail h2 .sw{width:14px;height:14px;border-radius:4px;}
+  #detail .sub{font-size:11px; color:#8b9aab; font-family:Consolas,monospace; margin:2px 0 12px 22px;}
+  #detail .kv{display:flex; font-size:12.5px; margin:6px 0;}
+  #detail .kv span{width:64px; color:#8b9aab; flex:0 0 auto;}
+  #detail .kv b{font-weight:600;}
+  #detail h4{font-size:11px; letter-spacing:1.2px; color:#7d8da1; text-transform:uppercase; margin:14px 0 6px;}
+  #detail .tag{display:inline-block; font-size:11.5px; background:#eef2f7; border:1px solid #dde5ee; border-radius:7px; padding:2px 8px; margin:0 5px 5px 0;}
+  #detail .rel{font-size:12px; margin:5px 0; color:#3c4c60;}
+  #detail .rel .card{font-family:Consolas,monospace; font-size:10px; background:var(--line); color:#fff; border-radius:7px; padding:1px 6px; margin-left:5px;}
+
+  /* legend */
+  #legend{left:20px; bottom:20px; padding:12px 16px; max-width:330px;}
+  #legend h3{font-size:11px; letter-spacing:1.5px; color:#7d8da1; text-transform:uppercase; margin-bottom:8px;}
+  #legend .row{display:flex; align-items:center; gap:9px; font-size:12px; color:#42526a; margin:6px 0;}
+  #legend .sw{width:16px;height:12px;border-radius:3px;flex:0 0 auto;box-shadow:0 2px 3px rgba(0,0,0,.2);}
+  #legend .studs{display:flex;gap:3px;}
+  #legend .studs i{width:9px;height:9px;border-radius:50%;background:#9fb0c4;display:block;}
+  #legend .tube{width:30px;height:0;border-top:3px solid #9fb0c4;border-radius:2px;position:relative;}
+  #legend .tube::after{content:"";position:absolute;right:-2px;top:-5px;border:4px solid transparent;border-left-color:#9fb0c4;}
+
+  #hint{right:20px; bottom:20px; font-size:11.5px; color:#7d8da1; background:rgba(255,255,255,.7); border-radius:20px; padding:6px 14px;}
+
+  /* ---- CSS2D in-scene labels ---- */
+  .brick-label{pointer-events:none; text-align:center; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.45); transform:translateY(0);}
+  .brick-label .ic{font-size:15px; display:block;}
+  .brick-label .cn{font-size:17px; font-weight:800; letter-spacing:.5px;}
+  .brick-label .en{font-size:10.5px; opacity:.85; font-family:Consolas,monospace;}
+  .attr-panel{pointer-events:none; background:rgba(255,255,255,.72); backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.9); border-radius:10px; padding:8px 12px; min-width:130px;
+    box-shadow:0 8px 22px rgba(30,45,70,.18);}
+  .attr-panel .t{font-size:12px; font-weight:700; color:var(--ink); border-bottom:1px solid #dfe6ee; padding-bottom:4px; margin-bottom:5px;}
+  .attr-panel .r{font-size:10.5px; color:#5a6a7e; margin:3px 0; display:flex; justify-content:space-between; gap:10px;}
+  .attr-panel .r i{font-style:normal; color:#9aa8b8; font-family:Consolas,monospace; font-size:9.5px;}
+  .rel-chip{pointer-events:none; background:rgba(38,48,62,.92); color:#fff; border-radius:9px; padding:4px 10px;
+    text-align:center; box-shadow:0 5px 14px rgba(0,0,0,.3); white-space:nowrap;}
+  .rel-chip .cn{font-size:12px; font-weight:700;}
+  .rel-chip .card{display:inline-block; margin-top:2px; font-size:9.5px; font-weight:800; background:rgba(255,255,255,.2); border-radius:7px; padding:1px 7px; font-family:Consolas,monospace;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<header class="hud">
+  <h1><span class="dot"></span>本体积木图 3D · Ontology LEGO Board</h1>
+  <p>军事目标行为研判示例本体（mil_demo）· 映射 OODA 观察 / 判断 / 决策链路 · Three.js 渲染</p>
+</header>
+
+<div id="ontoList" class="hud card panel">
+  <h3>本体模型 Ontologies</h3>
+  <div id="ontoRows"></div>
+</div>
+
+<div id="detail" class="hud card panel">
+  <div class="empty">点击积木或左侧列表<br/>查看本体详情</div>
+</div>
+
+<div id="legend" class="hud card panel">
+  <h3>图例 Legend</h3>
+  <div class="row"><span class="sw" style="background:var(--t1)"></span>T1 · T-box 概念层</div>
+  <div class="row"><span class="sw" style="background:var(--t2)"></span>T2 · A-box 数据层</div>
+  <div class="row"><span class="sw" style="background:var(--t3)"></span>T3 · R-box 规则/事件层</div>
+  <div class="row"><span class="studs"><i></i><i></i><i></i><i></i></span>凸点数 = 属性个数</div>
+  <div class="row"><span class="tube"></span>连结管 = 关系（箭头=有向）</div>
+  <div class="row" style="color:#8b9aab;font-size:11px;">铭牌 = 中文关系名 + 基数 cardinality</div>
+</div>
+
+<div id="hint" class="hud">拖拽旋转 · 滚轮缩放 · 右键平移 · 点击积木查看详情</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const TIER_COLOR = {1:0xd42027, 2:0x1668c4, 3:0xf2b01e};
+const H = 1.5, D = 2.4, BASE_Y = 0.3;
+
+const ONTOLOGIES = [
+  {name:'Target', cn:'目标', tier:1, pk:'target_id', icon:'◎', pos:[0,0],
+   attrs:[['目标编号','string'],['目标名称','string'],['目标类型','enum'],['威胁等级','enum'],['最后已知位置','string'],['航速(节)','number'],['航向(度)','number'],['更新时间','datetime']]},
+  {name:'Sensor', cn:'传感器', tier:2, pk:'sensor_id', icon:'📡', pos:[-7.5,-4.5],
+   attrs:[['传感器编号','string'],['传感器名称','string'],['传感器类型','enum'],['覆盖半径(km)','number'],['是否在线','boolean']]},
+  {name:'BehaviorEvent', cn:'行为事件', tier:3, pk:'event_id', icon:'∿', pos:[7.5,-4.5],
+   attrs:[['事件编号','string'],['事件类型','enum'],['观测时间','datetime'],['置信度','number'],['事件描述','string']]},
+  {name:'Assessment', cn:'研判结论', tier:3, pk:'assessment_id', icon:'▤', pos:[0,6.5],
+   attrs:[['研判编号','string'],['威胁研判','enum'],['OODA阶段','enum'],['建议行动','string'],['研判时间','datetime'],['研判人/系统','string']]},
+];
+const RELATIONS = [
+  {from:'Sensor', to:'Target', cn:'传感器观测目标', card:'N:N', arc:2.6},
+  {from:'Target', to:'BehaviorEvent', cn:'目标产生行为', card:'1:N', arc:2.6},
+  {from:'BehaviorEvent', to:'Sensor', cn:'事件来源传感器', card:'N:1', arc:4.4},
+  {from:'Assessment', to:'Target', cn:'研判针对目标', card:'N:1', arc:2.2},
+];
+const byName = Object.fromEntries(ONTOLOGIES.map(o=>[o.name,o]));
+const brickW = o => 0.55*o.attrs.length + 0.7;
+
+// ---------- renderer / scene ----------
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+app.appendChild(renderer.domElement);
+
+const css2d = new CSS2DRenderer();
+css2d.setSize(innerWidth, innerHeight);
+css2d.domElement.className = 'css2d';
+app.appendChild(css2d.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeef2f7);
+scene.fog = new THREE.Fog(0xeef2f7, 46, 95);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(15, 13, 19);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1.2, 0.8);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 8;
+controls.maxDistance = 60;
+controls.maxPolarAngle = Math.PI/2.05;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb6c2cd, 0.95));
+const dir = new THREE.DirectionalLight(0xffffff, 1.5);
+dir.position.set(14, 22, 10);
+dir.castShadow = true;
+dir.shadow.mapSize.set(2048,2048);
+dir.shadow.camera.left=-22; dir.shadow.camera.right=22;
+dir.shadow.camera.top=22; dir.shadow.camera.bottom=-22;
+scene.add(dir);
+
+// ---------- baseplate + studs ----------
+const plate = new THREE.Mesh(
+  new THREE.BoxGeometry(28, 0.6, 22),
+  new THREE.MeshStandardMaterial({color:0xdfe6ef, roughness:0.92})
+);
+plate.position.y = -0.3;
+plate.receiveShadow = true;
+scene.add(plate);
+
+const studGeo = new THREE.CylinderGeometry(0.3,0.3,0.14,16);
+const studMat = new THREE.MeshStandardMaterial({color:0xd3dbe6, roughness:0.9});
+const xs=[], zs=[];
+for(let x=-13;x<=13;x+=1.6) xs.push(x);
+for(let z=-10;z<=10;z+=1.6) zs.push(z);
+const plateStuds = new THREE.InstancedMesh(studGeo, studMat, xs.length*zs.length);
+{
+  const d = new THREE.Object3D(); let i=0;
+  for(const x of xs) for(const z of zs){ d.position.set(x,0.06,z); d.updateMatrix(); plateStuds.setMatrixAt(i++, d.matrix); }
+}
+plateStuds.instanceMatrix.needsUpdate = true;
+scene.add(plateStuds);
+
+// ---------- bricks ----------
+const pickables = [];
+const brickMeshes = {};
+const WHITE = new THREE.Color(0xffffff);
+
+function addLabel(obj, el, x,y,z){
+  const o = new CSS2DObject(el);
+  o.position.set(x,y,z);
+  obj.add(o);
+  return o;
+}
+
+ONTOLOGIES.forEach(o=>{
+  const w = brickW(o);
+  const g = new THREE.Group();
+  g.position.set(o.pos[0], 0, o.pos[1]);
+
+  const ped = new THREE.Mesh(
+    new THREE.BoxGeometry(w+1.0, 0.3, D+0.9),
+    new THREE.MeshStandardMaterial({color:0xcdd6e2, roughness:0.9})
+  );
+  ped.position.y = 0.15; ped.receiveShadow = true; ped.castShadow = true;
+  g.add(ped);
+
+  const tier = new THREE.Color(TIER_COLOR[o.tier]);
+  const brickMat = new THREE.MeshPhysicalMaterial({
+    color:tier, transmission:0.55, roughness:0.18, thickness:1.2, ior:1.4,
+    transparent:true, opacity:0.92, metalness:0, clearcoat:0.6, clearcoatRoughness:0.2,
+    emissive:tier, emissiveIntensity:0.08
+  });
+  const brick = new THREE.Mesh(new THREE.BoxGeometry(w, H, D), brickMat);
+  brick.position.y = BASE_Y + H/2;
+  brick.castShadow = true;
+  brick.userData.onto = o;
+  g.add(brick);
+  pickables.push(brick);
+  brickMeshes[o.name] = brick;
+
+  const studLight = tier.clone().lerp(WHITE, 0.35);
+  const bStudMat = new THREE.MeshStandardMaterial({color:studLight, roughness:0.35, metalness:0.1});
+  const n = o.attrs.length, pitch = 0.62;
+  for(let i=0;i<n;i++){
+    const s = new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.3,20), bStudMat);
+    s.position.set(-(n-1)*pitch/2 + i*pitch, BASE_Y+H+0.14, 0);
+    s.castShadow = true;
+    g.add(s);
+  }
+
+  const lab = document.createElement('div');
+  lab.className = 'brick-label';
+  lab.innerHTML = `<span class="ic">${o.icon}</span><span class="cn">${o.cn}</span><span class="en">${o.name}</span>`;
+  addLabel(g, lab, 0, BASE_Y+H/2, D/2+0.05);
+
+  const panel = document.createElement('div');
+  panel.className = 'attr-panel';
+  const rows = o.attrs.slice(0,4).map(a=>`<div class="r"><span>${a[0]}</span><i>${a[1]}</i></div>`).join('');
+  const more = o.attrs.length>4 ? `<div class="r" style="color:#9aa8b8">… +${o.attrs.length-4}</div>` : '';
+  panel.innerHTML = `<div class="t">${o.cn} · 属性 ${o.attrs.length}</div>${rows}${more}`;
+  addLabel(g, panel, 0, BASE_Y+H+2.4, 0);
+
+  scene.add(g);
+});
+
+// ---------- connectors ----------
+RELATIONS.forEach(r=>{
+  const a = byName[r.from], b = byName[r.to];
+  const start = new THREE.Vector3(a.pos[0], BASE_Y+H, a.pos[1]);
+  const end   = new THREE.Vector3(b.pos[0], BASE_Y+H, b.pos[1]);
+  const mid = start.clone().add(end).multiplyScalar(0.5); mid.y += r.arc;
+  const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+
+  const srcColor = new THREE.Color(TIER_COLOR[a.tier]);
+  const tubeMat = new THREE.MeshPhysicalMaterial({
+    color:srcColor, transmission:0.35, roughness:0.28, transparent:true, opacity:0.92,
+    emissive:srcColor, emissiveIntensity:0.3
+  });
+  const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 48, 0.09, 12), tubeMat);
+  scene.add(tube);
+
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.26,0.7,16),
+    new THREE.MeshStandardMaterial({color:srcColor, roughness:0.4}));
+  const t = 0.95;
+  cone.position.copy(curve.getPoint(t));
+  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), curve.getTangent(t).normalize());
+  scene.add(cone);
+
+  const chip = document.createElement('div');
+  chip.className = 'rel-chip';
+  chip.innerHTML = `<div class="cn">${r.cn}</div><div class="card">${r.card}</div>`;
+  const p = curve.getPoint(0.5);
+  const co = new CSS2DObject(chip); co.position.copy(p); co.position.y += 0.35;
+  scene.add(co);
+});
+
+// ---------- interaction ----------
+const ray = new THREE.Raycaster();
+const ptr = new THREE.Vector2();
+let hovered = null, selected = null;
+
+function setEmissive(brick, v){ brick.material.emissiveIntensity = v; }
+function refresh(){
+  ONTOLOGIES.forEach(o=>{
+    const b = brickMeshes[o.name];
+    if(o.name===selected) setEmissive(b, 0.45);
+    else if(o.name===hovered) setEmissive(b, 0.3);
+    else setEmissive(b, selected ? 0.04 : 0.08);
+  });
+  document.querySelectorAll('.onto-row').forEach(el=>{
+    el.classList.toggle('sel', el.dataset.name===selected);
+  });
+}
+
+renderer.domElement.addEventListener('pointermove', e=>{
+  ptr.x = (e.clientX/innerWidth)*2-1;
+  ptr.y = -(e.clientY/innerHeight)*2+1;
+  ray.setFromCamera(ptr, camera);
+  const hit = ray.intersectObjects(pickables)[0];
+  const name = hit ? hit.object.userData.onto.name : null;
+  if(name!==hovered){ hovered = name; renderer.domElement.style.cursor = name?'pointer':'default'; refresh(); }
+});
+renderer.domElement.addEventListener('click', ()=>{ select(hovered); });
+
+function select(name){
+  selected = name || null;
+  renderDetail(selected);
+  if(selected){
+    const o = byName[selected];
+    controls.target.set(o.pos[0], 1.2, o.pos[1]);
+  }
+  refresh();
+}
+
+// ---------- left list + right detail ----------
+const rowsEl = document.getElementById('ontoRows');
+ONTOLOGIES.forEach(o=>{
+  const c = '#'+TIER_COLOR[o.tier].toString(16).padStart(6,'0');
+  const el = document.createElement('div');
+  el.className = 'onto-row'; el.dataset.name = o.name;
+  el.innerHTML = `<span class="sw" style="background:${c}"></span>
+    <span class="nm"><b>${o.cn}</b><i>${o.name}</i></span>
+    <span class="ct">${o.attrs.length}</span>`;
+  el.onclick = ()=> select(o.name===selected ? null : o.name);
+  rowsEl.appendChild(el);
+});
+
+const detailEl = document.getElementById('detail');
+function renderDetail(name){
+  if(!name){ detailEl.innerHTML = `<div class="empty">点击积木或左侧列表<br/>查看本体详情</div>`; return; }
+  const o = byName[name];
+  const c = '#'+TIER_COLOR[o.tier].toString(16).padStart(6,'0');
+  const rels = RELATIONS.filter(r=>r.from===name||r.to===name).map(r=>{
+    const out = r.from===name;
+    const other = byName[out?r.to:r.from];
+    return `<div class="rel">${out?'→':'←'} ${r.cn} · ${other.cn}<span class="card">${r.card}</span></div>`;
+  }).join('');
+  detailEl.innerHTML = `
+    <h2><span class="sw" style="background:${c}"></span>${o.cn}</h2>
+    <div class="sub">${o.name} · T${o.tier}</div>
+    <div class="kv"><span>主键</span><b>${o.pk}</b></div>
+    <div class="kv"><span>语义层</span><b>T${o.tier} · ${{1:'T-box 概念层',2:'A-box 数据层',3:'R-box 规则/事件层'}[o.tier]}</b></div>
+    <div class="kv"><span>属性数</span><b>${o.attrs.length}</b></div>
+    <h4>属性列表</h4>
+    <div>${o.attrs.map(a=>`<span class="tag">${a[0]} <i style="font-style:normal;color:#9aa8b8">${a[1]}</i></span>`).join('')}</div>
+    <h4>关系列表</h4>
+    ${rels || '<div class="rel" style="color:#9aa8b8">无</div>'}`;
+}
+
+// ---------- loop ----------
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  css2d.setSize(innerWidth, innerHeight);
+});
+function tick(){
+  requestAnimationFrame(tick);
+  controls.update();
+  renderer.render(scene, camera);
+  css2d.render(scene, camera);
+}
+tick();
+
+window.__LEGO = { scene, camera, bricks:brickMeshes, relations:RELATIONS, ontologies:ONTOLOGIES };
+</script>
+</body>
+</html>

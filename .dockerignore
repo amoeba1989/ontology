@@ -1,0 +1,17 @@
+# 构建上下文里排除无关/敏感内容
+.git
+.github
+.workflow
+data
+backend/venv
+backend/**/__pycache__
+backend/*.db
+backend/*.db-*
+backend/uploads
+backend/run
+frontend/node_modules
+frontend/dist
+docs
+vibe_images
+*.md
+!README.md
