@@ -1,4 +1,4 @@
-"""军事演示库种子脚本：重建 mil_demo.db（target/sensor/behavior_event/assessment/command_decision）"""
+"""初始化缺失的演示记录，保留已存在的业务数据。"""
 import os
 import sqlite3
 from pathlib import Path
@@ -56,14 +56,8 @@ con.executescript(
     );
     """
 )
-con.execute("DELETE FROM behavior_event")
-con.execute("DELETE FROM assessment")
-con.execute("DELETE FROM command_decision")
-con.execute("DELETE FROM target")
-con.execute("DELETE FROM sensor")
-
 con.executemany(
-    "INSERT INTO target VALUES (?,?,?,?,?,?,?,?)",
+    "INSERT OR IGNORE INTO target VALUES (?,?,?,?,?,?,?,?)",
     [
         ("T-01", "蓝海货运轮", "商船", "friendly", "近海航道 A3", 12.0, 95, "2026-10-13 09:30:00"),
         ("T-02", "不明快速小艇", "快艇", "unknown", "管控区边界 B7", 32.0, 210, "2026-10-13 10:15:00"),
@@ -72,7 +66,7 @@ con.executemany(
     ],
 )
 con.executemany(
-    "INSERT INTO sensor VALUES (?,?,?,?,?)",
+    "INSERT OR IGNORE INTO sensor VALUES (?,?,?,?,?)",
     [
         ("S-01", "对海警戒雷达站", "雷达", 120, 1),
         ("S-02", "光电跟踪仪", "光电", 45, 1),
@@ -81,7 +75,7 @@ con.executemany(
     ],
 )
 con.executemany(
-    "INSERT INTO behavior_event VALUES (?,?,?,?,?,?)",
+    "INSERT OR IGNORE INTO behavior_event VALUES (?,?,?,?,?,?)",
     [
         ("EVT-A101", "T-01", "常规航行", "按计划航线匀速航行，AIS 信号正常", 0.95, "2026-10-13 09:28:00"),
         ("EVT-A201", "T-02", "切入航道", "突然改变航向切入商船航道，未开启 AIS 应答", 0.82, "2026-10-13 10:02:00"),
@@ -93,7 +87,7 @@ con.executemany(
     ],
 )
 con.executemany(
-    "INSERT INTO assessment VALUES (?,?,?,?,?,?,?)",
+    "INSERT OR IGNORE INTO assessment VALUES (?,?,?,?,?,?,?)",
     [
         ("ASM-B201", "T-02", "hostile", "orient", "警告驱离", "研判席", "2026-10-13 10:20:00"),
     ],

@@ -116,8 +116,6 @@ def _insert_sql(table: str, cols: list[str], n: int) -> tuple[str, dict]:
 
 
 def _load(db: Session, cfg: dict, cols: list[str], rows: list[list]) -> int:
-    if not rows:
-        return 0
     tgt = cfg["target"]
     conn_id = tgt["connection_id"]
     table = tgt["table"]
@@ -132,6 +130,9 @@ def _load(db: Session, cfg: dict, cols: list[str], rows: list[list]) -> int:
         )
 
     upsert_keys = cfg.get("upsert_keys") or []
+    # A full refresh with no results must clear stale rows too.
+    if not rows:
+        return 0
     key_idx = {c: i for i, c in enumerate(cols)}
 
     for start in range(0, len(rows), _BATCH):
@@ -169,10 +170,10 @@ def _set_progress(db: Session, run: PipelineRun, idx: int, total: int, label: st
     db.commit()
 
 
-def execute_run(run_id: str) -> None:
+def execute_run(run_id: str, session_factory=None) -> None:
     """在后台线程中执行一次真实运行；自管 Session，异常落 run.error。"""
     from app.database import SessionLocal
-    db = SessionLocal()
+    db = (session_factory or SessionLocal)()
     try:
         run = db.get(PipelineRun, run_id)
         if not run:

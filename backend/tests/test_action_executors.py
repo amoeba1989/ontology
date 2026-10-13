@@ -18,9 +18,8 @@ async def test_sql_exec_dry_run():
     executor = get_executor("sql_exec")
     config = {"connection_id": "conn_1", "sql": "UPDATE users SET status='$status' WHERE id=$id"}
     result = await executor.execute(config, {"status": "active", "id": "42"}, dry_run=True)
-    assert result.success is True
-    assert "conn_1" in result.message
-    assert "active" in result.output["sql"]
+    assert result.success is False
+    assert ":name" in result.message
 
 
 @pytest.mark.asyncio

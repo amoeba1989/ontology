@@ -13,9 +13,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Test delivery chain and business scenarios
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt pytest pytest-asyncio
+          python -m pytest tests/test_delivery_projects.py tests/test_action_executors.py tests/test_ontology_constraints.py tests/test_ontology_impact.py -q --disable-warnings
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm install -g pnpm@10
+          pnpm install --frozen-lockfile --registry=https://registry.npmjs.org
+          pnpm exec vite build
   deploy:
+    needs: verify
     if: vars.DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 40
     env:
@@ -25,7 +50,7 @@ jobs:
       ECS_SSH_KEY: ${{ secrets.ECS_SSH_KEY }}
       ECS_KNOWN_HOSTS: ${{ secrets.ECS_KNOWN_HOSTS }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 

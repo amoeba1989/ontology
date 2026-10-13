@@ -422,6 +422,8 @@ def update_pipeline(pipeline_id: str, body: PipelineUpdate, db: Session = Depend
     p.step_duration_ms = body.step_duration_ms
     p.engine = body.engine
     p.config_json = body.config_json or {}
+    # An edited definition must run again before delivery can trust its result.
+    p.status = "idle"
     db.commit()
     db.refresh(p)
     return PipelineOut.from_orm_obj(p, _recent_runs(db, p.id))

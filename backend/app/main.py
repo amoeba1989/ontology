@@ -11,6 +11,7 @@ from app.models import *  # noqa: F401,F403 — 确保所有模型注册
 from app.database import Base
 from app.api.v1.entities import router as entities_router
 from app.api.v1.auth import router as auth_router, seed_admin
+from app.api.v1.delivery import router as delivery_router
 
 
 def _seed_system_config(db):
@@ -544,6 +545,7 @@ app.include_router(functions_router, prefix="/api/v1")
 app.include_router(monitor_router, prefix="/api/v1")
 app.include_router(studio_router, prefix="/api/v1")
 app.include_router(pipelines_router, prefix="/api/v1")
+app.include_router(delivery_router, prefix="/api/v1")
 app.include_router(aip_scenes_router, prefix="/api/v1")
 app.include_router(scene_registry_router, prefix="/api/v1")
 app.include_router(aip_executions_router, prefix="/api/v1")

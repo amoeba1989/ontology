@@ -163,9 +163,12 @@ async def execute_action(
     dry_run = data.dry_run if data else False
 
     executor = get_executor(action.action_type)
+    if action.action_type == "sql_exec":
+        from app.services.action_executors.sql_exec import SqlExecExecutor
+        executor = SqlExecExecutor(db, user.id if user else None)
     result = await executor.execute(action.type_config or {}, params, dry_run)
 
-    if not dry_run:
+    if not dry_run and result.success:
         action.impact_count = (action.impact_count or 0) + 1
         write_audit(
             db, user_id=user.id if user else None,

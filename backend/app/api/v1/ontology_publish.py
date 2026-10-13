@@ -584,11 +584,15 @@ def _check_readiness_for_version_entity(ve: OntologyVersionEntity) -> dict:
 
 
 def _sync_relations(v: OntologyVersion, db: Session):
+    db.flush()
     db.query(OntologyVersionRelation).filter(
         OntologyVersionRelation.version_id == v.id
     ).delete()
 
-    source_id_to_ve = {ve.source_entity_id: ve for ve in v.entities}
+    # add/remove_entities can leave the already-loaded relationship stale.
+    # Read flushed rows so the published graph includes newly added objects.
+    version_entities = db.query(OntologyVersionEntity).filter_by(version_id=v.id).all()
+    source_id_to_ve = {ve.source_entity_id: ve for ve in version_entities}
     source_ids = set(source_id_to_ve.keys())
 
     if not source_ids:

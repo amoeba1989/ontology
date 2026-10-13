@@ -18,6 +18,7 @@ from app.models.scene import (
     AipScene, AipSceneVersion, AipSceneExecution, AipSceneTrigger,
 )
 from app.models.business_document import BusinessDocument
+from app.models.delivery_project import DeliveryProject, DeliveryEvent
 
 # ── Data Plane（M1 新增 7 张表）──
 from app.models.connection import Connection

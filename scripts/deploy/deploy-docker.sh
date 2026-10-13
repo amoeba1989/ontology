@@ -30,7 +30,11 @@ until curl -sf "http://127.0.0.1:$WEB_PORT/api/v1/scene-registry" >/dev/null; do
   fi
   sleep 2
 done
-log "灌演示种子数据（幂等，容器内执行）"
-$DC exec -T backend python scripts/seed_mil_demo.py
-$DC exec -T backend python scripts/seed_drone_demo.py
+# 日常部署只更新应用，不重置业务记录或覆盖已有场景配置。
+# 初次搭建演示环境时可显式设置 SEED_DEMO_DATA=1。
+if [ "${SEED_DEMO_DATA:-0}" = "1" ]; then
+  log "按显式配置初始化演示数据"
+  $DC exec -T backend python scripts/seed_mil_demo.py
+  $DC exec -T backend python scripts/seed_drone_demo.py
+fi
 log "部署完成：http://<ECS-IP>:$WEB_PORT （数据持久化在 /opt/ontology/data/）"

@@ -7,6 +7,8 @@ const router = createRouter({
     { path: '/login', name: 'login', component: () => import('../views/auth/LoginView.vue'), meta: { title: '登录', public: true } },
 
     // 工作台
+    { path: '/workspace/projects', name: 'delivery-projects', component: () => import('../views/workspace/DeliveryWorkspace.vue'), meta: { title: '业务交付工作区' } },
+    { path: '/apps/projects/:id', name: 'delivery-runtime', component: () => import('../views/workspace/DeliveryRuntime.vue'), meta: { title: '业务应用' } },
     { path: '/workspace/space', name: 'workspace-space', component: () => import('../views/workspace/OntologySpaceView.vue'), meta: { title: '本体态势舱' } },
     { path: '/dashboard', name: 'dashboard', component: () => import('../views/dashboard/SystemDashboardView.vue'), meta: { title: '系统看版' } },
 

@@ -95,6 +95,7 @@ const ico = {
 
 const navGroups = [
   { label: '工作台', items: [
+    { path: '/workspace/projects', label: '业务交付工作区', icon: ico.orchestrate },
     { path: '/workspace/space', label: '本体态势舱', icon: ico.space },
   ]},
   { label: '数据集成', items: [

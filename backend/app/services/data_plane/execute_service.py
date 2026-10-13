@@ -493,7 +493,8 @@ class ExecuteService:
                     try:
                         raw.commit()
                     except Exception:
-                        pass
+                        raw.rollback()
+                        raise
             columns = result.get("columns") or []
             rows = result.get("rows") or []
             return self._finalize(log, columns, rows)
