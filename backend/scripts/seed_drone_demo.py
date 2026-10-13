@@ -148,7 +148,10 @@ def enum(values, labels):
 
 
 def seed_connection():
-    existing = req("GET", "/connections?q=drone") or []
+    # The connection name is Chinese, so searching for the English scenario key
+    # does not return an existing connection. List connections and match the
+    # stable name explicitly to keep repeated deployments idempotent.
+    existing = req("GET", "/connections") or []
     for c in existing:
         if c.get("name") == "反制演示库":
             print("[conn] 已存在，复用:", c["id"])
