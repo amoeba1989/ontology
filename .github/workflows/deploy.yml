@@ -1,0 +1,79 @@
+name: Deploy to Alibaba Cloud ECS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ontology-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 40
+    env:
+      ECS_HOST: ${{ secrets.ECS_HOST }}
+      ECS_USER: ${{ secrets.ECS_USER }}
+      ECS_SSH_PORT: ${{ secrets.ECS_SSH_PORT || '22' }}
+      ECS_SSH_KEY: ${{ secrets.ECS_SSH_KEY }}
+      ECS_KNOWN_HOSTS: ${{ secrets.ECS_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in ECS_HOST ECS_USER ECS_SSH_KEY ECS_KNOWN_HOSTS; do
+            if [ -z "${!key}" ]; then
+              echo "Missing GitHub Actions secret: $key"
+              exit 1
+            fi
+          done
+          [[ "$ECS_HOST" =~ ^[a-zA-Z0-9.-]+$ ]]
+          [[ "$ECS_USER" =~ ^[a-zA-Z0-9_-]+$ ]]
+          [[ "$ECS_SSH_PORT" =~ ^[0-9]+$ ]]
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$ECS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$ECS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Synchronize source and deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH_OPTIONS="-p $ECS_SSH_PORT -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
+          ssh $SSH_OPTIONS "$ECS_USER@$ECS_HOST" \
+            'test -d /opt/ontology && command -v rsync && command -v curl && command -v flock && docker info >/dev/null'
+          # Transfer only this commit's files; never send runner credentials.
+          SOURCE_DIR="$(mktemp -d)"
+          trap 'rm -rf "$SOURCE_DIR"' EXIT
+          git archive HEAD | tar -x -C "$SOURCE_DIR"
+          # A server-side lock also protects manual deployments using this lock.
+          # Keep the lock open throughout synchronization, build and restart.
+          tar -C "$SOURCE_DIR" -czf - . | ssh $SSH_OPTIONS "$ECS_USER@$ECS_HOST" '
+            set -eu
+            exec 9>/opt/ontology/.deploy.lock
+            flock -w 1800 9
+            source_dir=$(mktemp -d)
+            trap '\''rm -rf "$source_dir"'\'' EXIT
+            tar -xzf - -C "$source_dir"
+            rsync -a --delete \
+              --exclude="/.git/" --exclude="/.deploy.lock" \
+              --exclude="/data/" --exclude=".env" --exclude=".env.*" \
+              --exclude="/backend/data/" --exclude="/backend/uploads/" \
+              --exclude="/backend/venv/" --exclude="/.venv/" \
+              --exclude="/frontend/node_modules/" --exclude="/logs/" \
+              "$source_dir/" /opt/ontology/
+            cd /opt/ontology
+            sh scripts/deploy/deploy-docker.sh
+          '
