@@ -110,7 +110,7 @@ def save_ai_models(data: dict, db: Session = Depends(get_db), user: User = Depen
 
 @router.post("/ai/models/test")
 def test_ai_model(data: dict, _user: User = Depends(require_admin)):
-    """测试指定模型的连通性"""
+    """通过一次最小 chat completion 测试实际模型调用，而不是只探测 models 列表。"""
     api_key = data.get("api_key", "")
     base_url = data.get("base_url", "https://api.anthropic.com")
     model_id = data.get("model_id", "")
@@ -121,17 +121,26 @@ def test_ai_model(data: dict, _user: User = Depends(require_admin)):
         return TestResult(success=False, message="请先选择模型")
 
     try:
-        import httpx
-        with httpx.Client(timeout=10) as client:
-            resp = client.get(f"{base_url}/v1/models", headers={
-                "Authorization": f"Bearer {api_key}",
-                "x-api-key": api_key,
-            })
-            if resp.status_code < 400:
-                return TestResult(success=True, message=f"连接成功，模型 {model_id} 可用")
-            return TestResult(success=False, message=f"连接失败: HTTP {resp.status_code}")
+        from openai import OpenAI
+        # DeepSeek 的官方 OpenAI 兼容根地址是 https://api.deepseek.com；
+        # 允许用户填入带 /v1 的兼容地址，但避免重复路径。
+        normalized = base_url.rstrip("/")
+        if normalized.endswith("/v1") and "deepseek.com" in normalized:
+            normalized = normalized[:-3]
+        client = OpenAI(api_key=api_key.strip(), base_url=normalized, timeout=15, max_retries=0)
+        response = client.chat.completions.create(
+            model=model_id,
+            messages=[{"role": "user", "content": "Reply with OK."}],
+            max_tokens=8,
+            temperature=0,
+        )
+        reply = (response.choices[0].message.content or "").strip()
+        return TestResult(success=True, message=f"连接成功，模型 {model_id} 可用：{reply[:40]}")
     except Exception as e:
-        return TestResult(success=False, message=f"连接失败: {str(e)}")
+        status = getattr(getattr(e, "response", None), "status_code", None)
+        if status:
+            return TestResult(success=False, message=f"模型调用失败: HTTP {status}：{str(e)[:240]}")
+        return TestResult(success=False, message=f"模型调用失败: {type(e).__name__}：{str(e)[:240]}")
 
 
 @router.get("/scenes")
