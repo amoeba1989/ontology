@@ -517,7 +517,7 @@ async function saveMappings() {
 
 async function loadDatasources() {
   try {
-    datasources.value = await get<{ id: string; name: string; tables?: string[] }[]>('/datasources')
+    datasources.value = await get<{ id: string; name: string; tables?: string[] }[]>('/connections')
   } catch (e) {
     console.error('加载数据源失败', e)
   }

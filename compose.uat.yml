@@ -1,0 +1,27 @@
+# Independent test deployment. Always use -p ontology-uat; do not combine with production compose.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    environment:
+      DATABASE_URL: sqlite:///./data/ontology.db
+      DEMO_DB_DIR: /app/backend/data
+      BOOTSTRAP_ADMIN_PASSWORD: ${UAT_ADMIN_PASSWORD:?Set UAT_ADMIN_PASSWORD in .env.uat}
+      SECRET_KEY: ${UAT_SECRET_KEY:?Set UAT_SECRET_KEY in .env.uat}
+    volumes:
+      - uat-data:/app/backend/data
+    restart: unless-stopped
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    ports:
+      - "${UAT_WEB_PORT:-8090}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+volumes:
+  uat-data:

@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
+import { reactive } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -93,7 +93,8 @@ const ico = {
   config: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h4M10 4h4M2 8h7M12 8h2M2 12h2M7 12h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="4" r="1.8" stroke="currentColor" stroke-width="1.4"/><circle cx="10.5" cy="8" r="1.8" stroke="currentColor" stroke-width="1.4"/><circle cx="5" cy="12" r="1.8" stroke="currentColor" stroke-width="1.4"/></svg>`,
 }
 
-const navGroups = [
+type NavItem = { path: string; label: string; icon: string; exact?: boolean; children?: { path: string; label: string; exact?: boolean }[] }
+const navGroups: { label: string; items: NavItem[] }[] = [
   { label: '工作台', items: [
     { path: '/workspace/projects', label: '业务交付工作区', icon: ico.orchestrate },
     { path: '/workspace/space', label: '本体态势舱', icon: ico.space },
@@ -108,6 +109,7 @@ const navGroups = [
   { label: '本体中心', items: [
     { path: '/builder', label: '本体构建', icon: ico.model, children: [
       { path: '/builder', label: '手动构建', exact: true },
+      { path: '/builder/drafts', label: 'AI / 表单建模' },
       { path: '/builder/template', label: '模板构建' },
       { path: '/builder/doc', label: '文档构建' },
       { path: '/builder/ai', label: '资产构建' },

@@ -26,6 +26,7 @@ def _find_asset(db: Session, name: str) -> Asset | None:
         .filter(Asset.status == "active", Asset.kind == "table")
         .filter(
             (Asset.name == name)
+            | (Asset.id == name)
             | (Asset.alias == name)
             | (Asset.locator["table"].as_string() == name)
         )
@@ -60,7 +61,7 @@ def get_domains(db: Session) -> list[str]:
     asset = _find_asset(db, _TABLE_LIST_ASSET_NAME)
     if not asset:
         logger.warning("未找到资产 '%s'，请先在数据接入页面注册", _TABLE_LIST_ASSET_NAME)
-        return []
+        return sorted({t["domain"] for t in _registered_tables(db)})
     sql = (
         "SELECT DISTINCT theme_domain_1 FROM dwd_table_list "
         "WHERE theme_domain_1 IS NOT NULL AND theme_domain_1 != '' "
@@ -73,7 +74,7 @@ def get_domains(db: Session) -> list[str]:
 def get_sub_domains(domain1: str, db: Session) -> list[str]:
     asset = _find_asset(db, _TABLE_LIST_ASSET_NAME)
     if not asset:
-        return []
+        return ["已注册数据资产"] if any(t["domain"] == domain1 for t in _registered_tables(db)) else []
     sql = (
         "SELECT DISTINCT theme_domain_2 FROM dwd_table_list "
         "WHERE theme_domain_1 = :d1 AND theme_domain_2 IS NOT NULL AND theme_domain_2 != '' "
@@ -86,7 +87,7 @@ def get_sub_domains(domain1: str, db: Session) -> list[str]:
 def get_themes(domain1: str, domain2: str, db: Session) -> list[str]:
     asset = _find_asset(db, _TABLE_LIST_ASSET_NAME)
     if not asset:
-        return []
+        return ["业务数据"] if any(t["domain"] == domain1 for t in _registered_tables(db)) else []
     sql = (
         "SELECT DISTINCT theme_domain_3 FROM dwd_table_list "
         "WHERE theme_domain_1 = :d1 AND theme_domain_2 = :d2 "
@@ -100,7 +101,7 @@ def get_themes(domain1: str, domain2: str, db: Session) -> list[str]:
 def get_tables(domain1: str, domain2: str, domain3: str | None = None, db: Session = None) -> list[dict]:
     asset = _find_asset(db, _TABLE_LIST_ASSET_NAME)
     if not asset:
-        return []
+        return [t for t in _registered_tables(db) if t["domain"] == domain1]
     sql = (
         "SELECT table_name, table_desc, layering, cycle FROM dwd_table_list "
         "WHERE theme_domain_1 = :d1 AND theme_domain_2 = :d2"
@@ -117,8 +118,10 @@ def get_tables(domain1: str, domain2: str, domain3: str | None = None, db: Sessi
 def get_table_schema(table_name: str, db: Session) -> list[dict]:
     asset = _find_asset(db, _TABLE_DETAILS_ASSET_NAME)
     if not asset:
-        logger.warning("未找到资产 '%s'，请先在数据接入页面注册", _TABLE_DETAILS_ASSET_NAME)
-        return []
+        source = _find_asset(db, table_name)
+        return [{"field_name": c["name"], "field_desc": c.get("comment", ""), "field_type": c.get("type", "string"),
+                 "field_length": None, "is_partition": False, "field_handle": "", "field_source_desc": source.name}
+                for c in (source.schema_snapshot or [])] if source else []
     sql = (
         "SELECT field_name, field_desc, field_type, field_length, "
         "is_partition, field_handle, field_source_desc "
@@ -141,7 +144,7 @@ def get_tables_by_domains(
     """根据多个主题域组合查询表列表"""
     asset = _find_asset(db, _TABLE_LIST_ASSET_NAME)
     if not asset:
-        return []
+        return [t for t in _registered_tables(db) if t["domain"] in domain1_list]
 
     in_clause, params = _expand_in_params("d1", domain1_list)
     sql = f"SELECT table_name, table_desc, layering, cycle FROM dwd_table_list WHERE theme_domain_1 IN ({in_clause})"
@@ -158,3 +161,12 @@ def get_tables_by_domains(
     sql += " ORDER BY serial_number"
     rows = _execute(db, asset, sql, params)
     return [{"table_name": r[0], "table_desc": r[1], "layering": r[2], "cycle": r[3]} for r in rows]
+
+
+def _registered_tables(db):
+    from app.models import Connection
+    rows = db.query(Asset, Connection).join(Connection, Asset.connection_id == Connection.id).filter(
+        Asset.status == "active", Asset.kind == "table", Connection.enabled.is_(True)).all()
+    # Unique asset IDs prevent identically named tables in different databases from colliding.
+    return [{"table_name": a.id, "table_desc": a.name, "domain": c.name,
+             "layering": "已注册资产", "cycle": "按管道配置"} for a, c in rows]

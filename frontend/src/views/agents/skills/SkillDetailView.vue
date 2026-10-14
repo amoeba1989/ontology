@@ -12,6 +12,28 @@
       </div>
     </div>
 
+    <div v-if="skill.skill_type === 'configured'" class="skill-detail__section skill-run">
+      <h3>运行技能 · 查询真实数据库</h3>
+      <p>受已发布应用约束；结果最多取样 20 行。也可在智能体问答中调用。</p>
+      <label v-for="(property, name) in skill.input_schema?.properties || {}" :key="name">
+        {{ name }}
+        <select v-if="property.enum" v-model="params[name]"><option v-for="choice in property.enum" :key="choice">{{ choice }}</option></select>
+        <input v-else v-model="params[name]" />
+      </label>
+      <button class="run-button" :disabled="running || skill.status !== 'active'" @click="executeSkill">{{ running ? '查询中…' : '运行技能' }}</button>
+      <button class="run-button secondary" @click="router.push('/agent/manage')">进入智能体问答</button>
+      <p v-if="runError" role="alert">{{ runError }}</p>
+      <template v-if="runResult">
+        <p :class="{ failure: !runResult.success }">{{ runResult.summary }}</p>
+        <p>执行编号：{{ runResult.run_id }} · 应用版本：{{ runResult.release_number || '—' }}</p>
+        <div v-if="runResult.data?.columns" class="result-scroll"><table><thead><tr><th v-for="column in runResult.data.columns" :key="column">{{ column }}</th></tr></thead>
+          <tbody><tr v-for="(row, index) in runResult.data.rows" :key="index"><td v-for="(cell, ci) in row" :key="ci">{{ cell }}</td></tr></tbody></table></div>
+        <pre v-else>{{ JSON.stringify(runResult.data, null, 2) }}</pre>
+      </template>
+      <h3>最近执行记录</h3>
+      <p v-for="run in runs" :key="run.id">{{ new Date(run.created_at).toLocaleString() }} · {{ run.source.startsWith('agent:') ? '智能体问答' : run.source === 'workflow' ? '业务编排' : '技能运行' }} · {{ run.status === 'success' ? '成功' : '失败' }} · {{ run.result.summary }}</p>
+    </div>
+
     <div class="skill-detail__section">
       <h3>输入参数</h3>
       <pre>{{ JSON.stringify(skill.input_schema, null, 2) }}</pre>
@@ -64,6 +86,20 @@ const route = useRoute()
 const router = useRouter()
 const skill = ref<SkillItem | null>(null)
 const versions = ref<VersionItem[]>([])
+const params = ref<Record<string, any>>({})
+const runs = ref<any[]>([])
+const running = ref(false)
+const runError = ref('')
+const runResult = ref<any>(null)
+async function executeSkill() {
+  if (!skill.value) return
+  running.value = true; runError.value = ''
+  try {
+    runResult.value = await skillsApi.execute(skill.value.id, params.value)
+    runs.value = await skillsApi.runs(skill.value.id)
+  } catch (e: any) { runError.value = e.response?.data?.detail || '技能运行失败' }
+  finally { running.value = false }
+}
 
 function statusLabel(status: string) {
   const map: Record<string, string> = { active: '生效', draft: '草稿', deprecated: '已废弃' }
@@ -74,6 +110,10 @@ async function load() {
   const id = route.params.id as string
   skill.value = await skillsApi.get(id)
   versions.value = await skillsApi.versions(id)
+  if (skill.value?.skill_type === 'configured') {
+    params.value = { ...(skill.value.test_cases?.[0]?.params || {}) }
+    runs.value = await skillsApi.runs(id)
+  }
 }
 
 async function handleDeprecate() {
@@ -92,6 +132,15 @@ onMounted(load)
 </script>
 
 <style scoped>
+.skill-run { padding: 20px; border: 1px solid #c6d8eb; border-radius: 12px; background: #f6faff; }
+.skill-run p { font-size: 12px; color: #4b5969; margin: 12px 0; }
+.skill-run label { display: block; margin: 12px 0; }
+.skill-run select, .skill-run input { padding: 6px 12px; margin-left: 12px; }
+.run-button { padding: 9px 16px; background: #2463ab; color: white; border: 0; border-radius: 6px; cursor: pointer; margin: 6px 12px 12px 0; }
+.run-button.secondary { background: #e4edf8; color: #245080; }
+.result-scroll { overflow: auto; } table { border-collapse: collapse; min-width: 100%; font-size: 12px; }
+th, td { text-align: left; padding: 10px; border-bottom: 1px solid #dfe6ef; white-space: nowrap; }
+.failure { color: #b42318 !important; }
 .skill-detail { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
 .skill-detail__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
 .skill-detail__title { font-size: 22px; font-weight: 600; color: #1a1a2e; }

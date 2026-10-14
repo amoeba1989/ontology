@@ -16,6 +16,16 @@ from app.services import dwd_catalog, minio_docs
 logger = logging.getLogger(__name__)
 
 
+def read_document(key, db):
+    if key.startswith("db:"):
+        from app.models import BusinessDocument
+        document = db.get(BusinessDocument, key[3:])
+        if not document:
+            raise ValueError("业务文档不存在")
+        return document.parsed_text or ""
+    return minio_docs.get_document_content(key)
+
+
 def _get_llm_client(db: Session | None = None) -> OpenAI:
     from app.services.llm_resolver import get_llm_client
     return get_llm_client(db=db, scene="ontology")
@@ -41,7 +51,7 @@ def match_domain(business_desc: str, db: Session | None = None) -> dict:
     domains = dwd_catalog.get_domains(db)
     domain_list = "\n".join(f"- {d}" for d in domains)
 
-    prompt = f"""你是一名深耕中国联通业务体系的运营商领域专家兼本体建模专家，熟悉联通在公众客户、政企客户、网络资源、产品中心、订单中心、计费账务、客户服务、渠道运营、智慧家庭、物联网、云网融合、数据中台和智慧运营等领域的业务对象、流程规则和系统边界。根据用户的业务描述，从以下一级主题域中选择最相关的1-3个：
+    prompt = f"""你是企业业务分析与本体建模专家。以用户提供的业务目标和已注册资产为依据，不预设行业。根据用户的业务描述，从以下一级主题域中选择最相关的1-3个：
 
 可选主题域：
 {domain_list}
@@ -51,9 +61,9 @@ def match_domain(business_desc: str, db: Session | None = None) -> dict:
 请返回 JSON 格式（不要返回其他内容）：
 {{"domains": ["最相关主题域1", "最相关主题域2"], "reason": "选择理由"}}"""
 
-    client = _get_llm_client()
+    client = _get_llm_client(db)
     resp = client.chat.completions.create(
-        model=_get_model_name(),
+        model=_get_model_name(db),
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
     )
@@ -82,7 +92,7 @@ def recommend_tables(business_desc: str, tables: list[dict], db: Session | None 
     tables_text = "\n".join(table_summaries)
     table_names = [t["table_name"] for t in tables[:50]]
 
-    prompt = f"""你是一名深耕中国联通业务体系的运营商领域专家兼本体建模专家，熟悉联通在公众客户、政企客户、网络资源、产品中心、订单中心、计费账务、客户服务、渠道运营、智慧家庭、物联网、云网融合、数据中台和智慧运营等领域的业务对象、流程规则和系统边界。根据用户的业务描述，从以下候选数据表中选出与该业务最相关的表。
+    prompt = f"""你是企业业务分析与本体建模专家。以用户提供的业务目标和已注册资产为依据，不预设行业。根据用户的业务描述，从以下候选数据表中选出与该业务最相关的表。
 
 业务描述：{business_desc}
 
@@ -92,9 +102,9 @@ def recommend_tables(business_desc: str, tables: list[dict], db: Session | None 
 请选出与业务场景最相关的表，返回 JSON 格式（不要返回其他内容）：
 {{"recommended": ["表名1", "表名2", ...], "reason": "选择理由"}}"""
 
-    client = _get_llm_client()
+    client = _get_llm_client(db)
     resp = client.chat.completions.create(
-        model=_get_model_name(),
+        model=_get_model_name(db),
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
     )
@@ -125,7 +135,7 @@ def extract_ontology_stream(
     doc_texts = {}
     for key in document_keys:
         try:
-            text = minio_docs.get_document_content(key)
+            text = read_document(key, db)
             doc_texts[key] = text[:3000]
         except Exception as e:
             doc_texts[key] = f"[读取失败: {e}]"
@@ -135,7 +145,7 @@ def extract_ontology_stream(
     schema_json = json.dumps(tables_schema, ensure_ascii=False, indent=2)
     doc_summary = "\n\n".join(f"### {k}\n{v[:2000]}" for k, v in doc_texts.items())
 
-    prompt = f"""你是一名深耕中国联通业务体系的运营商领域专家兼本体建模专家，熟悉联通在公众客户、政企客户、网络资源、产品中心、订单中心、计费账务、客户服务、渠道运营、智慧家庭、物联网、云网融合、数据中台和智慧运营等领域的业务对象、流程规则和系统边界。根据以下结构化数据表 schema 和业务文档，提取本体的实体、属性和关系。
+    prompt = f"""你是企业业务分析与本体建模专家。以用户提供的业务目标和已注册资产为依据，不预设行业。根据以下结构化数据表 schema 和业务文档，提取本体的实体、属性和关系。
 
 规则：
 - 实体必须和结构化数据中的表对应（一张表对应一个实体）
@@ -172,9 +182,9 @@ def extract_ontology_stream(
 
     yield f"data: {json.dumps({'event': 'progress', 'message': '正在调用大模型提取实体和关系...'})}\n\n"
 
-    client = _get_llm_client()
+    client = _get_llm_client(db)
     resp = client.chat.completions.create(
-        model=_get_model_name(),
+        model=_get_model_name(db),
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
         stream=True,
@@ -204,7 +214,7 @@ def extract_ontology_stream(
             asset = (
                 db.query(Asset)
                 .filter(Asset.status == "active", Asset.kind.in_(["table", "sql_view"]))
-                .filter(Asset.locator["table"].as_string() == tn)
+                .filter((Asset.id == tn) | (Asset.locator["table"].as_string() == tn))
                 .first()
             )
             if not asset:

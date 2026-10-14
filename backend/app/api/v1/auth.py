@@ -209,12 +209,12 @@ def seed_admin(db: Session):
     """初始化管理员账号"""
     existing = db.query(User).filter(User.username == "admin").first()
     if existing:
-        existing.password_hash = hash_password("bonc")
-        db.commit()
         return
+    import os
+    initial_password = os.environ.get("BOOTSTRAP_ADMIN_PASSWORD", "bonc")
     admin = User(
         username="admin",
-        password_hash=hash_password("bonc"),
+        password_hash=hash_password(initial_password),
         name="系统管理员",
         role="admin",
     )

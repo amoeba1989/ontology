@@ -8,8 +8,10 @@ from typing import Optional
 from app.database import get_db
 from app.models.agent import Agent, ModelRegistry
 from app.models.scene import AipScene
+from app.core.deps import require_user, require_admin
+from app.models import User
 
-router = APIRouter(prefix="/agents", tags=["agents"])
+router = APIRouter(prefix="/agents", tags=["agents"], dependencies=[Depends(require_user)])
 open_router = APIRouter(prefix="/open/agents", tags=["open-api"])
 
 
@@ -92,7 +94,7 @@ def list_agents(db: Session = Depends(get_db)):
     ]
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(require_admin)])
 def create_agent(body: AgentCreate, db: Session = Depends(get_db)):
     a = Agent(**body.model_dump())
     db.add(a)
@@ -109,7 +111,16 @@ def get_agent(aid: str, db: Session = Depends(get_db)):
     return _agent_out(a, db)
 
 
-@router.put("/{aid}")
+@router.get("/{aid}/model-status")
+def agent_model_status(aid: str, db: Session = Depends(get_db)):
+    from app.services.llm_resolver import agent_model_status as model_status
+    agent = db.get(Agent, aid)
+    if not agent:
+        raise HTTPException(404, "智能体不存在")
+    return model_status(db, agent)
+
+
+@router.put("/{aid}", dependencies=[Depends(require_admin)])
 def update_agent(aid: str, body: AgentUpdate, db: Session = Depends(get_db)):
     a = db.get(Agent, aid)
     if not a:
@@ -121,7 +132,7 @@ def update_agent(aid: str, body: AgentUpdate, db: Session = Depends(get_db)):
     return _agent_out(a, db)
 
 
-@router.delete("/{aid}")
+@router.delete("/{aid}", dependencies=[Depends(require_admin)])
 def delete_agent(aid: str, db: Session = Depends(get_db)):
     a = db.get(Agent, aid)
     if not a:
@@ -131,7 +142,7 @@ def delete_agent(aid: str, db: Session = Depends(get_db)):
     return {"ok": True}
 
 
-@router.post("/{aid}/publish")
+@router.post("/{aid}/publish", dependencies=[Depends(require_admin)])
 def publish_agent(aid: str, db: Session = Depends(get_db)):
     a = db.get(Agent, aid)
     if not a:
@@ -162,7 +173,7 @@ def get_api_info(aid: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{aid}/chat")
-async def chat_with_agent(aid: str, body: ChatRequest, db: Session = Depends(get_db)):
+async def chat_with_agent(aid: str, body: ChatRequest, db: Session = Depends(get_db), user: User = Depends(require_user)):
     a = db.get(Agent, aid)
     if not a:
         raise HTTPException(404, "Agent not found")
@@ -183,6 +194,14 @@ async def chat_with_agent(aid: str, body: ChatRequest, db: Session = Depends(get
 
     if not question:
         raise HTTPException(400, "No question provided")
+
+    if (a.tools_config or {}).get("skill_ids"):
+        from app.services.skill_chat import chat_events
+        def skill_stream():
+            for ev in chat_events(db, a, user, question, body.messages):
+                yield f"data: {_json.dumps(ev, ensure_ascii=False, default=str)}\n\n"
+            yield "data: [DONE]\n\n"
+        return StreamingResponse(skill_stream(), media_type="text/event-stream")
 
     # Build model config from agent settings
     model_name = None
@@ -299,7 +318,15 @@ async def open_chat(
         raise HTTPException(401, "Invalid or missing X-Agent-Key")
 
     # Reuse internal chat logic
-    return await chat_with_agent(aid, body, db)
+    if (a.tools_config or {}).get("skill_ids"):
+        # API key authorizes the publishing account's configured read-only skills.
+        from app.models import DeliveryProject
+        project = db.get(DeliveryProject, (a.tools_config or {}).get("project_id"))
+        owner = db.get(User, project.owner_id) if project else None
+        if not owner:
+            raise HTTPException(403, "智能体尚未绑定有效的项目发布人")
+        return await chat_with_agent(aid, body, db, owner)
+    return await chat_with_agent(aid, body, db, None)
 
 
 @open_router.get("/{aid}/info")

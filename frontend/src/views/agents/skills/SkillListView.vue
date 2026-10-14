@@ -15,7 +15,7 @@
         <p class="skill-card__desc">{{ s.description || '暂无描述' }}</p>
         <div class="skill-card__meta">
           <span>v{{ s.current_version || 0 }}</span>
-          <span>{{ s.skill_type === 'generated' ? 'AI生成' : '内置' }}</span>
+          <span>{{ s.skill_type === 'configured' ? '数据库业务技能 · 可运行' : s.skill_type === 'generated' ? 'AI生成' : '内置' }}</span>
           <span v-if="s.created_by">{{ s.created_by }}</span>
         </div>
       </div>

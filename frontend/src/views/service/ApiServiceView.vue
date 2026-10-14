@@ -122,7 +122,7 @@ async function loadEndpoints() {
   try {
     const data = await get<{ groups: EndpointGroup[] }>('/ontology-api/endpoints')
     endpointGroups.value = data.groups
-    if (data.groups.length > 0) expandedGroups[data.groups[0].entity] = true
+    if (data.groups.length > 0) { expandedGroups[data.groups[0].entity] = true; selectedEndpoint.value = data.groups[0].endpoints[0] }
   } catch { /* fallback empty */ }
 }
 
@@ -135,8 +135,13 @@ async function executeTry() {
     let result: any
     if (ep.method === 'GET') {
       const params = new URLSearchParams()
-      Object.entries(tryParams).forEach(([k, v]) => { if (v) params.set(k, v) })
-      result = await get(`${ep.path}?${params.toString()}`)
+      let path = ep.path
+      Object.entries(tryParams).forEach(([k, v]) => {
+        if (path.includes(`{${k}}`)) path = path.replace(`{${k}}`, encodeURIComponent(v))
+        else if (v) params.set(k, v)
+      })
+      if (path.includes('{')) throw new Error('请填写实例 ID')
+      result = await get(`${path}?${params.toString()}`)
     } else {
       const body: Record<string, any> = {}
       Object.entries(tryParams).forEach(([k, v]) => { if (v) body[k] = v })

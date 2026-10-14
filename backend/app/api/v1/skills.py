@@ -6,8 +6,10 @@ from typing import Optional
 
 from app.database import get_db
 from app.models.skill import Skill
+from app.core.deps import require_user, require_admin
+from app.models import User
 
-router = APIRouter(prefix="/skills", tags=["skills"])
+router = APIRouter(prefix="/skills", tags=["skills"], dependencies=[Depends(require_user)])
 
 
 class SkillCreate(BaseModel):
@@ -59,7 +61,7 @@ def list_skills(status: Optional[str] = None, db: Session = Depends(get_db)):
     return [_skill_out(s) for s in q.all()]
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(require_admin)])
 def create_skill(body: SkillCreate, db: Session = Depends(get_db)):
     s = Skill(**body.model_dump())
     db.add(s)
@@ -76,7 +78,7 @@ def get_skill(sid: str, db: Session = Depends(get_db)):
     return _skill_out(s)
 
 
-@router.put("/{sid}")
+@router.put("/{sid}", dependencies=[Depends(require_admin)])
 def update_skill(sid: str, body: SkillUpdate, db: Session = Depends(get_db)):
     s = db.get(Skill, sid)
     if not s:
@@ -88,7 +90,7 @@ def update_skill(sid: str, body: SkillUpdate, db: Session = Depends(get_db)):
     return _skill_out(s)
 
 
-@router.delete("/{sid}")
+@router.delete("/{sid}", dependencies=[Depends(require_admin)])
 def delete_skill(sid: str, db: Session = Depends(get_db)):
     s = db.get(Skill, sid)
     if not s:
@@ -115,7 +117,7 @@ class RollbackRequest(BaseModel):
     target_version: int
 
 
-@router.post("/{sid}/rollback")
+@router.post("/{sid}/rollback", dependencies=[Depends(require_admin)])
 def rollback(sid: str, body: RollbackRequest, db: Session = Depends(get_db)):
     s = db.get(Skill, sid)
     if not s:
@@ -127,7 +129,7 @@ def rollback(sid: str, body: RollbackRequest, db: Session = Depends(get_db)):
         raise HTTPException(400, str(e))
 
 
-@router.post("/{sid}/deprecate")
+@router.post("/{sid}/deprecate", dependencies=[Depends(require_admin)])
 def deprecate(sid: str, db: Session = Depends(get_db)):
     s = db.get(Skill, sid)
     if not s:
@@ -135,3 +137,39 @@ def deprecate(sid: str, db: Session = Depends(get_db)):
     s.status = "deprecated"
     db.commit()
     return _skill_out(s)
+
+
+class SkillExecute(BaseModel):
+    params: dict = {}
+
+
+@router.post("/{sid}/execute")
+def execute(sid: str, body: SkillExecute, db: Session = Depends(get_db), user: User = Depends(require_user)):
+    from app.services.business_skills import run_business_skill
+    skill = db.get(Skill, sid)
+    if not skill:
+        raise HTTPException(404, "技能不存在")
+    if skill.skill_type != "configured":
+        raise HTTPException(409, "该技能尚未接入受控的业务执行器")
+    return run_business_skill(db, skill, body.params, user)
+
+
+@router.get("/{sid}/runs")
+def runs(sid: str, db: Session = Depends(get_db), user: User = Depends(require_user)):
+    from app.models.customer_demo import SkillRun
+    from app.services.business_skills import check_access
+    skill = db.get(Skill, sid)
+    if not skill:
+        raise HTTPException(404, "技能不存在")
+    if skill.skill_type == "configured":
+        check_access(db, skill, user)
+    rows = db.query(SkillRun).filter_by(skill_id=sid).order_by(SkillRun.created_at.desc()).limit(20).all()
+    return [{"id": r.id, "status": r.status, "source": r.source, "skill_version": r.skill_version,
+             "params": r.params, "result": r.result, "duration_ms": r.duration_ms,
+             "created_at": r.created_at.isoformat() + "Z"} for r in rows]
+
+
+@router.get("/runtime/model-status")
+def model_status(db: Session = Depends(get_db)):
+    from app.services.llm_resolver import agent_model_status
+    return agent_model_status(db)

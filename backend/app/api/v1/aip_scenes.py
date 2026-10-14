@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from app.database import get_db, SessionLocal
+from app.core.deps import require_admin
 from app.models.scene import (
     AipScene, AipSceneVersion, AipSceneExecution, AipSceneTrigger,
 )
@@ -103,7 +104,7 @@ def _full(s: AipScene) -> dict:
     return d
 
 
-def _validate_scene_payload(s: AipScene) -> dict:
+def _validate_scene_payload(s: AipScene, db: Session | None = None) -> dict:
     """场景校验：循环依赖 / 节点引用是否存在 / 数据流是否合理。"""
     errors: list[str] = []
     warnings: list[str] = []
@@ -146,7 +147,8 @@ def _validate_scene_payload(s: AipScene) -> dict:
     from app.models.agent import Agent
     from app.models.function import OntologyFunction
 
-    db = SessionLocal()
+    owns_session = db is None
+    db = db or SessionLocal()
     try:
         for n in nodes:
             ntype = n.get("type", "")
@@ -186,7 +188,8 @@ def _validate_scene_payload(s: AipScene) -> dict:
                 if sid and not db.get(AipScene, sid):
                     errors.append(f"节点 {label} 引用的子场景 {sid} 不存在")
     finally:
-        db.close()
+        if owns_session:
+            db.close()
 
     return {"ok": not errors, "errors": errors, "warnings": warnings}
 
@@ -332,7 +335,7 @@ def validate_scene(sid: str, db: Session = Depends(get_db)):
     s = repo.get_by_id(sid)
     if not s:
         raise HTTPException(404, "场景不存在")
-    return _validate_scene_payload(s)
+    return _validate_scene_payload(s, db)
 
 
 # ── 版本 / 发布 / 回滚 ────────────────────────────────────────
@@ -355,7 +358,7 @@ def publish_scene(sid: str, db: Session = Depends(get_db)):
     s = repo.get_by_id(sid)
     if not s:
         raise HTTPException(404, "场景不存在")
-    val = _validate_scene_payload(s)
+    val = _validate_scene_payload(s, db)
     if not val["ok"]:
         raise HTTPException(400, {"message": "校验失败", "errors": val["errors"]})
     new_version = (s.version or 0) + 1
@@ -410,7 +413,7 @@ def rollback_scene(sid: str, version_id: str = Query(...), db: Session = Depends
 
 # ── 执行 ────────────────────────────────────────────────────────
 
-@router.post("/{sid}/execute")
+@router.post("/{sid}/execute", dependencies=[Depends(require_admin)])
 async def execute_scene(
     sid: str,
     body: SceneExecuteRequest = SceneExecuteRequest(),

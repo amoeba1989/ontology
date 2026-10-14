@@ -15,6 +15,8 @@ def publish_skill(skill: Skill, change_log: str, published_by: str, db: Session)
     new_version = skill.current_version + 1
 
     snapshot = {
+        "config_json": skill.config_json,
+        "code_ref": skill.code_ref,
         "name": skill.name,
         "description": skill.description,
         "input_schema": skill.input_schema,
@@ -52,6 +54,9 @@ def rollback_skill(skill: Skill, target_version: int, db: Session) -> Skill:
         raise ValueError(f"Version {target_version} not found")
 
     snap = version.snapshot
+    if "config_json" in snap:
+        skill.config_json = snap["config_json"]
+        skill.code_ref = snap.get("code_ref", skill.code_ref)
     skill.name = snap["name"]
     skill.description = snap["description"]
     skill.input_schema = snap.get("input_schema")

@@ -193,6 +193,8 @@ def _seed_scene_registry(db):
 
 
 async def lifespan(app: FastAPI):
+    from app.services.db_migrations import upgrade_incremental_schema
+    upgrade_incremental_schema(engine)
     # 启动：建表 + 初始化管理员
     Base.metadata.create_all(bind=engine)
     ensure_legacy_schema_compat(engine)
@@ -546,6 +548,10 @@ app.include_router(monitor_router, prefix="/api/v1")
 app.include_router(studio_router, prefix="/api/v1")
 app.include_router(pipelines_router, prefix="/api/v1")
 app.include_router(delivery_router, prefix="/api/v1")
+from app.api.v1.customer_demo import router as customer_demo_router
+app.include_router(customer_demo_router, prefix="/api/v1")
+from app.api.v1.modeling_drafts import router as modeling_drafts_router
+app.include_router(modeling_drafts_router, prefix="/api/v1")
 app.include_router(aip_scenes_router, prefix="/api/v1")
 app.include_router(scene_registry_router, prefix="/api/v1")
 app.include_router(aip_executions_router, prefix="/api/v1")

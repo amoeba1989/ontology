@@ -8,6 +8,9 @@
       <span>首次使用？建议先 <a class="step-upload__tip-link" @click="handleDownloadTemplate">下载文档模板</a>，按模板结构整理业务资料后上传，抽取效果更佳</span>
     </div>
 
+    <div v-if="documents.length" class="step-upload__tip">
+      <span>已入库业务说明：</span><button v-for="document in documents" :key="document.id" @click="useDocument(document)">{{ document.name }}</button>
+    </div>
     <div class="step-upload__field">
       <label class="step-upload__label">业务需求描述</label>
       <textarea class="step-upload__textarea" v-model="desc" placeholder="例如：我需要构建设备告警研判的本体，包含设备、告警事件、研判结论等实体..." rows="4"></textarea>
@@ -45,7 +48,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { get } from '../../../../api/client'
+const documents = ref<any[]>([])
+onMounted(async () => { documents.value = await get<any[]>('/business-documents') })
+async function useDocument(document: any) {
+  const data = await get<any>(`/business-documents/${document.id}/text`)
+  desc.value = document.summary || document.name
+  files.value = [new File([data.text], document.name, { type: 'text/markdown' })]
+}
 import { uploadDocuments, downloadTemplate } from '../../../../api/docBuilder'
 
 const emit = defineEmits<{ (e: 'next', payload: { sessionId: string; businessDesc: string }): void }>()

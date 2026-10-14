@@ -51,6 +51,7 @@ export const modelsApi = {
 }
 
 export const agentsApi = {
+  modelStatus: (id: string) => client.get<any>(`/agents/${id}/model-status`).then(r => r.data),
   list: () => client.get<AgentItem[]>('/agents').then(r => r.data),
   create: (data: Partial<AgentItem>) => client.post<AgentItem>('/agents', data).then(r => r.data),
   get: (id: string) => client.get<AgentItem>(`/agents/${id}`).then(r => r.data),

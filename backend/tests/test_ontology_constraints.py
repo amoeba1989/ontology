@@ -158,10 +158,11 @@ class TestBuildConstraintPrompt:
         assert "T2" in prompt
         assert "T3" in prompt
 
-    def test_contains_telecom_knowledge(self):
+    def test_domain_knowledge_is_explicit_opt_in(self):
         prompt = build_constraint_prompt()
-        assert "客户" in prompt
-        assert "用户" in prompt
+        assert "联通" not in prompt
+        assert "套餐" not in prompt
+        assert "医学领域" in build_constraint_prompt(domain_knowledge="医学领域")
 
     def test_with_existing_entities(self):
         existing = ["Customer", "Product"]

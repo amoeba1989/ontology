@@ -96,6 +96,8 @@ def update_rule(
         raise HTTPException(status_code=404, detail="规则不存在")
 
     changes = []
+    if (rule.rule_meta_json or {}).get("engine") == "constraint_v1" and data.model_dump(exclude_unset=True).get("status") == "active":
+        raise HTTPException(409, "该规则尚处于样例验证阶段，暂不能对真实业务数据启用")
     for field, value in data.model_dump(exclude_unset=True).items():
         old = getattr(rule, field)
         if old != value:
@@ -144,6 +146,9 @@ def execute_rule(
     rule = repo.get_by_id(rule_id)
     if not rule:
         raise HTTPException(status_code=404, detail="规则不存在")
+
+    if (rule.rule_meta_json or {}).get("engine") == "constraint_v1":
+        raise HTTPException(409, "请到建模工作区测试正反样例；该规则尚未绑定业务数据执行")
 
     rule.trigger_count += 1
     rule.last_triggered = datetime.utcnow()

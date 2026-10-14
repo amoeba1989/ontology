@@ -27,7 +27,7 @@ jobs:
         working-directory: backend
         run: |
           pip install -r requirements.txt pytest pytest-asyncio
-          python -m pytest tests/test_delivery_projects.py tests/test_action_executors.py tests/test_ontology_constraints.py tests/test_ontology_impact.py -q --disable-warnings
+          python -m pytest tests/test_delivery_projects.py tests/test_customer_demo.py tests/test_action_executors.py tests/test_ontology_constraints.py tests/test_ontology_impact.py -q --disable-warnings
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -83,6 +83,7 @@ jobs:
           SOURCE_DIR="$(mktemp -d)"
           trap 'rm -rf "$SOURCE_DIR"' EXIT
           git archive HEAD | tar -x -C "$SOURCE_DIR"
+          git rev-parse HEAD > "$SOURCE_DIR/.deployment-revision"
           # A server-side lock also protects manual deployments using this lock.
           # Keep the lock open throughout synchronization, build and restart.
           tar -C "$SOURCE_DIR" -czf - . | ssh $SSH_OPTIONS "$ECS_USER@$ECS_HOST" '
@@ -102,3 +103,35 @@ jobs:
             cd /opt/ontology
             sh scripts/deploy/deploy-docker.sh
           '
+
+      - name: Collect production demonstration verification
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$ECS_SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 \
+            "$ECS_USER@$ECS_HOST" 'cat /opt/ontology/data/customer-demo-report.json' > customer-demo-report.json
+          python - <<'PY'
+          import json, os
+          r = json.load(open('customer-demo-report.json'))
+          if r.get('revision') != os.environ['GITHUB_SHA']:
+              raise SystemExit('Verification report does not match this deployment')
+          lines = ['## Production demonstration verification', '', '| Business pack | Database skills | Model | AI tool calling |', '|---|---|---|---|']
+          for p in r['packs']:
+              ai = p.get('ai', {})
+              model = str(ai.get('model', '')).replace('\n', ' ').replace('|', '/')
+              lines.append(f"| {p['key']} | {p['skills_passed']}/3 | {model} | {'PASS' if ai.get('passed') else 'FAIL'} |")
+          lines += ['', 'Menu record counts: ' + json.dumps(r['menus'], ensure_ascii=False)]
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('\n'.join(lines) + '\n')
+          if not r['ok']:
+              raise SystemExit('Production demonstration verification failed; see report')
+          print('Production database skills and real model tool calling: PASS')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: customer-demo-verification
+          path: customer-demo-report.json
+          retention-days: 14

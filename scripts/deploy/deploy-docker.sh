@@ -37,4 +37,6 @@ if [ "${SEED_DEMO_DATA:-0}" = "1" ]; then
   $DC exec -T backend python scripts/seed_mil_demo.py
   $DC exec -T backend python scripts/seed_drone_demo.py
 fi
+log "初始化独立客户演示并验证数据库技能与真实模型问答（保留原有业务数据和模型密钥）"
+$DC exec -T -e DEMO_DEPLOY_REVISION="$(cat .deployment-revision 2>/dev/null || echo local)" backend python scripts/customer_demo.py --install --check-ai
 log "部署完成：http://<ECS-IP>:$WEB_PORT （数据持久化在 /opt/ontology/data/）"

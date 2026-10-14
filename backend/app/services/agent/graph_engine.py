@@ -42,17 +42,19 @@ class GraphEngine:
         self.model_name = model_name or get_model_name(db, scene="agent")
         self.model_config = model_config or {}
         self._tool_router = ToolRouter(db)
-        self._client = get_llm_client(
-            api_key=self.model_config.get("api_key"),
-            api_base=self.model_config.get("api_base"),
-            db=db,
-            scene="agent",
-        )
+        self._lazy_client = None
         # 当 True 时，每个节点会额外 yield 结构化的 node_started/node_finished/node_failed 事件，
         # 包含输入/输出/耗时等真实数据，给 AIP 场景执行落库使用
         self.emit_node_io = emit_node_io
         # 收集每个节点的真实 IO（供调用方落库）
         self.node_io: dict[str, dict] = {}
+
+    @property
+    def _client(self):
+        if self._lazy_client is None:
+            self._lazy_client = get_llm_client(api_key=self.model_config.get("api_key"),
+                api_base=self.model_config.get("api_base"), db=self.db, scene="agent")
+        return self._lazy_client
 
 
     def run(self, question: str) -> Generator[dict, None, None]:
@@ -251,7 +253,7 @@ class GraphEngine:
         skipped: set[str] = set()
         ready = deque(nid for nid, deg in in_degree.items() if deg == 0)
 
-        active_nodes = [nid for nid in self.nodes if self.nodes[nid].get("type") not in ("skillNode", "memoryNode", "toolNode")]
+        active_nodes = [nid for nid, n in self.nodes.items() if n.get("type") not in ("memoryNode", "toolNode") and not (n.get("type") == "skillNode" and n.get("parentNode"))]
         yield {
             "type": "scene_started",
             "total_nodes": len(active_nodes),
@@ -271,7 +273,7 @@ class GraphEngine:
             node_started_at = time.time()
 
             # 跳过元数据子节点
-            if ntype in ("memoryNode", "toolNode", "skillNode"):
+            if ntype in ("memoryNode", "toolNode") or (ntype == "skillNode" and node.get("parentNode")):
                 context[node_id] = {"meta": data, "passthrough": True}
                 executed.add(node_id)
                 self._propagate_ready(node_id, children, in_degree, executed, skipped, ready)
@@ -298,6 +300,8 @@ class GraphEngine:
                 else:
                     result, summary = self._execute_node(ntype, data, context, "")
 
+                if isinstance(result, dict) and (result.get("error") or result.get("success") is False):
+                    raise ValueError(result.get("error") or result.get("summary") or "节点执行失败")
                 context[node_id] = result
                 self._record_node_io(node_id, ntype, label, data, result, summary, node_started_at, status="success")
                 yield self._make_node_finished_event(node_id, ntype, label, result, summary, node_started_at)
@@ -321,6 +325,9 @@ class GraphEngine:
             # 推进后续就绪节点
             self._propagate_ready(node_id, children, in_degree, executed, skipped, ready)
 
+        if set(self.nodes) - executed - skipped or any(io.get("status") == "failed" for io in self.node_io.values()):
+            yield {"type": "scene_failed", "error": "存在失败节点或未完成节点，请检查依赖、循环及执行记录"}
+            return
         final_output = self._collect_final_output(context)
         yield {"type": "scene_finished", "final_output": final_output, "node_io": self.node_io}
 
@@ -547,7 +554,7 @@ class GraphEngine:
             "subscene": self._exec_subscene,
             "memoryNode": self._exec_passthrough,        # 子节点：仅作为元数据挂在 agent 上
             "toolNode": self._exec_passthrough,
-            "skillNode": self._exec_passthrough,
+            "skillNode": self._exec_skill,
             "httpCall": self._exec_http_call,
             "loop": self._exec_loop,
         }
@@ -672,7 +679,7 @@ class GraphEngine:
         if not skill_id:
             return {"error": "未配置 skill"}, "未配置 skill"
         skill = self.db.get(Skill, skill_id)
-        if not skill:
+        if not skill or skill.status != "active":
             return {"error": f"Skill {skill_id} 不存在"}, "Skill 不存在"
 
         input_mapping = data.get("input_mapping", {})
@@ -680,7 +687,7 @@ class GraphEngine:
         for param_name, source in input_mapping.items():
             if source == "{question}":
                 params[param_name] = question
-            elif source.startswith("{") and source.endswith("}"):
+            elif isinstance(source, str) and source.startswith("{") and source.endswith("}"):
                 key = source[1:-1]
                 params[param_name] = context.get(key, "")
             else:
@@ -695,6 +702,8 @@ class GraphEngine:
                     params[first_param] = question
 
         result = execute_skill(skill.code_ref, params, self.db)
+        if not result.get("success"):
+            raise ValueError(result.get("summary", "技能执行失败"))
         return result.get("data", {}), result.get("summary", "skill 执行完成")
 
     def _exec_intent_recognition(self, data: dict, context: dict, question: str):

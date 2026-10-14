@@ -34,6 +34,14 @@ def execute_skill(code_ref: str, params: dict, db: Session) -> dict:
             return {"success": False, "summary": f"执行失败: {e}", "data": {}}
     # Fallback: check for generated skill
     from app.models.skill import Skill
+    configured = db.query(Skill).filter_by(code_ref=code_ref, skill_type="configured", status="active").first()
+    if configured:
+        # Internal canvas execution inherits the bound project's owner, not LLM parameters.
+        from app.models import DeliveryProject, User
+        from app.services.business_skills import run_business_skill
+        project = db.get(DeliveryProject, (configured.config_json or {}).get("project_id"))
+        user = db.get(User, project.owner_id) if project else None
+        return run_business_skill(db, configured, params, user, source="workflow")
     skill = db.query(Skill).filter(Skill.code_ref == code_ref, Skill.skill_type == "generated", Skill.status == "active").first()
     if skill:
         return execute_generated_skill(skill, params, db)
@@ -125,6 +133,8 @@ def execute_generated_skill(skill, params: dict, db) -> dict:
     from app.services.skill_sandbox import execute_in_sandbox
 
     tools = db.query(SkillTool).filter(SkillTool.skill_id == skill.id).all()
+    if not tools:
+        return {"success": False, "summary": "该生成技能没有可执行工具", "data": {}}
     results = {}
     for tool in tools:
         try:

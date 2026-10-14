@@ -115,7 +115,7 @@ EXAMPLES = {
 }
 
 
-def create_example(db, user, key):
+def create_example(db, user, key, managed_key=None):
     """Each click creates an isolated source database and editable project; never touches production sources."""
     spec = EXAMPLES[key]
     token = uuid4().hex[:12]
@@ -187,6 +187,9 @@ def create_example(db, user, key):
         'version_id': None, 'acceptance_evidence': '', 'example_key': key,
     })
     db.add(project); db.flush()
+    if managed_key:
+        from app.models.customer_demo import CustomerDemoPack
+        db.add(CustomerDemoPack(key=managed_key, project_id=project.id))
     db.add(DeliveryEvent(project_id=project.id, revision=1, kind='example', status='success', message='已创建独立合成数据、模型、约束和真实管道；等待运行与发布'))
     db.commit()
     return project

@@ -6,6 +6,11 @@
         <div class="step1-import__sub">导入 OWL / RDF / JSON 标准本体文件，系统会解析对象、属性与关系，进入审核流程</div>
       </div>
 
+      <div v-if="demoPacks.length" class="import-demo"><strong>已入库业务模板</strong>
+        <p>读取已发布样例的对象、属性与关系进行预览；确认后才进入构建流程。</p>
+        <button v-for="pack in demoPacks" :key="pack.key" @click="useDemo(pack.key)">{{ demoNames[pack.key] }}</button>
+      </div>
+
       <div
         class="import-drop"
         :class="{ 'import-drop--active': dragOver }"
@@ -73,7 +78,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { get } from '../../../api/client'
+const demoPacks = ref<any[]>([])
+const demoNames: Record<string, string> = { health: '慢病健康', library: '学术文献', bim: '建筑运维', supply: '供应链' }
+onMounted(async () => { try { demoPacks.value = (await get<any>('/customer-demo/status')).packs } catch { /* existing upload remains available */ } })
+async function useDemo(key: string) {
+  try {
+    const template = await get<any>(`/customer-demo/${key}/template`)
+    await parseFile(new File([JSON.stringify(template)], `${key}-demo.json`, { type: 'application/json' }))
+  } catch { message.error('模板读取失败') }
+}
 import { message } from 'ant-design-vue'
 import { useBuilderStore } from '../../../store/builder'
 import type { BuilderSession, OntologyObjectDraft, OntologyRelationDraft } from '../../../types/builder'
@@ -230,6 +245,8 @@ function confirmImport() {
 </script>
 
 <style scoped>
+.import-demo { margin: 16px 0; padding: 16px; background: #f3f7fc; border-radius: 8px; }
+.import-demo p { font-size: 12px; color: #62758c; }.import-demo button { margin: 8px 12px 0 0; padding: 6px 12px; background: white; border: 1px solid #cddbec; border-radius: 5px; cursor: pointer; }
 .step1-import {
   height: calc(100vh - 64px - 56px - 76px);
   overflow: auto;

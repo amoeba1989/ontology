@@ -20,11 +20,11 @@ NAMING_CONSTRAINTS = """
 
 TIER_DECISION_TREE = """
 ## 层级判定规则（tier字段）
-- T1 核心对象（tier=1）：跨3个以上业务场景复用 → 客户、用户、账户、产品、套餐、资费、订单、工单
-- T2 领域对象（tier=2）：在单个业务域内被多场景引用 → 设备、网元、资源、合约、账单、渠道
+- T1 核心对象（tier=1）：经业务确认、跨领域复用的稳定概念，如组织、人员、地点
+- T2 领域对象（tier=2）：在单个业务域内被多个场景引用的概念
 - T3 场景对象（tier=3）：仅在当前场景内使用 → 分析结果、临时标签、中间状态
 判定步骤：
-1. 该对象是否在联通T1列表中？→ tier=1
+1. 该对象是否已确认跨领域复用？→ tier=1
 2. 该对象是否被多个场景引用？→ tier=2
 3. 其余 → tier=3
 """
@@ -43,8 +43,10 @@ OUTPUT_FORMAT = """
 """
 
 
-def build_constraint_prompt(existing_entities: list[str] | None = None) -> str:
-    parts = [NAMING_CONSTRAINTS, TIER_DECISION_TREE, TELECOM_KNOWLEDGE, OUTPUT_FORMAT]
+def build_constraint_prompt(existing_entities: list[str] | None = None, domain_knowledge: str | None = None) -> str:
+    parts = [NAMING_CONSTRAINTS, TIER_DECISION_TREE, OUTPUT_FORMAT]
+    if domain_knowledge:
+        parts.append(domain_knowledge)
     if existing_entities:
         entity_list = "、".join(existing_entities)
         parts.append(f"\n## 已有实体（避免重复创建，优先建立关联）\n{entity_list}\n")

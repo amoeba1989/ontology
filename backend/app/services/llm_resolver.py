@@ -34,12 +34,9 @@ def _resolve_model_from_db(db: Session, scene: str = "general") -> dict | None:
     try:
         from app.models.system_config import SystemConfig
         row = db.query(SystemConfig).filter(SystemConfig.key == "ai.models").first()
-        if not row or not row.value:
-            return None
-
-        models = json.loads(row.value)
+        models = json.loads(row.value) if row and row.value else []
         if not models:
-            return None
+            return _registry_model(db)
 
         # 1. 先找该场景的默认模型
         for m in models:
@@ -62,10 +59,69 @@ def _resolve_model_from_db(db: Session, scene: str = "general") -> dict | None:
             if m.get("api_key"):
                 return {"api_key": m["api_key"], "base_url": m.get("base_url", ""), "model": m.get("model_id", "")}
 
-        return None
+        return _registry_model(db)
     except Exception as e:
         logger.warning(f"从数据库解析模型配置失败: {e}")
         return None
+
+
+def _registry_model(db):
+    """The model management menu and system settings share the same resolver."""
+    from app.models.agent import ModelRegistry
+    rows = db.query(ModelRegistry).filter_by(status="active").order_by(ModelRegistry.created_at).all()
+    rows.sort(key=lambda m: not bool((m.config_json or {}).get("is_default")))
+    for row in rows:
+        if row.api_key and row.model_name and (not row.capabilities or "chat" in row.capabilities):
+            return {"api_key": row.api_key, "base_url": row.api_base, "model": row.model_name}
+    return None
+
+
+def resolve_agent_model(db, agent=None):
+    """Resolve credentials and model together to avoid provider/model mismatches."""
+    from app.models.agent import ModelRegistry
+    if agent and agent.model_id:
+        model = db.get(ModelRegistry, agent.model_id)
+        if not model or model.status != "active" or not model.api_key:
+            raise ValueError("智能体绑定的模型未启用或未配置密钥")
+        config = {"api_key": model.api_key, "base_url": model.api_base, "model": model.model_name}
+    elif agent and (agent.tools_config or {}).get("model_preference") == "deepseek":
+        config = _deepseek_model(db)
+        if not config:
+            raise ValueError("演示助手需要 DeepSeek：请在系统配置中填写有效的 DeepSeek 模型、接口地址及密钥")
+    else:
+        config = _resolve_model_from_db(db, "agent") or dict(_SCENE_FALLBACKS["agent"])
+    if not config.get("api_key") or not config.get("model") or not config.get("base_url"):
+        raise ValueError("请在系统配置或模型管理中配置可用于智能体的模型、接口地址和密钥")
+    return config
+
+
+def _deepseek_model(db):
+    from app.models.system_config import SystemConfig
+    from app.models.agent import ModelRegistry
+    row = db.query(SystemConfig).filter_by(key="ai.models").first()
+    try:
+        models = json.loads(row.value) if row and row.value else []
+    except (ValueError, TypeError):
+        models = []
+    candidates = [{"api_key": m.get("api_key"), "base_url": m.get("base_url"), "model": m.get("model_id")}
+                  for m in models if m.get("enabled", True) and m.get("status", "active") != "disabled"]
+    candidates += [{"api_key": m.api_key, "base_url": m.api_base, "model": m.model_name}
+                   for m in db.query(ModelRegistry).filter_by(status="active").all()]
+    candidates.append(dict(_SCENE_FALLBACKS["agent"]))
+    for model in candidates:
+        if model.get("api_key") and "deepseek" in (model.get("model") or "").lower():
+            return model
+    return None
+
+
+def agent_model_status(db, agent=None):
+    from urllib.parse import urlsplit
+    try:
+        config = resolve_agent_model(db, agent)
+        return {"configured": True, "model": config["model"], "host": urlsplit(config["base_url"]).hostname,
+                "connection": "not_tested", "message": "配置已找到；实际问答成功后才表示连接及工具调用通过"}
+    except ValueError as exc:
+        return {"configured": False, "connection": "not_configured", "message": str(exc)}
 
 
 def get_llm_client(

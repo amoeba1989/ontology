@@ -27,6 +27,12 @@ _TIER_LABEL = {1: "核心", 2: "领域", 3: "场景"}
 _SCHEMA_VERSION = "V3.1"
 
 
+def _bound_asset(db, entity):
+    from app.services.data_plane.entity_data_service import EntityDataService
+    resolved = EntityDataService(db).resolve_entity_asset(entity.id)
+    return resolved[0] if resolved else None
+
+
 # ─── TBox: 术语层 ────────────────────────────────────────────────────
 
 @router.get("/tbox")
@@ -65,7 +71,7 @@ def get_tbox(db: Session = Depends(get_db)) -> dict[str, Any]:
         primary_tables = [a.source_table for a in e.attributes if a.source_table]
         abox_scale = 0
         if primary_tables:
-            ds = ds_by_table.get(primary_tables[0])
+            ds = _bound_asset(db, e)
             if ds:
                 abox_scale = (ds.profile or {}).get("row_count", 0) or 0
 
@@ -98,7 +104,7 @@ def get_tbox(db: Session = Depends(get_db)) -> dict[str, Any]:
             continue
         link_types.append({
             "apiName": r.name,
-            "displayName": r.description or r.name,
+            "displayName": r.name_cn or r.name,
             "source": src.name,
             "target": tgt.name,
             "cardinality": r.cardinality,
@@ -157,7 +163,7 @@ def get_abox(db: Session = Depends(get_db)) -> dict[str, Any]:
             tables = [a.source_table for a in mapped_attrs if a.source_table]
             if tables:
                 primary_table = tables[0]
-                ds = ds_by_table.get(primary_table)
+                ds = _bound_asset(db, e)
                 if ds:
                     instance_count = (ds.profile or {}).get("row_count", 0) or 0
                     backing_source = ds.name
@@ -307,6 +313,12 @@ def get_capability(db: Session = Depends(get_db)) -> dict[str, Any]:
             "description": f.description or "",
         })
 
+    from app.models import Skill, ModelRegistry
+    skill_list = [{"apiName": s.code_ref, "displayName": s.name, "kind": "SKILL", "description": s.description,
+                   "id": s.id, "version": s.current_version, "status": s.status, "writesState": False}
+                  for s in db.query(Skill).filter_by(status="active").all()]
+    model_list = [{"apiName": m.model_name, "displayName": m.name, "kind": "MODEL", "id": m.id}
+                  for m in db.query(ModelRegistry).filter_by(status="active").all()]
     return {
         "kind": "capability",
         "version": _SCHEMA_VERSION,
@@ -315,16 +327,16 @@ def get_capability(db: Session = Depends(get_db)) -> dict[str, Any]:
         "meta": {
             "actionCount": len(action_list),
             "functionCount": len(function_list),
-            "skillCount": 0,
+            "skillCount": len(skill_list),
             "toolCount": 0,
-            "modelCount": 0,
+            "modelCount": len(model_list),
             "scenarios": _all_scenarios(entities),
         },
         "actions": action_list,
         "functions": function_list,
-        "skills": [],
+        "skills": skill_list,
         "tools": [],
-        "models": [],
+        "models": model_list,
     }
 
 
@@ -364,7 +376,7 @@ def get_stats(db: Session = Depends(get_db)) -> dict[str, Any]:
         primary_tables = [a.source_table for a in e.attributes if a.source_table]
         count = 0
         if primary_tables:
-            ds = ds_by_table.get(primary_tables[0])
+            ds = _bound_asset(db, e)
             if ds:
                 count = (ds.profile or {}).get("row_count", 0) or 0
         abox_total += count

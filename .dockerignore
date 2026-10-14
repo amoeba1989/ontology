@@ -2,6 +2,8 @@
 .git
 .github
 .workflow
+.env*
+**/.env*
 data
 backend/venv
 backend/**/__pycache__

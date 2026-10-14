@@ -66,13 +66,18 @@ def recommend_tables(req: RecommendTablesRequest, db: Session = Depends(get_db))
 
 
 @router.get("/documents")
-def list_documents(prefix: str = ""):
+def list_documents(prefix: str = "", db: Session = Depends(get_db)):
+    from app.models import BusinessDocument
+    docs = db.query(BusinessDocument).all()
+    if docs:
+        return {"documents": [{"key": "db:" + d.id, "title": d.name, "size": d.size_bytes,
+                               "last_modified": d.uploaded_at.isoformat()} for d in docs if not prefix or prefix in d.name]}
     return {"documents": minio_docs.list_documents(prefix)}
 
 
 @router.get("/documents/content")
-def get_document_content(key: str = Query(...)):
-    content = minio_docs.get_document_content(key)
+def get_document_content(key: str = Query(...), db: Session = Depends(get_db)):
+    content = ai_builder_v2.read_document(key, db)
     return {"key": key, "content": content[:5000]}
 
 

@@ -20,6 +20,7 @@ const router = createRouter({
     { path: '/data/quality', name: 'data-quality', component: () => import('../views/datasource/pages/DataQualityPage.vue'), meta: { title: '数据质量' } },
 
     // 本体中心 — 本体构建
+    { path: '/builder/drafts', name: 'modeling-drafts', component: () => import('../views/builder/ModelingDraftView.vue'), meta: { title: 'AI / 表单建模' } },
     { path: '/builder', name: 'ontology-builder', component: () => import('../views/builder/OntologyBuilderView.vue'), meta: { title: '手动构建' } },
     { path: '/builder/template', name: 'ontology-builder-template', component: () => import('../views/builder/TemplateBuilderView.vue'), meta: { title: '模板构建' } },
     { path: '/builder/doc', name: 'ontology-builder-doc', component: () => import('../views/builder/DocBuilderView.vue'), meta: { title: '文档构建' } },

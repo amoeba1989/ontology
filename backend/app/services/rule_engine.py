@@ -231,8 +231,31 @@ class RuleEvaluator:
         self.db = db
         self.resolver = FieldResolver(db)
 
+    def _screen_sql(self, rule, limit):
+        from app.services.data_plane.execute_service import ExecuteService
+        resolved = EntityDataService(self.db).resolve_entity_asset(rule.entity_id)
+        if not resolved:
+            raise ValueError("规则对象未绑定数据源")
+        sql = rule.condition_expr.strip().rstrip(";")
+        result = ExecuteService(self.db).execute_on_connection(connection_id=resolved[0].connection_id,
+            sql=f"SELECT * FROM ({sql}) AS rule_result LIMIT :rule_limit",
+            params={"rule_limit": max(1, min(int(limit), 200))}, purpose="rule.sql", write=False)
+        return {"columns": result.columns, "rows": result.rows, "sample_limit": max(1, min(int(limit), 200))}
+
     def evaluate(self, rule: BusinessRule, user_id: str) -> RuleResult:
         """对指定用户评估一条规则"""
+        if (rule.rule_meta_json or {}).get("engine") == "constraint_v1":
+            raise ValueError("该规则目前仅支持建模工作区的样例验证，尚未启用真实业务数据执行")
+        if (rule.rule_meta_json or {}).get("engine") == "sql":
+            data = self._screen_sql(rule, 200)
+            count = len(data["rows"])
+            if count:
+                rule.trigger_count = (rule.trigger_count or 0) + 1
+                rule.last_triggered = datetime.utcnow()
+            return RuleResult(rule_name=rule.name, triggered=bool(count), matched_count=count,
+                total_count=count, confidence=1.0 if count else 0.0, rule_id=rule.id,
+                conditions=[ConditionResult(field="sql", display="配置的SQL约束返回的命中结果（最多200条）",
+                                            operator="count>", expected=0, actual=count, matched=bool(count))])
         conditions = rule.conditions_json or []
         meta = rule.rule_meta_json or {}
         match_mode = meta.get("match_mode", "all")
@@ -450,6 +473,12 @@ class RuleScreener:
 
     def screen(self, rule: BusinessRule, limit: int = 50) -> dict:
         """根据规则筛选命中的用户列表"""
+        if (rule.rule_meta_json or {}).get("engine") == "constraint_v1":
+            return {"error": "请在建模工作区测试样例；该规则尚未启用真实业务数据执行", "users": []}
+        if (rule.rule_meta_json or {}).get("engine") == "sql":
+            data = RuleEvaluator(self.db)._screen_sql(rule, limit)
+            return {**data, "users": [dict(zip(data["columns"], row)) for row in data["rows"]],
+                    "total": len(data["rows"]), "rule_name": rule.name}
         conditions = rule.conditions_json or []
         meta = rule.rule_meta_json or {}
         match_mode = meta.get("match_mode", "all")

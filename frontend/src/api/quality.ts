@@ -114,8 +114,8 @@ export interface QualityDashboard {
 
 export const qualityApi = {
   // Dashboard
-  dashboard: () => get<QualityDashboard>('/data-plane/quality/dashboard'),
-  evaluateAll: () => post<{ evaluated: number }>('/data-plane/quality/evaluate-all'),
+  dashboard: () => get<QualityDashboard>('/quality/dashboard'),
+  evaluateAll: () => post<{ evaluated: number }>('/quality/evaluate-all'),
 
   // Legacy
   ruleKinds: () => get<RuleKindTemplate[]>('/quality/rule_kinds'),

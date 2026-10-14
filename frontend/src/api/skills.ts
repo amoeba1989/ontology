@@ -30,6 +30,9 @@ export interface VersionItem {
 }
 
 export const skillsApi = {
+  execute: (id: string, params: Record<string, any>) => client.post(`/skills/${id}/execute`, { params }).then(r => r.data),
+  runs: (id: string) => client.get<any[]>(`/skills/${id}/runs`).then(r => r.data),
+  modelStatus: () => client.get<any>('/skills/runtime/model-status').then(r => r.data),
   list: (status?: string) => client.get<SkillItem[]>('/skills', { params: status ? { status } : {} }).then(r => r.data),
   get: (id: string) => client.get<SkillItem>(`/skills/${id}`).then(r => r.data),
   create: (data: Partial<SkillItem>) => client.post<SkillItem>('/skills', data).then(r => r.data),

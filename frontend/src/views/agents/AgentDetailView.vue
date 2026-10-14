@@ -56,6 +56,13 @@
       <!-- Left: Config form -->
       <div class="agent-detail__left">
         <div class="agent-detail__form-group">
+          <label class="agent-detail__label">业务技能（可多选）</label>
+          <select class="agent-detail__select" v-model="form.skill_ids" multiple>
+            <option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">{{ skill.name }}</option>
+          </select>
+          <small>{{ modelStatus?.configured ? `使用模型：${modelStatus.model}；问答时验证连接` : modelStatus?.message || '请在系统配置中设置智能体模型' }}</small>
+        </div>
+        <div class="agent-detail__form-group">
           <label class="agent-detail__label">描述</label>
           <textarea class="agent-detail__textarea" v-model="form.description" rows="2" placeholder="智能体描述"></textarea>
         </div>
@@ -86,9 +93,17 @@
         </div>
         <div class="agent-detail__chat-body" v-else>
           <div class="agent-detail__messages" ref="messagesRef">
+            <div v-if="!messages.length && current?.tools_config?.suggested_questions" class="agent-detail__sugs">
+              <button v-for="q in current.tools_config.suggested_questions" :key="q" class="agent-detail__sug" @click="askSuggestion(q)">{{ q }}</button>
+            </div>
             <div v-for="(msg, i) in messages" :key="i" class="agent-detail__message" :class="`agent-detail__message--${msg.role}`">
               <div class="agent-detail__bubble" :class="`agent-detail__bubble--${msg.role}`">
                 <template v-if="msg.role === 'assistant'">
+                  <details v-for="call in msg.skillCalls || []" :key="call.run_id || call.skill_id" class="skill-evidence">
+                    <summary>{{ call.success ? '✓' : '×' }} {{ call.tool }} · {{ call.summary }}</summary>
+                    <router-link :to="`/agent/toolbox/${call.skill_id}`">查看技能与执行记录</router-link>
+                    <pre>{{ JSON.stringify(call.data, null, 2) }}</pre>
+                  </details>
                   <div v-if="msg.trace" class="agent-detail__trace" v-html="renderMarkdown(msg.trace)"></div>
                   <div v-if="msg.parsed" class="agent-detail__answer" v-html="renderMarkdown(msg.parsed.answer)"></div>
                   <div v-else v-html="renderMarkdown(msg.content)"></div>
@@ -129,6 +144,9 @@ import { marked } from 'marked'
 import { agentsApi, type AgentItem } from '../../api/agents'
 import { entityApi } from '../../api/ontology'
 import { actionApi } from '../../api/actions'
+import { skillsApi, type SkillItem } from '../../api/skills'
+const availableSkills = ref<SkillItem[]>([])
+const modelStatus = ref<any>(null)
 
 const route = useRoute()
 const router = useRouter()
@@ -147,6 +165,7 @@ const form = reactive({
   tagsStr: '',
   system_prompt: '',
   entity_ids: [] as string[],
+  skill_ids: [] as string[],
 })
 
 let savedSnapshot = ''
@@ -170,6 +189,7 @@ interface ParsedConclusion {
 interface ChatMsg {
   role: 'user' | 'assistant'
   content: string
+  skillCalls?: any[]
   trace?: string
   parsed?: ParsedConclusion
 }
@@ -236,6 +256,7 @@ function formToPayload() {
     tags: form.tagsStr.split(',').map(t => t.trim()).filter(Boolean),
     system_prompt: form.system_prompt,
     entity_ids: form.entity_ids,
+    tools_config: { ...(current.value?.tools_config || {}), skill_ids: form.skill_ids },
   }
 }
 
@@ -252,6 +273,7 @@ function loadFormFromAgent(a: AgentItem) {
   form.tagsStr = (a.tags || []).join(', ')
   form.system_prompt = a.system_prompt
   form.entity_ids = a.entity_ids || []
+  form.skill_ids = a.tools_config?.skill_ids || []
   current.value = a
   savedSnapshot = JSON.stringify(formToPayload())
 }
@@ -311,9 +333,10 @@ async function sendMessage() {
   try {
     const response = await fetch(`/api/v1/agents/${current.value.id}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: text }),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
+      body: JSON.stringify({ question: text, messages: messages.value.slice(0, -1).slice(-10).map(m => ({ role: m.role, content: m.content })) }),
     })
+    if (!response.ok) throw new Error((await response.json()).detail || '问答请求失败')
     const reader = response.body!.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
@@ -336,7 +359,10 @@ async function sendMessage() {
           } else if (evt.type === 'answer') {
             messages.value[lastIdx].content = evt.content
           } else if (evt.type === 'tool_result') {
-            messages.value[lastIdx].content += `\n> 🔧 ${evt.tool || ''}：${evt.summary || ''}\n`
+            if (!messages.value[lastIdx].skillCalls) messages.value[lastIdx].skillCalls = []
+            messages.value[lastIdx].skillCalls!.push(evt)
+          } else if (evt.type === 'error') {
+            messages.value[lastIdx].content = `调用失败：${evt.content || '请检查模型配置'}`
           }
         } catch { /* skip non-json lines */ }
       }
@@ -344,6 +370,8 @@ async function sendMessage() {
       scrollToBottom()
     }
     tryParseConclusion(messages.value[lastIdx])
+  } catch (e: any) {
+    messages.value[messages.value.length - 1].content = e.message || '问答连接失败'
   } finally {
     streaming.value = false
   }
@@ -356,16 +384,21 @@ function scrollToBottom() {
 }
 
 onMounted(async () => {
+  availableSkills.value = (await skillsApi.list('active')).filter(s => s.skill_type === 'configured')
+  modelStatus.value = await skillsApi.modelStatus()
   const entityList = await entityApi.list()
   entities.value = entityList as any
 
   if (!isNew.value) {
     const agent = await agentsApi.get(route.params.id as string)
     loadFormFromAgent(agent)
+    modelStatus.value = await agentsApi.modelStatus(agent.id)
   }
 })
 </script>
 <style scoped>
+.skill-evidence { background: #eef6ff; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-size: 12px; }
+.skill-evidence pre { max-height: 260px; overflow: auto; white-space: pre-wrap; }
 .agent-detail {
   display: flex;
   flex-direction: column;
