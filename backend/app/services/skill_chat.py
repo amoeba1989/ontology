@@ -75,7 +75,15 @@ def chat_events(db, agent, user, question, history=None, client=None):
         if isinstance(exc, ValueError):
             answer = str(exc)
         else:
-            answer = "模型或技能调用失败，请检查模型连通性、额度、工具调用支持及项目权限（" + type(exc).__name__ + "）"
+            code = getattr(exc, "status_code", None)
+            if code == 401:
+                answer = "模型服务返回 401：API Key 无效、已失效或不属于当前接口地址；请在模型配置中重新填写密钥并测试连接。"
+            elif code == 404:
+                answer = "模型服务返回 404：请核对接口地址和模型 ID 是否为该服务实际支持的值。"
+            elif code == 429:
+                answer = "模型服务返回 429：请求超出额度或频率限制，请检查账户余额与限流设置。"
+            else:
+                answer = "模型或技能调用失败，请检查模型连通性、额度、工具调用支持及项目权限（" + type(exc).__name__ + "）"
         yield {"type": "error", "content": answer}
     finally:
         db.add(AgentTrace(agent_id=agent.id, input_text=question, output_text=answer,

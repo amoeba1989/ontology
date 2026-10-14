@@ -99,6 +99,7 @@
             <div v-for="(msg, i) in messages" :key="i" class="agent-detail__message" :class="`agent-detail__message--${msg.role}`">
               <div class="agent-detail__bubble" :class="`agent-detail__bubble--${msg.role}`">
                 <template v-if="msg.role === 'assistant'">
+                  <div v-if="msg.modelUsed" class="agent-detail__model-used">本次调用模型：{{ msg.modelUsed }} · 已授权技能 {{ msg.skillCount ?? 0 }} 项</div>
                   <details v-for="call in msg.skillCalls || []" :key="call.run_id || call.skill_id" class="skill-evidence">
                     <summary>{{ call.success ? '✓' : '×' }} {{ call.tool }} · {{ call.summary }}</summary>
                     <router-link :to="`/agent/toolbox/${call.skill_id}`">查看技能与执行记录</router-link>
@@ -189,6 +190,8 @@ interface ParsedConclusion {
 interface ChatMsg {
   role: 'user' | 'assistant'
   content: string
+  modelUsed?: string
+  skillCount?: number
   skillCalls?: any[]
   trace?: string
   parsed?: ParsedConclusion
@@ -354,7 +357,10 @@ async function sendMessage() {
         if (data === '[DONE]') break
         try {
           const evt = JSON.parse(data)
-          if (evt.type === 'token' || evt.type === 'content') {
+          if (evt.type === 'model_status') {
+            messages.value[lastIdx].modelUsed = evt.model
+            messages.value[lastIdx].skillCount = evt.skill_count
+          } else if (evt.type === 'token' || evt.type === 'content') {
             messages.value[lastIdx].content += evt.content
           } else if (evt.type === 'answer') {
             messages.value[lastIdx].content = evt.content
@@ -397,6 +403,7 @@ onMounted(async () => {
 })
 </script>
 <style scoped>
+.agent-detail__model-used { margin-bottom: 8px; font-size: 12px; color: var(--neutral-600, #475569); }
 .skill-evidence { background: #eef6ff; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-size: 12px; }
 .skill-evidence pre { max-height: 260px; overflow: auto; white-space: pre-wrap; }
 .agent-detail {

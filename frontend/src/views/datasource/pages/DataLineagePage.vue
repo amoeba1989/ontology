@@ -2,7 +2,7 @@
   <div class="di-page">
     <div class="di-page__header">
       <h1 class="di-page__title">数据血缘</h1>
-      <p class="di-page__subtitle">数据源 → ETL → 本体 → 应用 端到端血缘追踪</p>
+      <p class="di-page__subtitle">追踪已登记的数据资产如何映射到本体对象，并被业务动作读取</p>
     </div>
     <DataLineageTab />
   </div>

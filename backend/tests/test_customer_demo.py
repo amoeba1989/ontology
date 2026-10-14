@@ -102,6 +102,20 @@ def test_ai_without_successful_tool_call_cannot_report_success(demo):
     assert not any(e["type"] == "answer" for e in events)
 
 
+def test_ai_provider_401_reports_safe_actionable_error(demo):
+    db, user = demo
+    agent = db.get(Agent, db.get(CustomerDemoPack, "supply").resources["agent_id"])
+    client = Mock()
+    provider_error = RuntimeError("provider response may contain credentials")
+    provider_error.status_code = 401
+    client.chat.completions.create.side_effect = provider_error
+    events = list(chat_events(db, agent, user, "检查风险", client=client))
+    assert events[0]["type"] == "model_status"
+    assert events[-1]["type"] == "error"
+    assert "401" in events[-1]["content"]
+    assert "credentials" not in events[-1]["content"]
+
+
 def test_ontology_api_queries_relations_and_rejects_identifier_injection(demo):
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
