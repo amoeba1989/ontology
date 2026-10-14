@@ -76,7 +76,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SSH_OPTIONS="-p $ECS_SSH_PORT -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
+          # ECS 构建前端时可能数分钟没有终端输出；主动保活，避免公网/NAT
+          # 把正常的长构建误判成 SSH 失联并以 255 中断。
+          SSH_OPTIONS="-p $ECS_SSH_PORT -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=120 -o TCPKeepAlive=yes"
           ssh $SSH_OPTIONS "$ECS_USER@$ECS_HOST" \
             'test -d /opt/ontology && command -v rsync && command -v curl && command -v flock && docker info >/dev/null'
           # Transfer only this commit's files; never send runner credentials.
@@ -112,6 +114,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh -p "$ECS_SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 \
+            -o ServerAliveInterval=15 -o ServerAliveCountMax=120 -o TCPKeepAlive=yes \
             "$ECS_USER@$ECS_HOST" 'cat /opt/ontology/data/customer-demo-report.json' > customer-demo-report.json
           python - <<'PY'
           import json, os

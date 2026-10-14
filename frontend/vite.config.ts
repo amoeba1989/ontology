@@ -11,7 +11,7 @@ const revision = process.env.GITHUB_SHA || (existsSync(revisionFile) ? readFileS
   catch { return 'unknown' }
 })())
 const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
-const buildInfo = `v2.1.1 · ${builtAt} · ${revision.slice(0, 7)}`
+const buildInfo = `v2.1.2 · ${builtAt} · ${revision.slice(0, 7)}`
 
 // https://vite.dev/config/
 export default defineConfig({

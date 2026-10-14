@@ -3,14 +3,16 @@
 # ── 阶段 1：前端构建（编译检查也在此步完成，失败则整个构建中止） ──
 FROM node:20-alpine AS frontend-build
 WORKDIR /src/frontend
-ARG APP_BUILD_REVISION=unknown
-ENV GITHUB_SHA=$APP_BUILD_REVISION
 # 国内构建机直连 npm registry 极慢，统一走 npmmirror
 ENV npm_config_registry=https://registry.npmmirror.com
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+# 固定 pnpm 主版本，并把依赖层放在构建版本之前。这样每次提交只重新编译，
+# 只有 package/lock 文件变化时才重新下载全部依赖。
+RUN npm install -g pnpm@10 && pnpm install --frozen-lockfile
 COPY frontend/ ./
-RUN npx vite build
+ARG APP_BUILD_REVISION=unknown
+ENV GITHUB_SHA=$APP_BUILD_REVISION
+RUN pnpm exec vite build
 
 # ── 阶段 2：nginx 托管前端静态资源并转发 API ──
 FROM nginx:1.27-alpine AS web
