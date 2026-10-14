@@ -12,11 +12,7 @@ export const useThemeStore = defineStore('theme', () => {
 
   function init() {
     const saved = localStorage.getItem('theme')
-    if (saved) {
-      isDark.value = saved === 'dark'
-    } else {
-      isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
+    isDark.value = saved === 'dark'
     document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
   }
 

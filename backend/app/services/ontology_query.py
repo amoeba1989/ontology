@@ -11,6 +11,9 @@ def query_instances(db, entity, filters=None, limit=50, offset=0, user_id=None):
     if not resolved:
         raise HTTPException(409, "本体对象尚未绑定有效的数据资产")
     asset, binding = resolved
+    id_column = binding.id_column
+    if not id_column or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", id_column):
+        raise HTTPException(409, "本体对象尚未配置有效的实例 ID 字段")
     attrs = {a.id: a.name for a in db.query(EntityAttribute).filter_by(entity_id=entity.id)}
     mapping = {attrs[m["attribute_id"]]: m["source_column"] for m in (binding.field_mappings or []) if m.get("attribute_id") in attrs}
     clauses, params = [], {"limit": max(1, min(int(limit), 200)), "offset": max(0, min(int(offset), 100000))}
@@ -23,14 +26,15 @@ def query_instances(db, entity, filters=None, limit=50, offset=0, user_id=None):
         clauses.append(f"{column} IS NULL" if value is None else f"{column} = :p{i}")
         if value is not None:
             params[f"p{i}"] = value
-    sql = "SELECT * FROM <asset>" + (" WHERE " + " AND ".join(clauses) if clauses else "") + " LIMIT :limit OFFSET :offset"
+    sql = "SELECT * FROM <asset>" + (" WHERE " + " AND ".join(clauses) if clauses else "") + f" ORDER BY {id_column} LIMIT :limit OFFSET :offset"
     result = ExecuteService(db).execute(ExecuteRequest(asset_id=asset.id, sql=sql, params=params,
         purpose="ontology.api", user_id=user_id, bypass_cache=True))
     records = [dict(zip(result.columns, row)) for row in result.rows]
-    if any(c not in result.columns for c in mapping.values()):
+    if id_column not in result.columns or any(c not in result.columns for c in mapping.values()):
         raise HTTPException(409, "数据结构与本体映射不一致，请同步元数据")
-    return {"instances": [{name: row[col] for name, col in mapping.items()} for row in records],
-            "count": len(records), "limit": params["limit"], "offset": params["offset"], "asset_id": asset.id}
+    return {"instances": [{"$id": row[id_column], **{name: row[col] for name, col in mapping.items()}} for row in records],
+            "count": len(records), "limit": params["limit"], "offset": params["offset"],
+            "asset_id": asset.id, "asset_name": asset.name, "id_column": id_column}
 
 
 def get_entity(db, name):

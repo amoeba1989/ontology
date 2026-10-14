@@ -42,7 +42,7 @@ onMounted(() => {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #fff;
+  background: var(--neutral-0);
 }
 .app-main {
   flex: 1;
@@ -56,4 +56,6 @@ onMounted(() => {
   background: var(--neutral-50);
   padding: 24px 32px;
 }
+@media (max-width: 1100px) { .app-content { padding: 12px; } }
+@media (max-width: 700px) { .app-content { padding: 6px; } }
 </style>

@@ -2,6 +2,13 @@
   <div class="studio" :class="{ 'studio--fullscreen': fullscreen }">
     <!-- 左栏：搜索 + 按 tier 分组的对象列表 -->
     <aside class="studio__sider" v-show="!fullscreen">
+      <div class="studio__scenario">
+        <label for="studio-scenario">业务场景</label>
+        <select id="studio-scenario" v-model="selectedScenario">
+          <option value="">全部场景</option>
+          <option v-for="code in tbox?.meta.scenarios ?? []" :key="code" :value="code">{{ code }}</option>
+        </select>
+      </div>
       <div class="studio__search">
         <input v-model="searchText" placeholder="搜索对象类型..." class="studio__search-input" />
       </div>
@@ -44,8 +51,7 @@
     <main class="studio__main">
       <header class="studio__header">
         <div class="studio__header-info">
-          <strong>{{ tbox?.meta.objectTypeCount ?? 0 }} 个对象类型 · {{ tbox?.meta.linkTypeCount ?? 0 }} 条关系</strong>
-          <span class="studio__owl-tag">W3C OWL</span>
+          <strong>{{ visibleObjects.length }} 个对象类型 · {{ visibleLinks.length }} 条关系</strong>
           <span v-if="stats" class="studio__abox-tag">{{ formatNumber(stats.abox.individualCount) }} 个实例</span>
         </div>
         <div class="studio__view-switcher">
@@ -76,23 +82,23 @@
       <div class="studio__body" v-if="!loading && tbox">
         <StudioCardView
           v-if="activeView === 'card'"
-          :objects="tbox.objectTypes"
-          :relations="tbox.linkTypes"
+          :objects="visibleObjects"
+          :relations="visibleLinks"
           :hydration="aboxHydrationMap"
           @select="selectObject"
         />
         <StudioThreeBox
           v-else-if="activeView === 'threebox'"
-          :objects="tbox.objectTypes"
-          :relations="tbox.linkTypes"
+          :objects="visibleObjects"
+          :relations="visibleLinks"
           :rules="rbox?.rules ?? []"
           :hydration="aboxHydrationMap"
           @select="selectObject"
         />
         <StudioSemanticView
           v-else-if="activeView === 'flow'"
-          :objects="tbox.objectTypes"
-          :relations="tbox.linkTypes"
+          :objects="visibleObjects"
+          :relations="visibleLinks"
           :selected="selectedObject"
           @select="selectObject"
         />
@@ -155,6 +161,10 @@
             <div v-else class="studio__detail-row-sub studio__detail-row-sub--muted">未映射</div>
           </div>
         </template>
+
+        <StudioInstancePanel v-else-if="activeDetailTab === 'instances'"
+          :object-name="selectedObject.apiName" :title-property="selectedObject.titleProperty"
+          :focus-id="focusedInstanceId" @navigate="navigateInstance" />
 
         <!-- 关系 -->
         <template v-else-if="activeDetailTab === 'relations'">
@@ -232,6 +242,7 @@ import type { OntologyEntity } from '../../types/ontology'
 import StudioCardView from './StudioCardView.vue'
 import StudioThreeBox from './StudioThreeBox.vue'
 import StudioSemanticView from './StudioSemanticView.vue'
+import StudioInstancePanel from './StudioInstancePanel.vue'
 import OntologyNarrator from './OntologyNarrator.vue'
 
 const router = useRouter()
@@ -242,9 +253,10 @@ const rbox = ref<StudioRBox | null>(null)
 const stats = ref<StudioStats | null>(null)
 const loading = ref(true)
 
-const activeView = ref<'card' | 'threebox' | 'flow'>('card')
+const activeView = ref<'card' | 'threebox' | 'flow'>('flow')
 const selectedObject = ref<StudioObjectType | null>(null)
 const searchText = ref('')
+const selectedScenario = ref('')
 const fullscreen = ref(false)
 
 const canFullscreen = computed(() => ['flow'].includes(activeView.value))
@@ -255,8 +267,8 @@ watch(activeView, (v) => {
 
 const viewOptions = [
   { value: 'card' as const, label: '卡片视图' },
-  { value: 'threebox' as const, label: '三盒架构' },
-  { value: 'flow' as const, label: '语义网络' },
+  { value: 'threebox' as const, label: '分层视图' },
+  { value: 'flow' as const, label: '关系图' },
 ]
 
 const tierColor: Record<1 | 2 | 3, string> = { 1: '#2E5BFF', 2: '#00C7B1', 3: '#FF6B35' }
@@ -268,15 +280,25 @@ const aboxHydrationMap = computed(() => {
   return m
 })
 
+const visibleObjects = computed(() => (tbox.value?.objectTypes ?? [])
+  .filter(object => !selectedScenario.value || object.scenarioCode === selectedScenario.value))
+const visibleLinks = computed(() => {
+  const names = new Set(visibleObjects.value.map(object => object.apiName))
+  return (tbox.value?.linkTypes ?? []).filter(link => names.has(link.source) && names.has(link.target))
+})
+
+watch(selectedScenario, () => { selectedObject.value = null })
+
 function filteredByTier(tier: 1 | 2 | 3) {
   const q = searchText.value.trim().toLowerCase()
-  return (tbox.value?.objectTypes ?? [])
+  return visibleObjects.value
     .filter(o => o.tier === tier)
     .filter(o => !q || o.apiName.toLowerCase().includes(q) || o.displayName.toLowerCase().includes(q))
 }
 
 function selectObject(o: StudioObjectType) {
   selectedObject.value = o
+  focusedInstanceId.value = null
   // 切换对象时若 tab 是规则/动作/函数，触发详情懒加载
   if (['rules', 'actions', 'functions'].includes(activeDetailTab.value)) {
     loadEntityDetail(o.id)
@@ -284,15 +306,17 @@ function selectObject(o: StudioObjectType) {
 }
 
 // 详情面板 tab
-type DetailTab = 'attributes' | 'relations' | 'rules' | 'actions' | 'functions'
+type DetailTab = 'attributes' | 'instances' | 'relations' | 'rules' | 'actions' | 'functions'
 const detailTabs: { value: DetailTab; label: string }[] = [
   { value: 'attributes', label: '属性' },
+  { value: 'instances', label: '实例' },
   { value: 'relations', label: '关系' },
   { value: 'rules', label: '规则' },
   { value: 'actions', label: '动作' },
   { value: 'functions', label: '函数' },
 ]
 const activeDetailTab = ref<DetailTab>('attributes')
+const focusedInstanceId = ref<string | number | null>(null)
 const entityDetail = ref<OntologyEntity | null>(null)
 const detailLoading = ref(false)
 
@@ -300,6 +324,7 @@ function tabCount(tab: DetailTab): number {
   if (!selectedObject.value) return 0
   switch (tab) {
     case 'attributes': return selectedObject.value.properties.length
+    case 'instances': return selectedObject.value.aboxScale
     case 'relations': return relatedLinks.value.length
     case 'rules': return selectedObject.value.ruleCount
     case 'actions': return selectedObject.value.actionCount
@@ -307,10 +332,18 @@ function tabCount(tab: DetailTab): number {
   }
 }
 
+function navigateInstance(name: string, id: string | number) {
+  const target = tbox.value?.objectTypes.find(object => object.apiName === name)
+  if (!target) return
+  selectedObject.value = target
+  focusedInstanceId.value = id
+  activeDetailTab.value = 'instances'
+}
+
 const relatedLinks = computed(() => {
   if (!selectedObject.value || !tbox.value) return []
   const name = selectedObject.value.apiName
-  return tbox.value.linkTypes.filter(l => l.source === name || l.target === name)
+  return visibleLinks.value.filter(l => l.source === name || l.target === name)
 })
 
 async function loadEntityDetail(entityId: string) {
@@ -339,7 +372,7 @@ const narratorVisible = ref(false)
 const narratorRelCount = computed(() => {
   if (!selectedObject.value || !tbox.value) return 0
   const name = selectedObject.value.apiName
-  return tbox.value.linkTypes.filter(l => l.source === name || l.target === name).length
+  return visibleLinks.value.filter(l => l.source === name || l.target === name).length
 })
 
 function formatNumber(n: number) {
@@ -397,6 +430,8 @@ onMounted(async () => {
   inset: 0;
   z-index: 1000;
 }
+.studio__scenario { display: grid; gap: 5px; padding: 12px 12px 0; font-size: 11px; color: #64748b; }
+.studio__scenario select { width: 100%; padding: 7px; border: 1px solid #dbe3ef; border-radius: 6px; background: #fff; color: #334155; }
 
 /* 左栏 */
 .studio__sider {
@@ -785,4 +820,32 @@ onMounted(async () => {
   border-radius: 3px;
   border: 1px solid #e5e7eb;
 }
+@media (max-width: 1200px) {
+  .studio { flex-wrap: wrap; height: auto; min-height: 100%; }
+  .studio__sider { width: 205px; min-width: 180px; }
+  .studio__main { min-width: 0; height: min(70vh, 720px); }
+  .studio__detail { width: 100%; max-height: 45vh; border-left: 0; border-top: 1px solid #e5e7eb; }
+  .studio__header { flex-wrap: wrap; gap: 8px; padding: 10px; }
+}
+@media (max-width: 700px) {
+  .studio__sider { width: 100%; min-width: 0; max-height: 220px; overflow-y: auto; }
+  .studio__main { width: 100%; height: 58vh; }
+  .studio__header-info { width: 100%; }
+}
+:global([data-theme="dark"]) .studio { background: #212226; }
+:global([data-theme="dark"]) .studio__sider,
+:global([data-theme="dark"]) .studio__header,
+:global([data-theme="dark"]) .studio__detail { background: #1a1b1e; border-color: #37383d; }
+:global([data-theme="dark"]) .studio__stats,
+:global([data-theme="dark"]) .studio__detail-tabs,
+:global([data-theme="dark"]) .studio__detail-row,
+:global([data-theme="dark"]) .studio__view-switcher { background: #25262b; border-color: #37383d; }
+:global([data-theme="dark"]) .studio__header-info,
+:global([data-theme="dark"]) .studio__obj-cn,
+:global([data-theme="dark"]) .studio__detail-name,
+:global([data-theme="dark"]) .studio__detail-row-name { color: #f1f2f4; }
+:global([data-theme="dark"]) .studio__scenario select,
+:global([data-theme="dark"]) .studio__search-input,
+:global([data-theme="dark"]) .studio__refresh-btn,
+:global([data-theme="dark"]) .studio__view-btn--active { background: #37383d; color: #f1f2f4; border-color: #44454a; }
 </style>

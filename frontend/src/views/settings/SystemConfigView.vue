@@ -453,7 +453,7 @@ async function handleSetDefault(id: string) {
 async function handleTestModel(model: AiModel) {
   testingModelId.value = model.id; testResults[model.id] = null
   try {
-    testResults[model.id] = await systemConfigApi.testAiModel({ api_key: model.api_key, base_url: model.base_url, model_id: model.model_id })
+    testResults[model.id] = await systemConfigApi.testAiModel({ id: model.id })
   } catch { testResults[model.id] = { success: false, message: '测试请求失败' } } finally { testingModelId.value = null }
 }
 

@@ -3,6 +3,8 @@
 # ── 阶段 1：前端构建（编译检查也在此步完成，失败则整个构建中止） ──
 FROM node:20-alpine AS frontend-build
 WORKDIR /src/frontend
+ARG APP_BUILD_REVISION=unknown
+ENV GITHUB_SHA=$APP_BUILD_REVISION
 # 国内构建机直连 npm registry 极慢，统一走 npmmirror
 ENV npm_config_registry=https://registry.npmmirror.com
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./

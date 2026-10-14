@@ -174,7 +174,7 @@ def related_objects(name: str, object_id: str, rel_type: str | None = None,
             continue
         mapping = (entity.config_json or {}).get("relation_bindings", {}).get(rel.id)
         if not mapping:
-            results.append({"name": rel.name, "status": "mapping_required", "instances": []})
+            results.append({"name": rel.name, "label": rel.name_cn, "status": "mapping_required", "instances": []})
             continue
         target = db.get(OntologyEntity, rel.to_entity_id)
         if not target or target.status != "published":
@@ -190,5 +190,6 @@ def related_objects(name: str, object_id: str, rel_type: str | None = None,
             raise HTTPException(409, "关系连接字段未绑定")
         value = row.get(source_attr)
         data = query_instances(db, target, {target_attr: value}, user_id=user.id) if value is not None else {"instances": [], "count": 0}
-        results.append({"name": rel.name, "label": rel.name_cn, "target": target.name_cn, "status": "queried", **data})
+        results.append({"name": rel.name, "label": rel.name_cn, "target": target.name_cn,
+                        "target_api_name": target.name, "status": "queried", **data})
     return {"source": row, "direction": "outgoing", "depth": 1, "relations": results}

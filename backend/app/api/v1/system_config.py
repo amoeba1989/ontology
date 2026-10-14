@@ -1,6 +1,7 @@
 """
 系统配置 API — 分组管理平台全局参数（支持多模型配置）
 """
+import json
 from datetime import datetime
 
 from fastapi import APIRouter, Depends
@@ -45,6 +46,10 @@ def _mask_model_api_key(key: str | None) -> str | None:
     return key[:4] + "****" + key[-4:]
 
 
+def _is_masked_model_key(key: str | None) -> bool:
+    return bool(key and ("****" in key or "••••" in key))
+
+
 @router.get("", response_model=ConfigResponse)
 def get_all_config(db: Session = Depends(get_db), _user: User = Depends(require_admin)):
     """获取全部配置（按分组返回）"""
@@ -82,7 +87,7 @@ def save_ai_models(data: dict, db: Session = Depends(get_db), user: User = Depen
     """保存 AI 模型列表"""
     import json
     models = data.get("models", [])
-    # 如果 API Key 是脱敏的（以 •••• 开头），保留原值
+    # GET 返回 sk-****1234；编辑后保存时必须保留库里的真实密钥。
     row = db.query(SystemConfig).filter(SystemConfig.key == "ai.models").first()
     old_models = []
     if row and row.value:
@@ -94,7 +99,7 @@ def save_ai_models(data: dict, db: Session = Depends(get_db), user: User = Depen
     old_key_map = {m.get("id"): m.get("api_key", "") for m in old_models}
 
     for m in models:
-        if m.get("api_key", "").startswith("••••"):
+        if _is_masked_model_key(m.get("api_key")):
             m["api_key"] = old_key_map.get(m.get("id"), "")
 
     value = json.dumps(models, ensure_ascii=False)
@@ -109,13 +114,22 @@ def save_ai_models(data: dict, db: Session = Depends(get_db), user: User = Depen
 
 
 @router.post("/ai/models/test")
-def test_ai_model(data: dict, _user: User = Depends(require_admin)):
+def test_ai_model(data: dict, db: Session = Depends(get_db), _user: User = Depends(require_admin)):
     """通过一次最小 chat completion 测试实际模型调用，而不是只探测 models 列表。"""
     api_key = data.get("api_key", "")
     base_url = data.get("base_url", "https://api.anthropic.com")
     model_id = data.get("model_id", "")
+    if data.get("id"):
+        row = db.query(SystemConfig).filter(SystemConfig.key == "ai.models").first()
+        models = json.loads(row.value) if row and row.value else []
+        saved = next((m for m in models if m.get("id") == data["id"]), None)
+        if not saved:
+            return TestResult(success=False, message="模型配置不存在，请保存后重试")
+        api_key = saved.get("api_key", "")
+        base_url = saved.get("base_url", "")
+        model_id = saved.get("model_id", "")
 
-    if not api_key or api_key.startswith("••••"):
+    if not api_key or _is_masked_model_key(api_key):
         return TestResult(success=False, message="请先填写 API Key")
     if not model_id:
         return TestResult(success=False, message="请先选择模型")

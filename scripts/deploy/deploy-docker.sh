@@ -7,6 +7,8 @@ cd "$(dirname "$0")/../.."
 log() { echo "[deploy] $*"; }
 # 与 docker-compose.yml 的默认前端端口保持一致。
 WEB_PORT="${WEB_PORT:-8088}"
+APP_BUILD_REVISION="$(cat .deployment-revision 2>/dev/null || echo unknown)"
+export APP_BUILD_REVISION
 
 if docker compose version >/dev/null 2>&1; then
   DC="docker compose"

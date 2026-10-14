@@ -1,7 +1,7 @@
 import json
 import sqlite3
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from sqlalchemy import create_engine
@@ -121,9 +121,12 @@ def test_ontology_api_queries_relations_and_rejects_identifier_injection(demo):
     response = client.get(root)
     assert response.status_code == 200, response.text
     assert response.json()["instances"][0]["id"] == "P1"
+    assert response.json()["instances"][0]["$id"] == "P1"
+    assert response.json()["asset_id"] and response.json()["asset_name"]
     related = client.get(root + "/P1/relations").json()
     assert len(related["relations"][0]["instances"]) == 2
     assert related["relations"][0]["name"] == "hasSku"
+    assert related["relations"][0]["target_api_name"]
     assert client.get(root, params={"filter": json.dumps({"id) OR 1=1 --": "P1"})}).status_code == 422
     assert client.get(root, params={"filter": json.dumps({"id": "P1' OR 1=1 --"})}).json()["count"] == 0
     assert client.get(root, params={"offset": 1}).json()["count"] == 0
@@ -143,14 +146,23 @@ def test_standalone_skill_node_failure_and_cycle_are_not_success(demo):
 
 def test_model_system_settings_and_registry_use_one_configuration(demo):
     from app.models.system_config import SystemConfig
+    from app.api.v1.system_config import get_ai_models, save_ai_models, test_ai_model
     from app.services.llm_resolver import resolve_agent_model, agent_model_status
-    db, _ = demo
-    settings = SystemConfig(group="ai", key="ai.models", value=json.dumps([{"model_id": "deepseek-chat", "base_url": "https://api.deepseek.com/v1", "api_key": "TEST-SECRET", "scenes": ["agent"], "is_default": True}]))
+    db, user = demo
+    settings = SystemConfig(group="ai", key="ai.models", value=json.dumps([{"id": "m1", "model_id": "deepseek-chat", "base_url": "https://api.deepseek.com/v1", "api_key": "TEST-SECRET", "scenes": ["agent"], "is_default": True}]))
     db.add(settings); db.commit()
     assert resolve_agent_model(db)["model"] == "deepseek-chat"
     status = agent_model_status(db)
     assert status["configured"] and status["host"] == "api.deepseek.com"
     assert "TEST-SECRET" not in json.dumps(status)
+    masked = get_ai_models(db, user)["models"][0]
+    assert masked["api_key"] != "TEST-SECRET"
+    save_ai_models({"models": [masked]}, db, user)
+    assert "TEST-SECRET" in settings.value
+    with patch("openai.OpenAI") as factory:
+        factory.return_value.chat.completions.create.return_value.choices = [SimpleNamespace(message=SimpleNamespace(content="OK"))]
+        assert test_ai_model({"id": "m1"}, db, user).success
+        assert factory.call_args.kwargs["api_key"] == "TEST-SECRET"
     db.delete(settings); db.commit()
 
 

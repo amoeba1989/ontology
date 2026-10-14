@@ -2,9 +2,20 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { templateCompilerOptions } from '@tresjs/core'
 import { fileURLToPath, URL } from 'node:url'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
+
+const revisionFile = fileURLToPath(new URL('../.deployment-revision', import.meta.url))
+const revision = process.env.GITHUB_SHA || (existsSync(revisionFile) ? readFileSync(revisionFile, 'utf8').trim() : (() => {
+  try { return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() }
+  catch { return 'unknown' }
+})())
+const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
+const buildInfo = `v2.1 · ${builtAt} · ${revision.slice(0, 7)}`
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: { __APP_BUILD_INFO__: JSON.stringify(buildInfo) },
   plugins: [vue({ ...templateCompilerOptions })],
   optimizeDeps: { include: ['dagre', 'marked'] },
   resolve: {

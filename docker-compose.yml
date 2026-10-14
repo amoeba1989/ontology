@@ -17,6 +17,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        APP_BUILD_REVISION: ${APP_BUILD_REVISION:-unknown}
     container_name: ontology-web
     ports:
       - "${WEB_PORT:-8088}:80"

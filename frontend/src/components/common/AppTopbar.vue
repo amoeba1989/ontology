@@ -4,6 +4,10 @@
       <OntologyBreadcrumb :items="breadcrumbs" />
     </div>
     <div class="topbar__right">
+      <span class="topbar__version" :title="buildInfo">{{ buildInfo }}</span>
+      <button class="topbar__theme" type="button" @click="themeStore.toggle()">
+        {{ themeStore.isDark ? '☀ 明快' : '☾ 暗黑' }}
+      </button>
       <button class="topbar__icon-btn" title="我的待办" @click="router.push('/todo')">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M8 2a4 4 0 00-4 4v3l-1 1.5h10L12 9V6a4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
@@ -26,6 +30,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
+import { useThemeStore } from '../../store/theme'
 import OntologyBreadcrumb from './OntologyBreadcrumb.vue'
 import SettingsDialog from './SettingsDialog.vue'
 
@@ -33,6 +38,8 @@ import SettingsDialog from './SettingsDialog.vue'
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
+const buildInfo = __APP_BUILD_INFO__
 const showSettings = ref(false)
 
 const userName = computed(() => authStore.user?.name || '用户')
@@ -52,13 +59,16 @@ const breadcrumbs = computed(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: #fff;
+  background: var(--neutral-0);
   border-bottom: 1px solid var(--neutral-200);
   flex-shrink: 0;
   gap: 16px;
 }
 .topbar__left { display: flex; align-items: center; flex-shrink: 0; }
 .topbar__right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.topbar__version { color: var(--neutral-500); font-size: 11px; white-space: nowrap; }
+.topbar__theme { border: 1px solid var(--neutral-200); border-radius: 7px; background: var(--neutral-0); color: var(--neutral-700); padding: 6px 9px; cursor: pointer; }
+@media (max-width: 880px) { .topbar__version { display: none; } .topbar { padding: 0 12px; } }
 .topbar__icon-btn {
   position: relative;
   width: 34px; height: 34px;
