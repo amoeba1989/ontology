@@ -124,9 +124,13 @@ jobs:
           lines += ['', 'Menu record counts: ' + json.dumps(r['menus'], ensure_ascii=False)]
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
               f.write('\n'.join(lines) + '\n')
+          # Basic data/skill verification gates deployment. AI is reported separately;
+          # enable CHECK_AI=1 in the server environment after configuring a model to
+          # make missing/failed tool-calling a hard gate.
           if not r['ok']:
               raise SystemExit('Production demonstration verification failed; see report')
-          print('Production database skills and real model tool calling: PASS')
+          ai_passed = all(p.get('ai', {}).get('passed', True) for p in r['packs'])
+          print('Production database skills: PASS; AI tool calling: ' + ('PASS' if ai_passed else 'NOT CONFIGURED/NOT VERIFIED'))
           PY
 
       - uses: actions/upload-artifact@v4
