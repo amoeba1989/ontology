@@ -105,7 +105,9 @@ jobs:
           '
 
       - name: Collect production demonstration verification
-        if: always()
+        # If image build/SSH deployment fails, do not parse the previous deployment's
+        # report and present its revision mismatch as a second unrelated error.
+        if: success()
         shell: bash
         run: |
           set -euo pipefail
