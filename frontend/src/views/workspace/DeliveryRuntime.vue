@@ -61,4 +61,14 @@ onMounted(async () => {
 <style scoped>
 .parameter{display:flex;flex-direction:column;gap:6px;margin:16px 0}.parameter input{border:1px solid #dce1eb;border-radius:7px;padding:10px;background:var(--surface-card,#fff);color:inherit;font:inherit}
 .runtime{max-width:1200px;margin:auto;padding:32px;color:var(--neutral-900,#17233d)}a,header span{color:#4f46e5;font-size:13px}header{display:flex;justify-content:space-between;gap:20px;margin:28px 0}h1{font-size:28px;margin:10px 0}header p{color:#64748b;white-space:pre-wrap}small,.meta{color:#7c879a;font-size:12px;line-height:1.8}section{padding:24px;border:1px solid #e1e6ef;border-radius:12px;margin-bottom:24px;background:var(--surface-card,#fff)}h2{font-size:18px;margin:0 auto 0 0}.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}select,button,textarea{border:1px solid #dce1eb;border-radius:7px;padding:10px;background:var(--surface-card,#fff);color:inherit;font:inherit;font-size:13px}button{cursor:pointer}button:disabled{opacity:.5;cursor:wait}.primary{background:#4f46e5;color:white}textarea{display:block;box-sizing:border-box;min-height:100px;width:100%;margin:10px 0;font-family:monospace}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}th,td{text-align:left;padding:12px;border-bottom:1px solid #e5e7eb}th{background:#f8fafc}.error,.success{padding:15px;border-radius:8px;margin-top:16px;white-space:pre-wrap}.error{color:#b91c1c;background:#fff1f2}.success{color:#047857;background:#ecfdf5}pre{overflow:auto;font-size:12px}li,label{font-size:13px;line-height:1.9}
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .runtime a,html[data-theme="dark"] .runtime header span{color:var(--semantic-300)}
+html[data-theme="dark"] .runtime header p{color:var(--neutral-600)}
+html[data-theme="dark"] .runtime small,html[data-theme="dark"] .runtime .meta{color:var(--neutral-500)}
+html[data-theme="dark"] .parameter input,html[data-theme="dark"] .runtime select,html[data-theme="dark"] .runtime button,html[data-theme="dark"] .runtime textarea{border-color:var(--neutral-300)}
+html[data-theme="dark"] .runtime section{border-color:var(--neutral-200)}
+html[data-theme="dark"] .runtime th{background:var(--neutral-100)}
+html[data-theme="dark"] .runtime th,html[data-theme="dark"] .runtime td{border-bottom-color:var(--neutral-200)}
+html[data-theme="dark"] .runtime .error{color:#ff8787;background:rgba(250,82,82,0.12)}
+html[data-theme="dark"] .runtime .success{color:var(--dynamic-300);background:rgba(18,184,134,0.12)}
 </style>

@@ -546,4 +546,25 @@ function formatTime(iso: string) {
 .impact-dialog__empty { text-align: center; color: #059669; padding: 20px; }
 .impact-dialog__tag--del { color: #dc2626; }
 .impact-dialog__tag--ren { color: #d97706; }
+
+/* ── 深色态覆盖：卡片/弹窗白底与状态徐章随主题翻转 ── */
+html[data-theme="dark"] .entity-card, html[data-theme="dark"] .check-card, html[data-theme="dark"] .modal-box, html[data-theme="dark"] .impact-dialog { background: var(--surface-card); }
+html[data-theme="dark"] .entity-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .check-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .btn-secondary, html[data-theme="dark"] .btn-sm, html[data-theme="dark"] .btn-outline { background: var(--surface-card); }
+html[data-theme="dark"] .version-item__badge--published, html[data-theme="dark"] .status-tag--published, html[data-theme="dark"] .check-card__summary--pass, html[data-theme="dark"] .version-item__active { background: rgba(22,163,74,0.18); color: var(--dynamic-300); }
+html[data-theme="dark"] .version-item__badge--pending_approval, html[data-theme="dark"] .status-tag--pending_approval, html[data-theme="dark"] .issue-item--rel { background: rgba(245,158,11,0.16); color: var(--kinetic-300); }
+html[data-theme="dark"] .version-item__badge--rejected, html[data-theme="dark"] .status-tag--rejected, html[data-theme="dark"] .check-card__summary--fail { background: rgba(220,38,38,0.18); color: #ff8787; }
+html[data-theme="dark"] .version-item__badge--draft, html[data-theme="dark"] .status-tag--draft { background: rgba(99,102,241,0.2); color: var(--semantic-300); }
+html[data-theme="dark"] .meta-card__reject { background: rgba(220,38,38,0.14); color: #ff8787; }
+html[data-theme="dark"] .issue-item { color: #ff8787; background: rgba(220,38,38,0.14); }
+html[data-theme="dark"] .check-pass { color: var(--dynamic-300); }
+html[data-theme="dark"] .check-fail, html[data-theme="dark"] .btn-link--danger { color: #ff8787; }
+html[data-theme="dark"] .btn-danger-outline { background: rgba(220,38,38,0.14); border-color: rgba(220,38,38,0.4); color: #ff8787; }
+html[data-theme="dark"] .impact-dialog__header { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .impact-dialog__close, html[data-theme="dark"] .impact-dialog__loading { color: var(--neutral-500); }
+html[data-theme="dark"] .impact-dialog__body h4 { color: var(--neutral-700); }
+html[data-theme="dark"] .impact-dialog__empty { color: var(--dynamic-300); }
+html[data-theme="dark"] .impact-dialog__tag--del { color: #ff8787; }
+html[data-theme="dark"] .impact-dialog__tag--ren { color: var(--kinetic-300); }
 </style>

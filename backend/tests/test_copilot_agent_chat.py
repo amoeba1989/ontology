@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from app.api.v1 import copilot as copilot_api
 from app.main import app
 from app.services import copilot as copilot_service
+from app.services import llm_resolver
 
 
 class CopilotAgentChatTests(unittest.TestCase):
@@ -38,8 +39,8 @@ class CopilotAgentChatTests(unittest.TestCase):
                 raise ImportError("Using SOCKS proxy, but the 'socksio' package is not installed.")
             return SimpleNamespace(kwargs=kwargs)
 
-        with patch.object(copilot_service.httpx, "Client", side_effect=fake_httpx_client):
-            with patch.object(copilot_service, "OpenAI", side_effect=fake_openai):
+        with patch.object(llm_resolver.httpx, "Client", side_effect=fake_httpx_client):
+            with patch.object(llm_resolver, "OpenAI", side_effect=fake_openai):
                 client = copilot_service.get_llm_client()
 
         self.assertEqual(len(calls), 2)

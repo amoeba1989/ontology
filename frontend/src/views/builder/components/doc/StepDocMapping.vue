@@ -258,4 +258,23 @@ onMounted(() => {
 .step-mapping__btn--secondary { background: #fff; color: #4a6fa5; border: 1px solid #4a6fa5; }
 .step-mapping__btn-sm { padding: 2px 8px; font-size: 11px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
 .step-mapping__hint { color: #d32f2f; font-size: 12px; text-align: right; margin-top: 8px; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-mapping__sub { color: var(--neutral-600); }
+html[data-theme="dark"] .step-mapping__spinner { border-color: var(--neutral-300); border-top-color: var(--semantic-500); }
+html[data-theme="dark"] .step-mapping__error,
+html[data-theme="dark"] .step-mapping__hint { color: #ff8787; }
+html[data-theme="dark"] .step-mapping__table th,
+html[data-theme="dark"] .step-mapping__table td,
+html[data-theme="dark"] .step-mapping__sub-table th,
+html[data-theme="dark"] .step-mapping__sub-table td { border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-mapping__table th,
+html[data-theme="dark"] .step-mapping__sub-table th { background: var(--neutral-100); }
+html[data-theme="dark"] .step-mapping__row--warning { background: rgba(245, 158, 11, 0.14); }
+html[data-theme="dark"] .step-mapping__row--low { background: rgba(255, 235, 59, 0.10); }
+html[data-theme="dark"] .step-mapping__select { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-mapping__confidence--low { color: var(--kinetic-300); }
+html[data-theme="dark"] .step-mapping__btn:disabled { background: var(--neutral-500); }
+html[data-theme="dark"] .step-mapping__btn--secondary { background: transparent; color: var(--semantic-300); border-color: var(--semantic-500); }
+html[data-theme="dark"] .step-mapping__btn-sm { background: var(--neutral-200); border-color: var(--neutral-300); color: var(--neutral-800); }
 </style>

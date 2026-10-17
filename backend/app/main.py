@@ -35,11 +35,11 @@ def _seed_system_config(db):
         ("storage", "local_path", "./uploads", "本地文件存储路径"),
         ("storage", "max_upload_mb", "50", "最大上传大小（MB）"),
         ("storage", "allowed_types", ".owl,.rdf,.ttl,.csv,.xlsx,.json,.docx,.pdf", "允许的文件类型"),
-        # ai
-        ("ai", "model", "claude-sonnet-4-20250514", "LLM 模型"),
+        # ai（默认 DeepSeek，密钥在 .env 的 LLM_API_KEY 配置即可）
+        ("ai", "model", "deepseek-flash", "LLM 模型"),
         ("ai", "api_key", "", "API Key"),
         ("ai", "api_secret", "", "API Secret（部分模型需要）"),
-        ("ai", "base_url", "https://api.anthropic.com", "API Base URL"),
+        ("ai", "base_url", "https://api.deepseek.com", "API Base URL"),
         ("ai", "temperature", "0.7", "Temperature（0.0-2.0）"),
         ("ai", "max_tokens", "4096", "最大 Token 数"),
         ("ai", "top_p", "1.0", "Top P 采样"),
@@ -53,6 +53,16 @@ def _seed_system_config(db):
         ("notification", "smtp_from_name", "本体管理平台", "发件人名称"),
         ("notification", "webhook_url", "", "Webhook URL"),
         ("notification", "webhook_secret", "", "Webhook 签名密钥"),
+        # mqtt（无人机 minsim 遥测接入全局默认，连接级 params 可覆盖）
+        ("mqtt", "topic_prefix", "minsim", "MQTT 主题前缀"),
+        ("mqtt", "telemetry_topic", "minsim/telemetry", "遥测订阅主题"),
+        ("mqtt", "event_topic", "minsim/event", "事件订阅主题"),
+        ("mqtt", "default_qos", "0", "默认订阅 QoS"),
+        ("mqtt", "sample_rate_hz", "1", "观测层落库降采样频率（Hz）"),
+        ("mqtt", "idempotency_fields", "client,scenario_id,tick,entity_id", "观测幂等键字段"),
+        ("mqtt", "stable_key_fields", "scenario_id,entity_name", "目标稳定标识字段"),
+        ("mqtt", "out_of_order_window", "500", "乱序容忍窗口（tick 数）"),
+        ("mqtt", "truncation_policy", "log-only", "截断处理策略（log-only=只记监控事件不崩溃）"),
     ]
     existing = {r.key for r in db.query(SystemConfig.key).all()}
     added = 0
@@ -66,6 +76,18 @@ def _seed_system_config(db):
         import json
         default_models = json.dumps([
             {
+                "id": "deepseek-flash",
+                "name": "DeepSeek Flash",
+                "provider": "DeepSeek",
+                "model_id": "deepseek-flash",
+                "api_key": "",
+                "base_url": "https://api.deepseek.com",
+                "temperature": 0.7,
+                "max_tokens": 4096,
+                "scenes": ["ontology", "agent", "data", "general"],
+                "is_default": True,
+            },
+            {
                 "id": "claude-sonnet",
                 "name": "Claude Sonnet 4",
                 "provider": "Anthropic",
@@ -75,7 +97,7 @@ def _seed_system_config(db):
                 "temperature": 0.7,
                 "max_tokens": 4096,
                 "scenes": ["ontology", "general"],
-                "is_default": True,
+                "is_default": False,
             },
             {
                 "id": "claude-opus",
@@ -175,18 +197,38 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 def _seed_scene_registry(db):
-    """场景中心默认导航项（幂等：已存在则跳过）"""
+    """场景中心默认导航项（幂等：已存在则跳过）。
+
+    平台当前聚焦两个业务场景：无人机黑飞反制 + 电商。引用对象取各自 domain
+    下的真实本体实体名（数据驱动，非硬编码）；无对应工作台页的场景 route 置空。
+    """
     from app.models.scene_registry import SceneRegistry
+    from app.models.entity import OntologyEntity
     if db.query(SceneRegistry).count() > 0:
         return
+
+    def _names(domain: str) -> list[str]:
+        rows = (
+            db.query(OntologyEntity)
+            .filter(OntologyEntity.domain == domain)
+            .order_by(OntologyEntity.tier, OntologyEntity.name)
+            .all()
+        )
+        return [e.name for e in rows]
+
     db.add(SceneRegistry(
-        name="边海空情目标研判",
-        description="基于目标/传感器/行为事件/研判结论军事本体，完成观察-判断-决策-行动闭环研判与处置",
-        icon="🛡️", color="#f59e0b", route="/scene/military", sort_order=0,
-        assets={
-            "object_classes": ["Target", "Sensor", "BehaviorEvent", "Assessment"],
-            "seats": ["情报席", "研判席", "指挥席", "行动席"],
-        },
+        id="scene_drone",
+        name="无人机黑飞反制",
+        description="基于无人机目标/观测/状态/飞行授权/反制设备/保护区/风险评估/预警事件本体，组织低慢小黑飞目标的侦-判-反闭环处置",
+        icon="🛡️", color="#f59e0b", route="/workspace/space", sort_order=0,
+        assets={"object_classes": _names("drone"), "domains": ["drone"]},
+    ))
+    db.add(SceneRegistry(
+        id="scene_shopping",
+        name="电商场景",
+        description="以顾客/商品/订单/购物车项/优惠券/支付流水/订单风险评估/风控预警事件八大本体构建电商语义网络，覆盖用户行为、商品与订单全生命周期治理",
+        icon="🛒", color="#2E5BFF", route=None, sort_order=1,
+        assets={"object_classes": _names("shopping"), "domains": ["shopping"]},
     ))
     db.commit()
     logger.info("场景注册表初始化完成")
@@ -492,6 +534,15 @@ async def lifespan(app: FastAPI):
 
     start_pipeline_worker()
 
+    # 启动无人机 MQTT 遥测消费者（仅当存在启用的 mqtt 连接；broker 不可达不影响启动）
+    try:
+        from app.services.data_plane.mqtt_bootstrap import start_mqtt_consumers
+        n = start_mqtt_consumers()
+        if n:
+            logger.info("MQTT 遥测消费者已启动：%d 个连接", n)
+    except Exception as e:
+        logger.warning(f"MQTT 消费者启动失败: {e}")
+
     # 启动监控采集器
     try:
         from app.services.monitor.collector import start_collector
@@ -501,6 +552,13 @@ async def lifespan(app: FastAPI):
         logger.warning(f"监控采集器启动失败: {e}")
 
     yield
+
+    # 关闭 MQTT 消费者
+    try:
+        from app.services.data_plane.mqtt_bootstrap import stop_mqtt_consumers
+        stop_mqtt_consumers()
+    except Exception as e:
+        logger.warning(f"MQTT 消费者关闭失败: {e}")
 
 
 app = FastAPI(
@@ -552,6 +610,8 @@ from app.api.v1.customer_demo import router as customer_demo_router
 app.include_router(customer_demo_router, prefix="/api/v1")
 from app.api.v1.modeling_drafts import router as modeling_drafts_router
 app.include_router(modeling_drafts_router, prefix="/api/v1")
+from app.api.v1.owl_editor import router as owl_editor_router
+app.include_router(owl_editor_router, prefix="/api/v1")
 app.include_router(aip_scenes_router, prefix="/api/v1")
 app.include_router(scene_registry_router, prefix="/api/v1")
 app.include_router(aip_executions_router, prefix="/api/v1")

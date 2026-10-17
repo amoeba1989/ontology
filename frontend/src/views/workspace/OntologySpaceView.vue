@@ -332,4 +332,17 @@ onBeforeUnmount(() => {
   border: 1px solid #ffd8a8;
   color: #d9480f;
 }
+
+/* ── 深色态覆盖：保留上方浅色规则，仅重染页面底/顶部玻璃条/加载错误浮层，使态势舱随主题翻转 ── */
+html[data-theme="dark"] .os-view { background: linear-gradient(180deg, #141519 0%, #1a1b1e 100%); }
+html[data-theme="dark"] .os-bar { background: rgba(33, 34, 38, 0.86); border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); }
+html[data-theme="dark"] .os-bar__id h1 { color: #f1f2f4; }
+html[data-theme="dark"] .os-bar__id p { color: #9a9ba1; }
+html[data-theme="dark"] .os-scn { color: #c1c2c5; }
+html[data-theme="dark"] .os-scn:hover { color: #dbe4ff; background: rgba(92, 124, 250, 0.16); }
+html[data-theme="dark"] .os-scn.is-on { background: #5c7cfa; color: #fff; }
+html[data-theme="dark"] .os-bar__stats { color: #9a9ba1; }
+html[data-theme="dark"] .os-bar__stats b { color: #91a7ff; }
+html[data-theme="dark"] .os-loading { background: rgba(33, 34, 38, 0.85); color: #c1c2c5; }
+html[data-theme="dark"] .os-err { background: rgba(250, 82, 82, 0.12); border-color: rgba(250, 82, 82, 0.4); color: #ffa8a8; }
 </style>

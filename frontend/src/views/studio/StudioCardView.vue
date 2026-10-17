@@ -255,4 +255,23 @@ function formatNumber(n: number) {
   gap: 4px;
 }
 .card__rel-icon { color: #00C7B1; font-weight: 700; }
+
+/* ── 深色态覆盖：卡片白底/提示条/徒章随主题翻转（顶部彩条/图标透色 chip 保留）── */
+html[data-theme="dark"] .card-view__hint { background: var(--neutral-100); border-color: var(--neutral-400); color: var(--neutral-600); }
+html[data-theme="dark"] .card-view__hint-title { color: var(--neutral-800); }
+html[data-theme="dark"] .card-view__hint-sep { color: var(--neutral-500); }
+html[data-theme="dark"] .card { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 0 1px var(--tc); }
+html[data-theme="dark"] .card__name { color: var(--neutral-900); }
+html[data-theme="dark"] .card__en { color: var(--neutral-500); }
+html[data-theme="dark"] .card__meta { color: var(--neutral-600); }
+html[data-theme="dark"] .card__meta-scenario { background: rgba(109,40,217,.22); color: #b197fc; }
+html[data-theme="dark"] .card__badge--instance { background: rgba(14,116,144,.2); color: #66dfec; border-color: transparent; }
+html[data-theme="dark"] .card__badge--rule { background: rgba(194,65,12,.2); color: #ffa94d; border-color: transparent; }
+html[data-theme="dark"] .card__badge--hydration-full { background: rgba(22,163,74,.18); color: #69db7c; border-color: transparent; }
+html[data-theme="dark"] .card__badge--hydration-partial { background: rgba(37,99,235,.18); color: #91c7ff; border-color: transparent; }
+html[data-theme="dark"] .card__badge--hydration-mapping { background: rgba(180,83,9,.2); color: #ffd43b; border-color: transparent; }
+html[data-theme="dark"] .card__badge--hydration-none { color: var(--neutral-500); border-color: var(--neutral-500); }
+html[data-theme="dark"] .card__rel-row { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .card__rel { color: var(--neutral-600); }
 </style>

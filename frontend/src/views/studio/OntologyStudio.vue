@@ -832,20 +832,20 @@ onMounted(async () => {
   .studio__main { width: 100%; height: 58vh; }
   .studio__header-info { width: 100%; }
 }
-:global([data-theme="dark"]) .studio { background: #212226; }
-:global([data-theme="dark"]) .studio__sider,
-:global([data-theme="dark"]) .studio__header,
-:global([data-theme="dark"]) .studio__detail { background: #1a1b1e; border-color: #37383d; }
-:global([data-theme="dark"]) .studio__stats,
-:global([data-theme="dark"]) .studio__detail-tabs,
-:global([data-theme="dark"]) .studio__detail-row,
-:global([data-theme="dark"]) .studio__view-switcher { background: #25262b; border-color: #37383d; }
-:global([data-theme="dark"]) .studio__header-info,
-:global([data-theme="dark"]) .studio__obj-cn,
-:global([data-theme="dark"]) .studio__detail-name,
-:global([data-theme="dark"]) .studio__detail-row-name { color: #f1f2f4; }
-:global([data-theme="dark"]) .studio__scenario select,
-:global([data-theme="dark"]) .studio__search-input,
-:global([data-theme="dark"]) .studio__refresh-btn,
-:global([data-theme="dark"]) .studio__view-btn--active { background: #37383d; color: #f1f2f4; border-color: #44454a; }
+html[data-theme="dark"] .studio { background: #212226; }
+html[data-theme="dark"] .studio__sider,
+html[data-theme="dark"] .studio__header,
+html[data-theme="dark"] .studio__detail { background: #1a1b1e; border-color: #37383d; }
+html[data-theme="dark"] .studio__stats,
+html[data-theme="dark"] .studio__detail-tabs,
+html[data-theme="dark"] .studio__detail-row,
+html[data-theme="dark"] .studio__view-switcher { background: #25262b; border-color: #37383d; }
+html[data-theme="dark"] .studio__header-info,
+html[data-theme="dark"] .studio__obj-cn,
+html[data-theme="dark"] .studio__detail-name,
+html[data-theme="dark"] .studio__detail-row-name { color: #f1f2f4; }
+html[data-theme="dark"] .studio__scenario select,
+html[data-theme="dark"] .studio__search-input,
+html[data-theme="dark"] .studio__refresh-btn,
+html[data-theme="dark"] .studio__view-btn--active { background: #37383d; color: #f1f2f4; border-color: #44454a; }
 </style>

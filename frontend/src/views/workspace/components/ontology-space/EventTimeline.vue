@@ -223,4 +223,28 @@ function kindLabel(k: string) {
 .tl__head { position: absolute; top: 4px; width: 2px; height: 18px; background: #3b5bdb; transform: translateX(-50%); border-radius: 1px; }
 
 .tl__count { font-size: 11px; color: #8aa3c8; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+
+/* ── 深色态覆盖：播放控制条/倍速/当前事件/时间轴随主题翻转 ── */
+html[data-theme="dark"] .tl { background: rgba(33, 34, 38, 0.86); border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45); }
+html[data-theme="dark"] .btn { background: rgba(44, 45, 49, 0.7); border-color: rgba(255, 255, 255, 0.12); color: #c1c2c5; }
+html[data-theme="dark"] .btn:hover:not(:disabled) { border-color: #5c7cfa; color: #91a7ff; }
+html[data-theme="dark"] .btn--main { background: #4c6ef5; border-color: #4c6ef5; color: #fff; }
+html[data-theme="dark"] .btn--main:hover:not(:disabled) { background: #5c7cfa; color: #fff; }
+html[data-theme="dark"] .chip { color: #868e96; }
+html[data-theme="dark"] .chip.is-on { background: rgba(76, 110, 245, 0.18); border-color: rgba(92, 124, 250, 0.4); color: #bac8ff; }
+html[data-theme="dark"] .tl__idle { color: #7a7b82; }
+html[data-theme="dark"] .tl__time { color: #868e96; }
+html[data-theme="dark"] .tl__lv { background: rgba(76, 110, 245, 0.18); color: #bac8ff; }
+html[data-theme="dark"] .tl__lv.lv-warning { background: rgba(245, 159, 0, 0.16); color: #ffd43b; }
+html[data-theme="dark"] .tl__lv.lv-ok { background: rgba(32, 201, 151, 0.16); color: #63e6be; }
+html[data-theme="dark"] .tl__sum { color: #f1f2f4; }
+html[data-theme="dark"] .tl__tags em { background: rgba(255, 255, 255, 0.06); color: #adb5bd; }
+html[data-theme="dark"] .tl__tags em.lv-warning { background: rgba(245, 159, 0, 0.16); color: #ffd43b; }
+html[data-theme="dark"] .tl__tags em.lv-ok { background: rgba(32, 201, 151, 0.16); color: #63e6be; }
+html[data-theme="dark"] .tl__rel { color: #91a7ff !important; background: rgba(76, 110, 245, 0.16) !important; }
+html[data-theme="dark"] .tl__stub { color: #ffa94d !important; background: rgba(245, 159, 0, 0.14) !important; }
+html[data-theme="dark"] .tl__rail { background: rgba(255, 255, 255, 0.1); }
+html[data-theme="dark"] .tl__tick { border-color: #212226; background: #748ffc; }
+html[data-theme="dark"] .tl__head { background: #91a7ff; }
+html[data-theme="dark"] .tl__count { color: #868e96; }
 </style>

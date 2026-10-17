@@ -46,4 +46,8 @@ defineProps<{ data: { label: string; objectName: string; tier?: number } }>()
   height: 7px;
   border: none;
 }
+
+/* ── 深色态覆盖：对象节点浅底→紫色半透（彩色描边保留）── */
+html[data-theme="dark"] .ln-node--ontology { background: rgba(139,92,246,.18); color: #b197fc; }
+html[data-theme="dark"] .ln-node__tier { color: #c3a8fc; }
 </style>

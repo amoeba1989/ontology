@@ -76,4 +76,16 @@ const totalProps = computed(() => props.result.entities.reduce((sum, e) => sum +
 .step-review__btn:hover { background: #1b5e20; }
 .step-review__btn--back { background: transparent; color: #666; border: 1px solid #d0d0d0; }
 .step-review__btn--back:hover { background: #f5f5f5; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-review__sub,
+html[data-theme="dark"] .step-review__stat,
+html[data-theme="dark"] .step-review__entity-desc { color: var(--neutral-600); }
+html[data-theme="dark"] .step-review__stat-num { color: var(--neutral-900); }
+html[data-theme="dark"] .step-review__entity-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-review__entity-name { color: var(--neutral-500); }
+html[data-theme="dark"] .step-review__prop-tag { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .step-review__relation-item { color: var(--neutral-700); }
+html[data-theme="dark"] .step-review__btn--back { color: var(--neutral-600); border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-review__btn--back:hover { background: var(--neutral-100); }
 </style>

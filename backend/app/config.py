@@ -1,5 +1,8 @@
 from pathlib import Path
 
+from typing import Literal
+
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 _ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
@@ -7,6 +10,13 @@ _ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./ontology.db"
+    DATABASE_BACKEND: Literal["sqlite", "mysql"] = "sqlite"
+    MYSQL_HOST: str = ""
+    MYSQL_PORT: int = 3306
+    MYSQL_DATABASE: str = "ontology_db"
+    MYSQL_USER: str = ""
+    MYSQL_PASSWORD: SecretStr = SecretStr("")
+    MYSQL_SSL_CA: str = ""
     REDIS_URL: str = "redis://localhost:6379/0"
     NEO4J_URI: str = "bolt://localhost:7687"
     NEO4J_USER: str = "neo4j"
@@ -14,9 +24,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    LLM_BASE_URL: str = "https://coding.dashscope.aliyuncs.com/v1"
+    LLM_BASE_URL: str = "https://api.deepseek.com"
     LLM_API_KEY: str = ""
-    LLM_MODEL: str = "qwen3.5-plus"
+    LLM_MODEL: str = "deepseek-flash"
     HOST: str = "0.0.0.0"
     PORT: int = 8001
     DEBUG: bool = True

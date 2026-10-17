@@ -1,22 +1,22 @@
 <template>
   <!-- 灯效与坐标基准 -->
   <TresAmbientLight :intensity="0.72" />
-  <TresHemisphereLight :args="['#ffffff', '#cfdcec', 0.85]" />
+  <TresHemisphereLight :args="[sceneEnv.hemiSky, sceneEnv.hemiGround, 0.85]" />
   <TresDirectionalLight :position="[24, 34, 18]" :intensity="1.15" />
   <TresDirectionalLight :position="[-20, 14, -18]" :intensity="0.35" color="#8fb3e8" />
-  <TresFog :args="['#e9f1fb', 90, 260]" />
+  <TresFog :args="[sceneEnv.fog, 90, 260]" />
 
   <!-- 数字孪生基面：按场景各裁一张极坐标底盘 + 场景铭牌；
        一张跨场景的大方格会把两个星系的节点读成同一条带，网格也就不再承载"哪个场景" -->
   <template v-for="galaxy in layout.galaxies" :key="'floor-' + galaxy.key">
     <TresGroup :position="galaxy.center">
       <TresPolarGridHelper
-        :args="[galaxy.span, 8, 3, 64, '#b9cfe9', '#dfeaf8']"
+        :args="[galaxy.span, 8, 3, 64, sceneEnv.grid1, sceneEnv.grid2]"
         :position="[0, -10.5, 0]"
       />
       <TresMesh :position="[0, -10.55, 0]" :rotation-x="-Math.PI / 2">
         <TresCircleGeometry :args="[galaxy.span * 0.98, 64]" />
-        <TresMeshBasicMaterial :map="floorTexture" color="#f2f7fd" />
+        <TresMeshBasicMaterial :map="floorTexture" :color="sceneEnv.floor" />
       </TresMesh>
       <Html :position="[0, -10.4, galaxy.span * 0.82]" center :distance-factor="42" :z-index-range="[22, 10]">
         <div class="os-nameplate">
@@ -38,7 +38,7 @@
         :rotation-x="Math.PI / 2"
       >
         <TresTorusGeometry :args="[ring.radius, 0.05, 8, 120]" />
-        <TresMeshBasicMaterial color="#a9c4e6" transparent :opacity="0.55" />
+        <TresMeshBasicMaterial :color="sceneEnv.ring" transparent :opacity="0.55" />
       </TresMesh>
 
       <!-- 本体关系细管：线型只承载 rel_type（粗细 / 双股） -->
@@ -235,6 +235,7 @@ import { computed, ref, shallowRef, watch } from 'vue'
 import * as THREE from 'three'
 import { Html, OrbitControls } from '@tresjs/cientos'
 import { useLoop, useTres } from '@tresjs/core'
+import { useThemeStore } from '../../../../store/theme'
 import type { SceneEvent } from '../../../../api/ontologyScene'
 import {
   EVENT_LEVEL_COLOR,
@@ -261,6 +262,15 @@ const emit = defineEmits<{
 }>()
 
 const SPIN_SPEED = 0.052 // ≈ 0.05°/帧（60fps）
+
+/**
+ * 三维环境色随主题翻转：基面/网格/雾/半球光在明快模式下是浅蓝天空系，
+ * 暗黑模式下压成深空灰，避免黑色外壳里漂浮一片亮蓝底盘。
+ */
+const theme = useThemeStore()
+const sceneEnv = computed(() => theme.isDark
+  ? { fog: '#141519', hemiSky: '#41495a', hemiGround: '#141519', grid1: '#333c4b', grid2: '#22262e', floor: '#1c1f26', ring: '#3d4757', edgeIdle: '#4b5566' }
+  : { fog: '#e9f1fb', hemiSky: '#ffffff', hemiGround: '#cfdcec', grid1: '#b9cfe9', grid2: '#dfeaf8', floor: '#f2f7fd', ring: '#a9c4e6', edgeIdle: '#8aa7cf' })
 
 /**
  * 星系自转与卫星环角度直接写在 three 实例上，不进响应式：
@@ -302,7 +312,7 @@ function edgeActive(edge: LayoutEdge) {
 function edgeColor(edge: LayoutEdge) {
   if (touches(edge, props.selectedId)) return '#3b5bdb'
   if (touches(edge, props.hoveredId)) return '#4c6ef5'
-  return '#8aa7cf'
+  return sceneEnv.value.edgeIdle
 }
 function edgeOpacity(edge: LayoutEdge) {
   if (edgeActive(edge)) return 0.95
@@ -792,4 +802,20 @@ onBeforeRender(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ── 深色态覆盖：画布上的 HTML 浮层卡（铭牌/类名/属性/规则提示）由白底翻为玻璃化深底 ── */
+html[data-theme="dark"] .os-nameplate { background: rgba(33, 34, 38, 0.72); border-color: rgba(255, 255, 255, 0.1); }
+html[data-theme="dark"] .os-nameplate b { color: #c1c2c5; }
+html[data-theme="dark"] .os-nameplate span { color: #868e96; }
+html[data-theme="dark"] .os-node-label { background: rgba(33, 34, 38, 0.86); border-color: rgba(255, 255, 255, 0.12); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45); }
+html[data-theme="dark"] .os-node-label.is-active { border-color: #5c7cfa; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); }
+html[data-theme="dark"] .os-node-label__cn { color: #f1f2f4; }
+html[data-theme="dark"] .os-node-label__en { color: #9a9ba1; }
+html[data-theme="dark"] .os-node-label__meta { color: #868e96; }
+html[data-theme="dark"] .os-attr { background: rgba(33, 34, 38, 0.9); border-color: rgba(255, 255, 255, 0.14); color: #c1c2c5; }
+html[data-theme="dark"] .os-attr.is-required { border-color: #f08c00; color: #ffd43b; }
+html[data-theme="dark"] .os-attr i { color: #868e96; }
+html[data-theme="dark"] .os-rule-chip { background: rgba(33, 34, 38, 0.92); border-left-color: #5c7cfa; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45); }
+html[data-theme="dark"] .os-rule-chip b { color: #f1f2f4; }
+html[data-theme="dark"] .os-rule-chip span { color: #9a9ba1; }
 </style>

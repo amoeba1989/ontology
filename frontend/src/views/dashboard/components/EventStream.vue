@@ -52,12 +52,12 @@ function tagColor(type: string) {
   align-items: center;
   gap: 8px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--color-border-secondary, #f0f0f0);
+  border-bottom: 1px solid var(--border-primary);
 }
 .event-time {
   font-family: monospace;
   font-size: 12px;
-  color: var(--color-text-secondary, #888);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 .event-desc {

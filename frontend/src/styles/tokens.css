@@ -60,6 +60,18 @@
   --neutral-900: #212529;
   --neutral-950: #0f1117;
 
+  /* ── 表面 / 卡片层（跨页面复用的容器底色，缺失时会回退成白色导致暗色态不翻色）── */
+  --surface-card: #ffffff;
+  --surface-secondary: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --border-primary: #e5e7eb;
+
+  /* ── 文本层级（场景页等复用；缺失时会回退成深色 hex，暗色态下不可见）── */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+
   /* ── 状态色 ── */
   --status-success: #12b886;
   --status-success-bg: #e6fcf5;
@@ -230,6 +242,16 @@
   --neutral-700: #c1c2c5;
   --neutral-800: #e0e1e3;
   --neutral-900: #f1f2f4;
+
+  --surface-card: #1a1b1e;
+  --surface-secondary: #212226;
+  --bg-card: #1a1b1e;
+  --bg-secondary: #212226;
+  --border-primary: #37383d;
+
+  --text-primary: #f1f2f4;
+  --text-secondary: #9a9ba1;
+  --text-tertiary: #7a7b82;
 
   --semantic-50: rgba(76, 110, 245, 0.08);
   --semantic-100: rgba(76, 110, 245, 0.12);

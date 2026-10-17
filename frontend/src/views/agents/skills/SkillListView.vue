@@ -66,5 +66,15 @@ onMounted(async () => {
 .skill-card__badge--deprecated { background: #f0f0f0; color: #999; }
 .skill-card__desc { font-size: 13px; color: #555; margin-bottom: 12px; line-height: 1.5; }
 .skill-card__meta { display: flex; gap: 12px; font-size: 11px; color: #999; }
-.skill-list__empty { text-align: center; padding: 60px 0; color: #999; }
+.skill-list__empty { text-align: center; padding: 60px 0; color: var(--neutral-500); }
+
+/* ── 深色态覆盖：标题/卡片文字/徽章随主题翻转 ── */
+html[data-theme="dark"] .skill-list__title, html[data-theme="dark"] .skill-card__name { color: var(--neutral-900); }
+html[data-theme="dark"] .skill-list__desc, html[data-theme="dark"] .skill-card__desc { color: var(--neutral-600); }
+html[data-theme="dark"] .skill-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .skill-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+html[data-theme="dark"] .skill-card__meta { color: var(--neutral-500); }
+html[data-theme="dark"] .skill-card__badge--active { background: rgba(26, 138, 58, 0.18); color: var(--dynamic-300); }
+html[data-theme="dark"] .skill-card__badge--draft { background: rgba(230, 81, 0, 0.18); color: var(--kinetic-300); }
+html[data-theme="dark"] .skill-card__badge--deprecated { background: var(--neutral-100); color: var(--neutral-500); }
 </style>

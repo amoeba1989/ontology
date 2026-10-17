@@ -53,3 +53,15 @@ tmp/
 # AI workspace
 docs/superpowers/
 .legacy-vue-snapshot/
+
+# 部署运行时产物（由流水线在 ECS 上生成，不入库）
+.deploy.lock
+.deployment-revision
+/data/
+
+# 时序图导出的位图（源文件 docs/dual-pipeline-timeline.html 入库，PNG 本地生成）
+docs/dual-pipeline-timeline.png
+docs/血缘改造/*.png
+
+# 登录页改版前后对比截图（本地验证用）
+docs/login-*.png

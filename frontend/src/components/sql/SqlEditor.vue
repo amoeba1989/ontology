@@ -125,4 +125,11 @@ watch(() => props.modelValue, () => {
 }
 .se-result__meta { font-size: 11px; color: #047857; margin-top: 4px; }
 .se-error { margin-top: 8px; }
+
+/* ── 深色态覆盖：编辑器底色/预览卡随主题翻转 ── */
+html[data-theme="dark"] .se-input { background: var(--neutral-100); color: var(--neutral-800); }
+html[data-theme="dark"] .se-input:focus { background: var(--neutral-0); border-color: var(--semantic-500); }
+html[data-theme="dark"] .se-result { background: rgba(16,185,129,.12); border-color: rgba(102,217,232,.28); }
+html[data-theme="dark"] .se-result__title { color: var(--dynamic-300); }
+html[data-theme="dark"] .se-result__meta { color: #63e6be; }
 </style>

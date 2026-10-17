@@ -361,4 +361,24 @@ onMounted(load)
 .mm-param b { color: #555; }
 .mm-card-actions { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid #f5f5f5; }
 :deep(.ant-card-body) { padding: 16px 20px; }
+
+/* ── 深色态覆盖：页面底/头部/统计条/工具栏白底与文字随主题翻转（小彩色 chip 保留）── */
+html[data-theme="dark"] .mm-page { background: var(--neutral-50); }
+html[data-theme="dark"] .mm-header,
+html[data-theme="dark"] .mm-stats,
+html[data-theme="dark"] .mm-toolbar { background: var(--surface-card); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mm-header-title,
+html[data-theme="dark"] .mm-stat-num,
+html[data-theme="dark"] .mm-card-name { color: var(--neutral-900); }
+html[data-theme="dark"] .mm-header-sub,
+html[data-theme="dark"] .mm-stat-label,
+html[data-theme="dark"] .mm-card-model,
+html[data-theme="dark"] .mm-card-base { color: var(--neutral-500); }
+html[data-theme="dark"] .mm-stat-card { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .mm-section-title { color: var(--neutral-600); }
+html[data-theme="dark"] .mm-card { border-color: var(--neutral-200) !important; }
+html[data-theme="dark"] .mm-card-icon-text { color: var(--neutral-700); }
+html[data-theme="dark"] .mm-param { background: var(--neutral-100); color: var(--neutral-500); }
+html[data-theme="dark"] .mm-param b { color: var(--neutral-700); }
+html[data-theme="dark"] .mm-card-actions { border-top-color: var(--neutral-200); }
 </style>

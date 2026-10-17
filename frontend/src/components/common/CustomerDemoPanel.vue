@@ -45,4 +45,13 @@ article { border: 1px solid #e0e8f1; background: white; padding: 16px; border-ra
 .demo-links { display: flex; gap: 12px; font-size: 12px; flex-wrap: wrap; } a { color: #2160a1; }
 button { background: #eaf1fa; color: #235d98; padding: 7px 10px; border: 0; border-radius: 5px; cursor: pointer; font-size: 12px; } button:disabled { opacity: .6; }
 .demo-error { color: #b42318; font-size: 12px; }
+
+/* ── 深色态覆盖：演示业务面板随主题翻转 ── */
+html[data-theme="dark"] .demo-hub { border-color: var(--neutral-200); background: var(--surface-secondary); color: var(--neutral-800); }
+html[data-theme="dark"] .demo-heading p, html[data-theme="dark"] .demo-note { color: var(--neutral-600); }
+html[data-theme="dark"] .demo-hub article { border-color: var(--neutral-200); background: var(--surface-card); }
+html[data-theme="dark"] .demo-hub small { color: var(--neutral-600); }
+html[data-theme="dark"] .demo-links a { color: var(--semantic-300); }
+html[data-theme="dark"] .demo-hub button { background: rgba(76, 110, 245, 0.16); color: var(--semantic-300); }
+html[data-theme="dark"] .demo-error { color: #ffa8a8; }
 </style>

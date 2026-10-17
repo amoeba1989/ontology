@@ -83,4 +83,10 @@ const METHOD_CARDS: Card[] = [
 .ob-empty-card-mini--import:hover  { border-color: #10b981; }
 .ob-empty-card-mini--extract:hover { border-color: #fb923c; }
 .ob-empty-card-mini--chat:hover    { border-color: #8b5cf6; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .ob-empty-card-mini { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .ob-empty-card-mini:hover { border-color: var(--neutral-400); }
+html[data-theme="dark"] .ob-empty-mini-text strong { color: var(--neutral-900); }
+html[data-theme="dark"] .ob-empty-mini-text span { color: var(--neutral-600); }
 </style>

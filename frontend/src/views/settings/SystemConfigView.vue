@@ -246,7 +246,7 @@ const modelModalOpen = ref(false)
 const modelModalIsEdit = ref(false)
 const editingModelId = ref<string | null>(null)
 const modelForm = reactive<Partial<AiModel>>({
-  name: '', provider: 'Anthropic', model_id: '', api_key: '', base_url: 'https://api.anthropic.com',
+  name: '', provider: 'DeepSeek', model_id: 'deepseek-flash', api_key: '', base_url: 'https://api.deepseek.com',
   temperature: 0.7, max_tokens: 4096, scenes: ['general'], is_default: false,
 })
 

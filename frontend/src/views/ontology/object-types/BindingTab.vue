@@ -194,4 +194,7 @@ async function onTestResolve(bindingId: string) {
 .bt-toolbar { display: flex; align-items: center; gap: 24px; margin-bottom: 16px; }
 .bt-section { margin-bottom: 24px; }
 .bt-section__title { font-size: 13px; font-weight: 600; color: #374151; margin: 0 0 8px; padding-left: 12px; border-left: 3px solid #3b82f6; }
+
+/* ── 深色态覆盖：小标题文字随主题翻转（品牌左边框保留）── */
+html[data-theme="dark"] .bt-section__title { color: var(--neutral-800); }
 </style>

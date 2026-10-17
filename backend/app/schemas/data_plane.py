@@ -317,6 +317,7 @@ class LineageNode(BaseModel):
     id: str
     label: str | None = None
     sub_label: str | None = None
+    kind_label: str | None = None
     extra: dict | None = None
 
 
@@ -324,6 +325,10 @@ class LineageEdgeOut(BaseModel):
     source: LineageNode
     target: LineageNode
     relation: str
+    relation_label: str | None = None
+    flow_from: dict | None = None
+    flow_to: dict | None = None
+    evidence_types: list[str] | None = None
     via_module: str | None = None
     via_purpose: str | None = None
     weight: int = 1

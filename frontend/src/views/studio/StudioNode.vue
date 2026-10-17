@@ -121,4 +121,14 @@ function formatCount(n: number): string {
   border-radius: 50%;
 }
 .studio-node__handle--source { background: var(--tc); }
+
+/* ── 深色态覆盖：节点白底/文字/徒章随画布主题翻转（品牌描边/光晕保留）── */
+html[data-theme="dark"] .studio-node { background: var(--surface-card); box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+html[data-theme="dark"] .studio-node:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.5), 0 0 0 3px var(--tc-glow); }
+html[data-theme="dark"] .studio-node__name { color: var(--neutral-900); }
+html[data-theme="dark"] .studio-node__en { color: var(--neutral-500); }
+html[data-theme="dark"] .studio-node__badges { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .studio-node__badge--abox { background: rgba(4,120,87,.2); color: #69db7c; }
+html[data-theme="dark"] .studio-node__badge--rbox { background: rgba(185,28,28,.2); color: #ff8787; }
+html[data-theme="dark"] .studio-node__handle { border-color: var(--neutral-0); }
 </style>

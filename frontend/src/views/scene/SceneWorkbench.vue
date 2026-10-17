@@ -662,4 +662,23 @@ onMounted(async () => {
 .mil__btn--ghost { border: none; background: transparent; }
 .mil__btn--primary { background: var(--semantic-600, #2563eb); border-color: var(--semantic-600, #2563eb); color: #fff; }
 .mil__btn--primary:hover { background: var(--semantic-700, #1d4ed8); }
+
+/* ── 深色态覆盖：页内白底控件/彩色徐章/绿红 pills 随主题翻转 ── */
+html[data-theme="dark"] .mil__subtab { background: var(--surface-card); }
+html[data-theme="dark"] .mil__subtab--active { background: rgba(76,110,245,0.16); }
+html[data-theme="dark"] .mil__select { background: var(--surface-card); color: var(--text-primary); }
+html[data-theme="dark"] .mil__btn { background: var(--surface-card); }
+html[data-theme="dark"] .mil__badge--hostile, html[data-theme="dark"] .mil__badge--critical { background: rgba(220,38,38,0.18); color: #ff8787; }
+html[data-theme="dark"] .mil__badge--unknown { background: rgba(245,158,11,0.16); color: var(--kinetic-300); }
+html[data-theme="dark"] .mil__badge--friendly { background: rgba(18,184,134,0.16); color: var(--dynamic-300); }
+html[data-theme="dark"] .mil__stat--danger .mil__stat-num { color: #ff8787; }
+html[data-theme="dark"] .mil__mini-closed { color: var(--dynamic-300); }
+html[data-theme="dark"] .mil__ev--effect { background: rgba(18,184,134,0.1); }
+html[data-theme="dark"] .mil__conf--high { color: var(--kinetic-300); }
+html[data-theme="dark"] .mil__decision { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.4); color: var(--kinetic-300); }
+html[data-theme="dark"] .mil__act-chosen-tag { color: var(--kinetic-300); }
+html[data-theme="dark"] .mil__rule-res--hit { background: rgba(220,38,38,0.18); color: #ff8787; }
+html[data-theme="dark"] .mil__cond--ok { color: var(--dynamic-300); }
+html[data-theme="dark"] .mil__effect { background: rgba(18,184,134,0.1); border-color: rgba(134,239,172,0.4); }
+html[data-theme="dark"] .mil__effect-label { color: var(--dynamic-300); }
 </style>

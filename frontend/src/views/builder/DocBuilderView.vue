@@ -142,4 +142,11 @@ onMounted(() => {
 .ai-builder__step--done .ai-builder__step-num { background: #2e7d32; color: #fff; border-color: #2e7d32; }
 .ai-builder__content { flex: 1; overflow-y: auto; }
 .ai-builder__review, .ai-builder__hydrate { height: 100%; }
+
+/* ── 深色态覆盖：页底/步骤条随主题翻转 ── */
+html[data-theme="dark"] .ai-builder { background: var(--neutral-50); }
+html[data-theme="dark"] .ai-builder__steps { background: var(--surface-card); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .ai-builder__step { color: var(--neutral-500); }
+html[data-theme="dark"] .ai-builder__step--active { color: var(--semantic-300); }
+html[data-theme="dark"] .ai-builder__step--done { color: var(--dynamic-300); }
 </style>

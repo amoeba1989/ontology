@@ -81,4 +81,14 @@ function submit() {
   font-size: 12px; font-weight: 600; cursor: pointer;
 }
 .apc-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .apc { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .apc-title,
+html[data-theme="dark"] .apc-item-name { color: var(--neutral-900); }
+html[data-theme="dark"] .apc-count,
+html[data-theme="dark"] .apc-item-meta { color: var(--neutral-600); }
+html[data-theme="dark"] .apc-empty { color: var(--neutral-500); }
+html[data-theme="dark"] .apc-item:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .apc-item--on { background: rgba(79, 70, 229, 0.16); border-color: var(--semantic-500); }
 </style>

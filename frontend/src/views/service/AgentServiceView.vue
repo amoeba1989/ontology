@@ -322,4 +322,8 @@ onMounted(loadAgents)
   color: var(--neutral-400);
   font-size: 13px;
 }
+
+/* ── 深色态覆盖：发布徐章/删除悬停浅色改透射色 ── */
+html[data-theme="dark"] .badge--published { background: rgba(16, 185, 129, 0.18); color: var(--dynamic-300); }
+html[data-theme="dark"] .btn-delete:hover { border-color: rgba(220, 38, 38, 0.5); color: #ff8787; background: rgba(220, 38, 38, 0.14); }
 </style>

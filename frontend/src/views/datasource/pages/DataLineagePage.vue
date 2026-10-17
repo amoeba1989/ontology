@@ -13,7 +13,7 @@ import DataLineageTab from '../tabs/DataLineageTab.vue'
 </script>
 
 <style scoped>
-.di-page { padding: var(--space-8) var(--space-8); }
+.di-page { padding: var(--space-8) var(--space-8); min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
 .di-page__header { margin-bottom: var(--space-5); }
 .di-page__title {
   font-size: var(--text-display-size); font-weight: var(--text-display-weight);

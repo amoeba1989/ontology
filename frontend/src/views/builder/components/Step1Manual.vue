@@ -585,4 +585,41 @@ watch(() => props.session.sessionId, () => {
 .modal-card textarea { width: 100%; resize: vertical; font-family: monospace; font-size: 12px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
 .preview-body { flex: 1; min-height: 0; display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+
+/* ── 深色态覆盖：三栏白底面板/输入/徒章/深色标题随主题翻转 ── */
+html[data-theme="dark"] .manual-root { background: var(--neutral-50); }
+html[data-theme="dark"] .manual-topbar { background: var(--surface-card); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .manual-topbar-title span,
+html[data-theme="dark"] .col-head,
+html[data-theme="dark"] .obj-name,
+html[data-theme="dark"] .modal-head { color: var(--neutral-900); }
+html[data-theme="dark"] .manual-topbar-stats { color: var(--neutral-600); }
+html[data-theme="dark"] .manual-topbar-stats span { background: var(--neutral-200); }
+html[data-theme="dark"] .btn-ghost { background: var(--neutral-100); color: var(--neutral-700); border-color: var(--neutral-300); }
+html[data-theme="dark"] .btn-ghost:hover:not(:disabled) { border-color: var(--semantic-500); color: var(--semantic-300); }
+html[data-theme="dark"] .btn-mini { color: var(--semantic-300); border-color: rgba(79, 70, 229, 0.4); }
+html[data-theme="dark"] .btn-mini:hover { background: rgba(79, 70, 229, 0.14); }
+html[data-theme="dark"] .manual-col { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .col-head { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .iconbtn { background: var(--neutral-100); color: var(--neutral-600); border-color: var(--neutral-300); }
+html[data-theme="dark"] .iconbtn:hover { color: var(--semantic-300); border-color: var(--semantic-500); }
+html[data-theme="dark"] .iconbtn-danger:hover { background: rgba(239, 68, 68, 0.16); }
+html[data-theme="dark"] .obj-item:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .form-grid label,
+html[data-theme="dark"] .rel-form label { color: var(--neutral-600); }
+html[data-theme="dark"] .form-grid input,
+html[data-theme="dark"] .form-grid select,
+html[data-theme="dark"] .form-grid textarea,
+html[data-theme="dark"] .prop-row input,
+html[data-theme="dark"] .prop-row select,
+html[data-theme="dark"] .rel-form input,
+html[data-theme="dark"] .rel-form select,
+html[data-theme="dark"] .modal-card textarea { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .link { color: var(--semantic-300); }
+html[data-theme="dark"] .rel-form { background: var(--neutral-100); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .rel-item { background: var(--neutral-100); }
+html[data-theme="dark"] .rel-from,
+html[data-theme="dark"] .rel-to { color: var(--neutral-900); }
+html[data-theme="dark"] .modal-card { background: var(--surface-card); }
+html[data-theme="dark"] .preview-body { border-color: var(--neutral-200); }
 </style>

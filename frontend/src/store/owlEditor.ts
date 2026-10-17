@@ -1,22 +1,40 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { OwlOntology, OwlClass, OwlObjectProperty, OwlDataProperty, OwlIndividual, OwlAnnotation, ObjectPropertyCharacteristic } from '../types/owl'
+import type { OwlOntology, OwlClass, OwlObjectProperty, OwlDataProperty, OwlIndividual, OwlAnnotation, ObjectPropertyCharacteristic, OwlNamespace } from '../types/owl'
 import { uid } from '../utils/owl/iri'
+// 前端序列化/解析仍被 Protege 编辑器视图使用；WebVowl 编辑器统一走后端 owlEditorApi
 import { serializeToOwlXml, downloadOwlFile } from '../utils/owl/serializer'
 import { parseOwlXml } from '../utils/owl/parser'
-
-const STORAGE_KEY = 'owl-editor-draft'
+import { owlEditorApi } from '../api/owlEditor'
+import type { OwlDocBrief, OwlParseResult } from '../api/owlEditor'
 
 function createEmptyOntology(): OwlOntology {
   return {
     id: uid('ont'),
-    iri: 'http://example.org/ontology',
+    iri: 'http://yuanshu.ontology/local#',
     annotations: [],
-    namespaces: [{ prefix: 'ex', iri: 'http://example.org/ontology#' }],
+    namespaces: [{ prefix: 'ys', iri: 'http://yuanshu.ontology/local#' }],
     classes: [],
     objectProperties: [],
     dataProperties: [],
     individuals: [],
+  }
+}
+
+/** 补齐后端文档 content 中缺失的数组字段，保证结构完整 */
+function normalizeContent(raw: Partial<OwlOntology> | undefined | null): OwlOntology {
+  const base = createEmptyOntology()
+  if (!raw) return base
+  return {
+    ...base,
+    ...raw,
+    iri: raw.iri || base.iri,
+    namespaces: raw.namespaces?.length ? raw.namespaces : base.namespaces,
+    annotations: raw.annotations ?? [],
+    classes: raw.classes ?? [],
+    objectProperties: raw.objectProperties ?? [],
+    dataProperties: raw.dataProperties ?? [],
+    individuals: raw.individuals ?? [],
   }
 }
 
@@ -231,18 +249,169 @@ export const useOwlEditorStore = defineStore('owlEditor', () => {
     isDirty.value = false
   }
 
-  // Persistence
-  function saveDraft() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ontology.value)) } catch { /* noop */ }
+  // Persistence（owl_documents 表，revision 乐观锁）
+  const docId = ref<string | null>(null)
+  const docName = ref('')
+  const docDomain = ref('')
+  const docRevision = ref(0)
+  const docList = ref<OwlDocBrief[]>([])
+  const saving = ref(false)
+  /** 每次整体替换文档时自增，画布 watch 它触发重渲染（类数量不变时也能刷新） */
+  const docVersion = ref(0)
+
+  function _clearSelection() {
+    selectedClassId.value = null
+    selectedObjectPropertyId.value = null
+    selectedDataPropertyId.value = null
+    selectedIndividualId.value = null
+  }
+
+  function _applyDocMeta(d: { id: string; name: string; domain: string | null; revision: number; content: Partial<OwlOntology> }) {
+    docId.value = d.id
+    docName.value = d.name
+    docDomain.value = d.domain || ''
+    docRevision.value = d.revision
+    ontology.value = normalizeContent(d.content)
+    _clearSelection()
     isDirty.value = false
+    docVersion.value++
+  }
+
+  async function refreshDocList(domain?: string) {
+    docList.value = await owlEditorApi.listDocuments(domain)
+    return docList.value
+  }
+
+  async function newDocument(name: string, domain?: string) {
+    saving.value = true
+    try {
+      const d = await owlEditorApi.createDocument({ name, domain: domain || null, content: ontology.value })
+      _applyDocMeta(d)
+      await refreshDocList()
+      return d
+    } finally { saving.value = false }
+  }
+
+  async function openDocument(id: string) {
+    const d = await owlEditorApi.getDocument(id)
+    _applyDocMeta(d)
+    return d
+  }
+
+  /** 保存当前文档；未关联文档时需传 name 新建 */
+  async function saveDocument(name?: string, domain?: string): Promise<{ ok: boolean; message: string }> {
+    saving.value = true
+    try {
+      if (!docId.value) {
+        if (!name) return { ok: false, message: '首次保存需要文档名' }
+        const d = await owlEditorApi.createDocument({ name, domain: domain || null, content: ontology.value })
+        _applyDocMeta(d)
+        await refreshDocList()
+        return { ok: true, message: `已创建文档「${d.name}」` }
+      }
+      const d = await owlEditorApi.saveDocument(docId.value, {
+        content: ontology.value,
+        revision: docRevision.value,
+        domain: domain ?? (docDomain.value || null),
+      })
+      docRevision.value = d.revision
+      isDirty.value = false
+      await refreshDocList()
+      return { ok: true, message: `已保存（revision ${d.revision}）` }
+    } catch (e: unknown) {
+      const resp = (e as { response?: { status?: number; data?: { detail?: string } } })?.response
+      if (resp?.status === 409) {
+        return { ok: false, message: resp.data?.detail || '文档已被他人修改，请刷新后重试' }
+      }
+      return { ok: false, message: resp?.data?.detail || '保存失败' }
+    } finally { saving.value = false }
+  }
+
+  async function deleteCurrentDocument() {
+    if (!docId.value) return
+    await owlEditorApi.deleteDocument(docId.value)
+    docId.value = null
+    docName.value = ''
+    docRevision.value = 0
+    await refreshDocList()
+  }
+
+  /** 导入 OWL/TTL：后端 rdflib 解析（与平台口径一致），结果映射为编辑器文档 */
+  async function importOwlFile(file: File) {
+    const fileType = file.name.endsWith('.ttl') ? 'turtle' : 'xml'
+    const res = await owlEditorApi.parseOwl(file, fileType)
+    _applyParseResult(res)
+    return res
+  }
+
+  function _applyParseResult(res: OwlParseResult) {
+    snapshot()
+    const namespaces: OwlNamespace[] = res.namespaceIRIs.map((iri, i) => ({ prefix: `ns${i + 1}`, iri }))
+    const primaryIri = namespaces[0]?.iri || 'http://yuanshu.ontology/local#'
+    ontology.value = {
+      id: uid('ont'),
+      iri: primaryIri,
+      annotations: [],
+      namespaces,
+      classes: res.classes.map(c => ({
+        id: uid('cls'),
+        iri: c.iri,
+        localName: c.localName,
+        annotations: [
+          ...(c.label ? [{ id: uid('ann'), property: 'rdfs:label', value: c.label }] : []),
+          ...(c.description ? [{ id: uid('ann'), property: 'rdfs:comment', value: c.description }] : []),
+        ],
+        superClassExpressions: c.superClassIRIs.map(iri => ({ id: uid('expr'), type: 'namedClass' as const, classIRI: iri })),
+        equivalentClassExpressions: [],
+        disjointWith: [],
+      })),
+      objectProperties: res.objectProperties.map(p => ({
+        id: uid('op'),
+        iri: p.iri,
+        localName: p.localName,
+        annotations: [
+          ...(p.label ? [{ id: uid('ann'), property: 'rdfs:label', value: p.label }] : []),
+        ],
+        superProperties: [],
+        domains: p.domainIRIs,
+        ranges: p.rangeIRIs,
+        characteristics: [],
+        inverseOf: null,
+      })),
+      dataProperties: res.dataProperties.map(p => ({
+        id: uid('dp'),
+        iri: p.iri,
+        localName: p.localName,
+        annotations: [
+          ...(p.label ? [{ id: uid('ann'), property: 'rdfs:label', value: p.label }] : []),
+        ],
+        superProperties: [],
+        domains: p.domainIRIs,
+        ranges: p.rangeIRIs,
+        functional: false,
+      })),
+      individuals: [],
+    }
+    docId.value = null
+    docName.value = ''
+    docRevision.value = 0
+    _clearSelection()
+    docVersion.value++
+  }
+
+  /** 导出当前草稿为 OWL 文件（后端 rdflib 序列化） */
+  async function exportCurrentDraft() {
+    await owlEditorApi.exportDraft(ontology.value.iri, ontology.value)
+  }
+
+  function saveDraft() {
+    // 兼容旧调用：直接走后端保存；无关联文档时忽略（由编辑器引导命名保存）
+    if (docId.value) void saveDocument()
   }
 
   function loadDraft(): boolean {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) { ontology.value = JSON.parse(raw); return true }
-    } catch { /* noop */ }
-    return false
+    // 兼容旧调用：不再读 localStorage；文档加载由 openDocument 完成
+    return docId.value !== null
   }
 
   return {
@@ -254,6 +423,9 @@ export const useOwlEditorStore = defineStore('owlEditor', () => {
     addDataProperty, deleteDataProperty, updateDataProperty,
     addIndividual, deleteIndividual, updateIndividual,
     updateOntologyMeta, exportOwlXml, exportAndDownload, importOwlXml, newOntology,
+    docId, docName, docDomain, docRevision, docList, saving, docVersion,
+    refreshDocList, newDocument, openDocument, saveDocument, deleteCurrentDocument,
+    importOwlFile, exportCurrentDraft,
     saveDraft, loadDraft,
   }
 })

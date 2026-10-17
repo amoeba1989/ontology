@@ -116,4 +116,15 @@ onMounted(() => {
 .step-extract__btn { padding: 10px 24px; background: #4a6fa5; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
 .step-extract__btn:hover { background: #3d5f8c; }
 .step-extract__error { color: #d32f2f; margin-top: 16px; font-size: 13px; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-extract__sub,
+html[data-theme="dark"] .step-extract__stat,
+html[data-theme="dark"] .step-extract__entity-desc { color: var(--neutral-600); }
+html[data-theme="dark"] .step-extract__stat-num { color: var(--neutral-900); }
+html[data-theme="dark"] .step-extract__entity-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-extract__entity-name { color: var(--neutral-500); }
+html[data-theme="dark"] .step-extract__prop-tag { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .step-extract__relation-item { color: var(--neutral-700); }
+html[data-theme="dark"] .step-extract__error { color: #ff8787; }
 </style>

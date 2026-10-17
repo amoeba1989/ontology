@@ -187,20 +187,39 @@
           </a-row>
         </template>
 
-        <!-- ─── 消息队列 (Kafka) ─── -->
+        <!-- ─── 消息队列 (Kafka / MQTT) ─── -->
         <template v-else-if="form.category === 'message_queue'">
-          <a-form-item label="Brokers *">
-            <a-input v-model:value="paramStr.brokers" placeholder="host1:9092,host2:9092" />
-          </a-form-item>
-          <a-form-item label="Security Protocol">
-            <a-select v-model:value="paramStr.security_protocol" :options="kafkaSecurityOptions" />
-          </a-form-item>
-          <a-row v-if="paramStr.security_protocol && paramStr.security_protocol !== 'PLAINTEXT'" :gutter="12">
-            <a-col :span="12"><a-form-item label="SASL 用户">
-              <a-input v-model:value="credStr.username" /></a-form-item></a-col>
-            <a-col :span="12"><a-form-item :label="modal.editingId ? 'SASL 密码（留空不改）' : 'SASL 密码'">
-              <a-input-password v-model:value="credStr.password" /></a-form-item></a-col>
-          </a-row>
+          <template v-if="form.type === 'mqtt'">
+            <a-row :gutter="12">
+              <a-col :span="16"><a-form-item label="Broker 主机 *"><a-input v-model:value="paramStr.host" placeholder="127.0.0.1" /></a-form-item></a-col>
+              <a-col :span="8"><a-form-item label="端口"><a-input-number v-model:value="paramNum.port" :placeholder="'1883'" style="width:100%" /></a-form-item></a-col>
+            </a-row>
+            <a-row :gutter="12">
+              <a-col :span="12"><a-form-item label="主题前缀"><a-input v-model:value="paramStr.topic_prefix" placeholder="minsim" /></a-form-item></a-col>
+              <a-col :span="12"><a-form-item label="Client ID"><a-input v-model:value="paramStr.client_id" placeholder="ontology-ingest" /></a-form-item></a-col>
+            </a-row>
+            <a-row :gutter="12">
+              <a-col :span="8"><a-form-item label="订阅 QoS"><a-input-number v-model:value="paramNum.qos" :min="0" :max="2" style="width:100%" /></a-form-item></a-col>
+              <a-col :span="8"><a-form-item label="用户名"><a-input v-model:value="credStr.username" /></a-form-item></a-col>
+              <a-col :span="8"><a-form-item :label="modal.editingId ? '密码（留空不改）' : '密码'">
+                <a-input-password v-model:value="credStr.password" /></a-form-item></a-col>
+            </a-row>
+            <p class="cp-hint">订阅 <b>&lt;前缀&gt;/telemetry</b>（实时遥测）与 <b>&lt;前缀&gt;/event</b>；落库降采样频率在「系统配置 · MQTT」分组设置。</p>
+          </template>
+          <template v-else>
+            <a-form-item label="Brokers *">
+              <a-input v-model:value="paramStr.brokers" placeholder="host1:9092,host2:9092" />
+            </a-form-item>
+            <a-form-item label="Security Protocol">
+              <a-select v-model:value="paramStr.security_protocol" :options="kafkaSecurityOptions" />
+            </a-form-item>
+            <a-row v-if="paramStr.security_protocol && paramStr.security_protocol !== 'PLAINTEXT'" :gutter="12">
+              <a-col :span="12"><a-form-item label="SASL 用户">
+                <a-input v-model:value="credStr.username" /></a-form-item></a-col>
+              <a-col :span="12"><a-form-item :label="modal.editingId ? 'SASL 密码（留空不改）' : 'SASL 密码'">
+                <a-input-password v-model:value="credStr.password" /></a-form-item></a-col>
+            </a-row>
+          </template>
         </template>
 
         <!-- ─── HTTP API ─── -->
@@ -391,7 +410,7 @@ const CATEGORIES: { key: ConnectionCategory; label: string; glyph: string; color
   { key: 'database',       label: '数据库',     glyph: 'DB',  color: '#3b82f6', hint: '关系数据库 / 数仓' },
   { key: 'object_storage', label: '对象存储',   glyph: 'S3',  color: '#10b981', hint: 'S3 / OSS / MinIO' },
   { key: 'file_transfer',  label: '文件传输',   glyph: 'FTP', color: '#f59e0b', hint: 'FTP / SFTP / HDFS' },
-  { key: 'message_queue',  label: '消息队列',   glyph: 'MQ',  color: '#8b5cf6', hint: 'Kafka / Pulsar' },
+  { key: 'message_queue',  label: '消息队列',   glyph: 'MQ',  color: '#8b5cf6', hint: 'Kafka / MQTT' },
   { key: 'api',            label: 'HTTP API',   glyph: 'API', color: '#ec4899', hint: 'REST / GraphQL' },
 ]
 
@@ -870,29 +889,29 @@ onMounted(async () => {
 <style scoped>
 .cp-page { padding: 24px; }
 .cp-page__header { margin-bottom: 16px; }
-.cp-page__title { font-size: 24px; font-weight: 600; color: #111827; margin: 0; }
-.cp-page__subtitle { font-size: 13px; color: #6b7280; margin-top: 4px; }
+.cp-page__title { font-size: 24px; font-weight: 600; color: var(--neutral-900); margin: 0; }
+.cp-page__subtitle { font-size: 13px; color: var(--neutral-600); margin-top: 4px; }
 .cp-stats {
   display: flex; align-items: center; gap: 32px; padding: 16px;
-  background: #fff; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background: var(--neutral-0); border: 1px solid var(--neutral-200); border-radius: 8px; box-shadow: var(--shadow-xs);
   margin-bottom: 12px;
 }
 .cp-spacer { flex: 1; }
 .cp-toolbar {
   display: flex; gap: 12px; align-items: center; padding: 12px 16px;
-  background: #fff; border-radius: 8px; margin-bottom: 12px;
+  background: var(--neutral-0); border: 1px solid var(--neutral-200); border-radius: 8px; margin-bottom: 12px;
 }
 .cp-status { display: inline-flex; align-items: center; gap: 6px; }
 .cp-status__dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.cp-mono { font-family: 'Menlo','Consolas',monospace; font-size: 12px; color: #4b5563; }
-.cp-muted { color: #9ca3af; font-size: 12px; }
-.cp-hint { color: #9ca3af; font-size: 11px; margin-left: 8px; }
-.cp-empty { padding: 32px; text-align: center; color: #6b7280; font-size: 13px; line-height: 1.7; }
+.cp-mono { font-family: 'Menlo','Consolas',monospace; font-size: 12px; color: var(--neutral-700); }
+.cp-muted { color: var(--neutral-500); font-size: 12px; }
+.cp-hint { color: var(--neutral-500); font-size: 11px; margin-left: 8px; }
+.cp-empty { padding: 32px; text-align: center; color: var(--neutral-600); font-size: 13px; line-height: 1.7; }
 
 .cp-bulk-bar {
   display: flex; align-items: center; gap: 12px;
   padding: 8px 12px; margin-bottom: 8px;
-  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+  background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: 6px;
 }
 
 .cp-cat-grid {
@@ -900,11 +919,11 @@ onMounted(async () => {
 }
 .cp-cat-card {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 18px 12px; border: 1px solid #e5e7eb; border-radius: 10px;
-  cursor: pointer; transition: all 0.15s; background: #fff;
+  padding: 18px 12px; border: 1px solid var(--neutral-200); border-radius: 10px;
+  cursor: pointer; transition: all 0.15s; background: var(--neutral-0);
 }
 .cp-cat-card:not(.cp-cat-card--disabled):hover {
-  border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.1);
+  border-color: var(--semantic-500); box-shadow: 0 4px 12px rgba(92,124,250,0.15);
   transform: translateY(-1px);
 }
 .cp-cat-card--disabled { opacity: 0.45; cursor: not-allowed; }
@@ -913,7 +932,7 @@ onMounted(async () => {
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 700; font-size: 14px;
 }
-.cp-cat-card__title { font-weight: 600; font-size: 14px; color: #111827; }
-.cp-cat-card__sub { font-size: 11px; color: #6b7280; }
-.cp-cat-card__hint { font-size: 11px; color: #9ca3af; }
+.cp-cat-card__title { font-weight: 600; font-size: 14px; color: var(--neutral-900); }
+.cp-cat-card__sub { font-size: 11px; color: var(--neutral-600); }
+.cp-cat-card__hint { font-size: 11px; color: var(--neutral-500); }
 </style>

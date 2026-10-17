@@ -355,10 +355,10 @@ function onNodeClick(id: string) {
 }
 .sem-view__ctrl:hover { background: #f1f5f9; }
 .sem-view__ctrl--reset { font-size: 14px; }
-:global([data-theme="dark"]) .sem-view,
-:global([data-theme="dark"]) .sem-view__canvas { background: #212226; }
-:global([data-theme="dark"]) .sem-view__head,
-:global([data-theme="dark"]) .sem-view__controls { background: #25262b; border-color: #44454a; }
-:global([data-theme="dark"]) .sem-view__info,
-:global([data-theme="dark"]) .sem-view__ctrl { color: #e0e1e3; }
+html[data-theme="dark"] .sem-view,
+html[data-theme="dark"] .sem-view__canvas { background: #212226; }
+html[data-theme="dark"] .sem-view__head,
+html[data-theme="dark"] .sem-view__controls { background: #25262b; border-color: #44454a; }
+html[data-theme="dark"] .sem-view__info,
+html[data-theme="dark"] .sem-view__ctrl { color: #e0e1e3; }
 </style>

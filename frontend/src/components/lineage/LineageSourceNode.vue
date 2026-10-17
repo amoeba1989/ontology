@@ -39,4 +39,7 @@ defineProps<{ data: { label: string } }>()
   height: 7px;
   border: none;
 }
+
+/* ── 深色态覆盖：源节点浅底→蓝色半透（彩色描边保留）── */
+html[data-theme="dark"] .ln-node--source { background: rgba(74,158,255,.14); color: #91c7ff; }
 </style>

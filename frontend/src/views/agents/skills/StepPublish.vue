@@ -65,4 +65,14 @@ async function handlePublish() {
 .step-publish__success { margin-top: 20px; padding: 16px; background: #e6f7e9; border-radius: 8px; text-align: center; }
 .step-publish__success p { font-size: 14px; color: #1a8a3a; font-weight: 600; margin-bottom: 12px; }
 .step-publish__go { padding: 8px 16px; background: #fff; border: 1px solid #1a8a3a; color: #1a8a3a; border-radius: 6px; font-size: 13px; cursor: pointer; }
+
+/* ── 深色态覆盖：汇总卡/字段/成功区随主题翻转 ── */
+html[data-theme="dark"] .step-publish__summary { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-publish__item { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .step-publish__item span:first-child { color: var(--neutral-500); }
+html[data-theme="dark"] .step-publish__item strong { color: var(--neutral-900); }
+html[data-theme="dark"] .step-publish__field textarea { border-color: var(--neutral-200); background: var(--surface-card); }
+html[data-theme="dark"] .step-publish__success { background: rgba(26, 138, 58, 0.16); }
+html[data-theme="dark"] .step-publish__success p { color: var(--dynamic-500); }
+html[data-theme="dark"] .step-publish__go { background: transparent; color: var(--dynamic-500); border-color: rgba(26, 138, 58, 0.5); }
 </style>

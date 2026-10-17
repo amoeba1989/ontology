@@ -168,4 +168,10 @@ const tierLabel = computed(() => ({ 1: '核心', 2: '领域', 3: '场景' }[prop
 .tooltip-fade-leave-active { transition: opacity 0.1s; }
 .tooltip-fade-enter-from { opacity: 0; transform: translateX(-4px); }
 .tooltip-fade-leave-to { opacity: 0; }
+
+/* ── 深色态覆盖：节点 tooltip 白底面板翻为玻璃化深底 ── */
+html[data-theme="dark"] .ont-node__tooltip { background: rgba(33, 34, 38, 0.96); border-color: var(--neutral-200); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+html[data-theme="dark"] .tooltip__name { color: var(--neutral-900); }
+html[data-theme="dark"] .tooltip__stats { border-top-color: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .tooltip__stats strong { color: var(--neutral-900); }
 </style>

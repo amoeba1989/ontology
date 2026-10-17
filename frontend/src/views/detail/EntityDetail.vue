@@ -1029,4 +1029,20 @@ watch(activeTab, (tab) => {
 .modal-dialog__list { margin: 0 0 16px; padding-left: 20px; font-size: 12px; color: var(--neutral-500); }
 .modal-dialog__list li { margin-bottom: 4px; }
 .modal-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── 深色态覆盖：工具栏/输入框/按钮/弹窗/状态徐章随主题翻转 ── */
+html[data-theme="dark"] .attr-toolbar { background: var(--neutral-100); }
+html[data-theme="dark"] .attr-toolbar__info { color: var(--neutral-600); }
+html[data-theme="dark"] .btn-secondary { background: var(--surface-card); color: var(--neutral-700); border-color: var(--neutral-300); }
+html[data-theme="dark"] .btn-secondary:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .mapping-input { background: var(--surface-card); border-color: var(--neutral-200); color: var(--neutral-800); }
+html[data-theme="dark"] .status-tag--success { background: rgba(18, 184, 134, 0.14); color: var(--dynamic-300); border-color: rgba(18, 184, 134, 0.35); }
+html[data-theme="dark"] .status-tag--warning { background: rgba(245, 158, 11, 0.14); color: var(--kinetic-300); border-color: rgba(245, 158, 11, 0.35); }
+html[data-theme="dark"] .status-tag--muted { background: var(--neutral-100); color: var(--neutral-500); border-color: var(--neutral-200); }
+html[data-theme="dark"] .status-tag--danger { background: rgba(220, 38, 38, 0.16); color: #ff8787; border-color: rgba(220, 38, 38, 0.35); }
+html[data-theme="dark"] .agent-chain-step--ont { background: rgba(59, 130, 246, 0.16); color: #74b3ff; }
+html[data-theme="dark"] .agent-chain-step--agent { background: rgba(99, 102, 241, 0.18); color: #a5b4fc; }
+html[data-theme="dark"] .agent-chain-step--result { background: rgba(34, 197, 94, 0.16); color: var(--dynamic-300); }
+html[data-theme="dark"] .btn-icon--danger:hover { color: #ff8787; background: rgba(220, 38, 38, 0.14); }
+html[data-theme="dark"] .modal-dialog { background: var(--surface-card); }
 </style>

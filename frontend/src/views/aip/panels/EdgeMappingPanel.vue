@@ -228,4 +228,23 @@ function inferInputFields(node: any): string[] {
 .edge-map__del:hover { background: #fef2f2; }
 .edge-map__add { border: 1px dashed #cbd5e1; background: none; color: #64748b; padding: 4px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; width: 100%; }
 .edge-map__add:hover { border-color: #2E5BFF; color: #2E5BFF; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .edge-map__title { color: var(--neutral-900); }
+html[data-theme="dark"] .edge-map__close:hover { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .edge-map__info { background: var(--neutral-100); }
+html[data-theme="dark"] .edge-map__node--src { background: rgba(59, 130, 246, 0.18); color: #91c7ff; }
+html[data-theme="dark"] .edge-map__node--tgt { background: rgba(22, 163, 74, 0.16); color: var(--dynamic-300); }
+html[data-theme="dark"] .edge-map__col { border-color: var(--neutral-200); }
+html[data-theme="dark"] .edge-map__field { color: var(--neutral-700); }
+html[data-theme="dark"] .edge-map__field--src:hover { background: rgba(59, 130, 246, 0.14); border-color: rgba(59, 130, 246, 0.4); }
+html[data-theme="dark"] .edge-map__field--tgt:hover,
+html[data-theme="dark"] .edge-map__field--mapped { background: rgba(22, 163, 74, 0.12); border-color: rgba(22, 163, 74, 0.4); }
+html[data-theme="dark"] .edge-map__mapped-from { color: var(--semantic-300); }
+html[data-theme="dark"] .edge-map__input { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .edge-map__input:focus { border-color: var(--semantic-500); }
+html[data-theme="dark"] .edge-map__del { color: #ff8787; }
+html[data-theme="dark"] .edge-map__del:hover { background: rgba(239, 68, 68, 0.12); }
+html[data-theme="dark"] .edge-map__add { color: var(--neutral-600); border-color: var(--neutral-400); }
+html[data-theme="dark"] .edge-map__add:hover { color: var(--semantic-300); border-color: var(--semantic-500); }
 </style>

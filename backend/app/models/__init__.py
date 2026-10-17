@@ -35,6 +35,7 @@ from app.models.skill_version import SkillVersion
 from app.models.skill_tool import SkillTool
 from app.models.customer_demo import CustomerDemoPack, SkillRun
 from app.models.modeling_draft import ModelingDraft, ModelingDraftEvent
+from app.models.owl_document import OwlDocument
 
 __all__ = [
     "OntologyEntity", "EntityAttribute", "EntityRelation",

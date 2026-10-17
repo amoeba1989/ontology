@@ -408,4 +408,30 @@ function removeAnnotation(annId: string) {
 .vb-table th { background: #f5f5f5; border: 1px solid #e0e0e0; padding: 6px 8px; text-align: left; font-weight: 500; }
 .vb-table td { border: 1px solid #e0e0e0; padding: 6px 8px; }
 .vb-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #999; }
+
+/* ── 深色态覆盖：白底主体/面板/芯片/输入翻转（顶部蓝条为彩色保留）── */
+html[data-theme="dark"] .vb-root { background: var(--neutral-50); color: var(--neutral-800); }
+html[data-theme="dark"] .vb-left,
+html[data-theme="dark"] .vb-detail-header,
+html[data-theme="dark"] .vb-detail-tabs,
+html[data-theme="dark"] .vb-detail-body { background: var(--surface-card); }
+html[data-theme="dark"] .vb-left { border-right-color: var(--neutral-200); }
+html[data-theme="dark"] .vb-left__toolbar,
+html[data-theme="dark"] .vb-detail-header,
+html[data-theme="dark"] .vb-detail-tabs { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .vb-input { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .vb-btn-sm { background: var(--neutral-100); color: var(--neutral-600); border-color: var(--neutral-300); }
+html[data-theme="dark"] .vb-btn-sm:hover { background: rgba(25, 118, 210, 0.22); border-color: #63a4ff; color: #63a4ff; }
+html[data-theme="dark"] .vb-tree-item:hover { background: rgba(25, 118, 210, 0.16); }
+html[data-theme="dark"] .vb-detail-header__iri { color: var(--neutral-500); }
+html[data-theme="dark"] .vb-detail-tab { color: var(--neutral-600); }
+html[data-theme="dark"] .vb-detail-tab:hover,
+html[data-theme="dark"] .vb-detail-tab--active { color: #63a4ff; }
+html[data-theme="dark"] .vb-section__title { color: var(--neutral-600); }
+html[data-theme="dark"] .vb-chip { background: rgba(25, 118, 210, 0.2); color: #91c7ff; }
+html[data-theme="dark"] .vb-chip__remove:hover { color: #ff8787; }
+html[data-theme="dark"] .vb-input--name { color: var(--neutral-800); border-bottom-color: var(--neutral-300); }
+html[data-theme="dark"] .vb-input--name:focus { border-bottom-color: #63a4ff; }
+html[data-theme="dark"] .vb-table th { background: var(--neutral-100); border-color: var(--neutral-300); }
+html[data-theme="dark"] .vb-table td { border-color: var(--neutral-300); }
 </style>

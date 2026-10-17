@@ -100,8 +100,12 @@ export async function put<T>(url: string, data?: unknown, config?: AxiosRequestC
   return res.data
 }
 
-export async function del<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+export async function del<T = void>(url: string, config?: AxiosRequestConfig): Promise<T> {
   const res: AxiosResponse<T> = await client.delete(url, config)
+  // 204 No Content 响应没有 body
+  if (res.status === 204) {
+    return undefined as unknown as T
+  }
   return res.data
 }
 

@@ -415,4 +415,44 @@ onMounted(() => {
 .mapping-confidence.none { background: #f1f5f9; color: #94a3b8; }
 .mapping-confidence.manual { background: #e0e7ff; color: #3730a3; }
 .mapping-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 14px; }
+
+/* ── 深色态覆盖：白底面板/浅底徒章/深色标题随主题翻转 ── */
+html[data-theme="dark"] .mapping-topbar { background: var(--surface-card); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-back-btn { color: var(--neutral-600); }
+html[data-theme="dark"] .mapping-back-btn:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .mapping-topbar-title,
+html[data-theme="dark"] .mapping-editor-title { color: var(--neutral-900); }
+html[data-theme="dark"] .mapping-progress-label { color: var(--neutral-600); }
+html[data-theme="dark"] .mapping-progress-track { background: var(--neutral-200); }
+html[data-theme="dark"] .mapping-next-btn { background: var(--neutral-300); color: var(--neutral-500); }
+html[data-theme="dark"] .mapping-toolbar { background: var(--neutral-100); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-toolbar-row label,
+html[data-theme="dark"] .mapping-editor-tables-label { color: var(--neutral-700); }
+html[data-theme="dark"] .mapping-auto-btn { background: transparent; color: var(--semantic-300); border-color: var(--semantic-500); }
+html[data-theme="dark"] .mapping-auto-btn:not(:disabled):hover { background: var(--semantic-600); color: #fff; }
+html[data-theme="dark"] .mapping-stat--high,
+html[data-theme="dark"] .mapping-obj-badge.done,
+html[data-theme="dark"] .mapping-confidence.high { background: rgba(22, 163, 74, 0.16); color: var(--dynamic-300); }
+html[data-theme="dark"] .mapping-stat--medium,
+html[data-theme="dark"] .mapping-confidence.medium { background: rgba(245, 158, 11, 0.16); color: var(--kinetic-300); }
+html[data-theme="dark"] .mapping-stat--low,
+html[data-theme="dark"] .mapping-confidence.low { background: rgba(239, 68, 68, 0.16); color: #ff8787; }
+html[data-theme="dark"] .mapping-stat--none,
+html[data-theme="dark"] .mapping-obj-badge.pending { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .mapping-confidence.none { background: var(--neutral-200); color: var(--neutral-500); }
+html[data-theme="dark"] .mapping-confidence.manual { background: rgba(99, 102, 241, 0.18); color: var(--semantic-200); }
+html[data-theme="dark"] .mapping-left { background: var(--surface-card); border-right-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-left-head { color: var(--neutral-800); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-obj-item { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-obj-item:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .mapping-obj-item.active { background: rgba(79, 70, 229, 0.12); }
+html[data-theme="dark"] .mapping-obj-name { color: var(--neutral-900); }
+html[data-theme="dark"] .mapping-right { background: var(--neutral-50); }
+html[data-theme="dark"] .mapping-editor { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-editor-head { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-editor-table { background: rgba(79, 70, 229, 0.14); color: var(--semantic-300); }
+html[data-theme="dark"] .mapping-editor-tables { background: var(--neutral-100); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-table th { background: var(--neutral-100); color: var(--neutral-600); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-table td { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .mapping-td-name { color: var(--neutral-900); }
 </style>

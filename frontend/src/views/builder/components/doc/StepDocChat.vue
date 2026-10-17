@@ -179,4 +179,21 @@ onMounted(() => {
 .step-chat__btn:hover:not(:disabled) { background: #3d5f8c; }
 .step-chat__btn--confirm { background: #2e7d32; }
 .step-chat__btn--confirm:hover:not(:disabled) { background: #1b5e20; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-chat__msg-avatar { background: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__msg--assistant .step-chat__msg-text { background: var(--neutral-100); border-color: var(--neutral-200); color: var(--neutral-800); }
+html[data-theme="dark"] .step-chat__msg--assistant .step-chat__msg-text :deep(h2) { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__msg--assistant .step-chat__msg-text :deep(blockquote) { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .step-chat__msg--assistant .step-chat__msg-text :deep(code) { background: var(--neutral-300); color: var(--neutral-800); }
+html[data-theme="dark"] .step-chat__msg--assistant .step-chat__msg-text :deep(hr) { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__ontology-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__ontology-header { background: var(--neutral-100); }
+html[data-theme="dark"] .step-chat__ontology-header:hover { background: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__entity code { color: var(--neutral-500); }
+html[data-theme="dark"] .step-chat__prop { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .step-chat__relations { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__rel { color: var(--neutral-600); }
+html[data-theme="dark"] .step-chat__input-area { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__input { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
 </style>

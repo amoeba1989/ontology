@@ -144,4 +144,19 @@ async function handleStart() {
 .step-upload__btn { margin-top: 12px; padding: 10px 24px; background: #4a6fa5; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
 .step-upload__btn:disabled { opacity: 0.5; cursor: default; }
 .step-upload__btn:hover:not(:disabled) { background: #3d5f8c; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-upload__title { color: var(--neutral-900); }
+html[data-theme="dark"] .step-upload__sub,
+html[data-theme="dark"] .step-upload__dropzone-inner p { color: var(--neutral-600); }
+html[data-theme="dark"] .step-upload__tip { background: rgba(74, 111, 165, 0.12); border-color: rgba(74, 111, 165, 0.3); color: var(--neutral-800); }
+html[data-theme="dark"] .step-upload__tip-link,
+html[data-theme="dark"] .step-upload__link { color: var(--semantic-300); }
+html[data-theme="dark"] .step-upload__label { color: var(--neutral-800); }
+html[data-theme="dark"] .step-upload__textarea { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-upload__dropzone { border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-upload__dropzone:hover,
+html[data-theme="dark"] .step-upload__dropzone--active { border-color: var(--semantic-500); background: rgba(74, 111, 165, 0.12); }
+html[data-theme="dark"] .step-upload__file-list { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-upload__file-item { border-bottom-color: var(--neutral-200); }
 </style>

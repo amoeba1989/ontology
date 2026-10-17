@@ -1,8 +1,10 @@
 name: Deploy to Alibaba Cloud ECS
 
+# GitHub 的部署分支是 main；保留 master 以兼容 Gitee 源码的分支约定。
+# 两条流水线共享 ECS 上的部署锁，部署期间避免同时推送不同版本。
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -27,7 +29,7 @@ jobs:
         working-directory: backend
         run: |
           pip install -r requirements.txt pytest pytest-asyncio
-          python -m pytest tests/test_delivery_projects.py tests/test_customer_demo.py tests/test_action_executors.py tests/test_ontology_constraints.py tests/test_ontology_impact.py -q --disable-warnings
+          python -m pytest tests -q --disable-warnings
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -95,10 +97,11 @@ jobs:
             source_dir=$(mktemp -d)
             trap '\''rm -rf "$source_dir"'\'' EXIT
             tar -xzf - -C "$source_dir"
-            rsync -a --delete \
+            rsync -a --delete --no-owner --no-group \
               --exclude="/.git/" --exclude="/.deploy.lock" \
               --exclude="/data/" --exclude=".env" --exclude=".env.*" \
               --exclude="/backend/data/" --exclude="/backend/uploads/" \
+              --exclude="*.db" --exclude="*.db-*" --exclude="*.sqlite*" \
               --exclude="/backend/venv/" --exclude="/.venv/" \
               --exclude="/frontend/node_modules/" --exclude="/logs/" \
               "$source_dir/" /opt/ontology/

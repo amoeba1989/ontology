@@ -400,4 +400,25 @@ const stateClass = computed(() => {
 .wf-handle--in { left: -6px; }
 .wf-handle--out { right: -6px; }
 .wf-handle--bottom { bottom: -6px; right: 50%; transform: translateX(50%); }
+
+/* ── 深色态覆盖：工作流节点白底/文字/状态徒章随画布主题翻转（彩色顶栏/图标渐变保留）── */
+html[data-theme="dark"] .wf-node { background: var(--surface-card); border-color: var(--neutral-200); box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3); }
+html[data-theme="dark"] .wf-node:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.35); }
+html[data-theme="dark"] .wf-node__header { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .wf-node__type-label { color: var(--neutral-500); }
+html[data-theme="dark"] .wf-node__name { color: var(--neutral-900); }
+html[data-theme="dark"] .wf-node__state-badge { background: var(--neutral-200); }
+html[data-theme="dark"] .wf-node__state-badge--running { background: rgba(245,158,11,.16); }
+html[data-theme="dark"] .wf-node__state-badge--done { background: rgba(16,185,129,.16); }
+html[data-theme="dark"] .wf-node__state-badge--error { background: rgba(239,68,68,.16); }
+html[data-theme="dark"] .wf-node__state-text { color: var(--neutral-600); }
+html[data-theme="dark"] .wf-node__state-badge--running .wf-node__state-text { color: #ffa94d; }
+html[data-theme="dark"] .wf-node__state-badge--done .wf-node__state-text { color: #69db7c; }
+html[data-theme="dark"] .wf-node__state-badge--error .wf-node__state-text { color: #ff8787; }
+html[data-theme="dark"] .wf-node__desc { color: var(--neutral-600); }
+html[data-theme="dark"] .wf-node__extra { background: var(--neutral-100); }
+html[data-theme="dark"] .wf-node__extra-key { color: var(--neutral-500); }
+html[data-theme="dark"] .wf-node__extra-val { color: var(--neutral-700); }
+html[data-theme="dark"] .wf-node__result { background: rgba(16,185,129,.16); color: #69db7c; }
+html[data-theme="dark"] .wf-handle { background: var(--neutral-200); border-color: var(--neutral-400); }
 </style>

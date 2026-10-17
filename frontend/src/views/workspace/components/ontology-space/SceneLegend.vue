@@ -55,4 +55,13 @@
   border-bottom: 4px solid transparent;
   border-left: 9px solid #7d9ec9;
 }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .scene-legend { background: rgba(33, 34, 38, 0.86); border-color: rgba(255, 255, 255, 0.08); color: #c1c2c5; }
+html[data-theme="dark"] .lg em { color: #868e96; }
+html[data-theme="dark"] .glyph { background: #748ffc; }
+html[data-theme="dark"] .g-tri { border-bottom-color: #748ffc; }
+html[data-theme="dark"] .line, html[data-theme="dark"] .line--twin { border-top-color: #5c5d63; border-bottom-color: #5c5d63; }
+html[data-theme="dark"] .line--pulse { background: #91a7ff; }
+html[data-theme="dark"] .arrow { border-left-color: #5c5d63; }
 </style>

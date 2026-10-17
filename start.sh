@@ -48,7 +48,7 @@ if [ -z "$BACKEND_PYTHON" ]; then
     exit 1
 fi
 
-require_command npm
+require_command pnpm
 require_command lsof
 
 echo "========================================"
@@ -62,9 +62,10 @@ echo "Backend Reload: $BACKEND_RELOAD"
 echo
 
 if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
-    echo "Frontend dependencies are not installed."
-    echo "Run: cd frontend && npm install"
-    exit 1
+    echo "Frontend dependencies are not installed. Running pnpm install..."
+    cd "$FRONTEND_DIR"
+    pnpm install
+    cd "$ROOT_DIR"
 fi
 
 if backend_pids="$(port_pids "$BACKEND_PORT")" && [ -n "$backend_pids" ]; then
@@ -121,7 +122,7 @@ echo
 
 echo "[3/3] Starting frontend (port $FRONTEND_PORT)..."
 cd "$FRONTEND_DIR"
-nohup env VITE_PROXY_TARGET="$VITE_PROXY_TARGET" npx vite --host 0.0.0.0 --port "$FRONTEND_PORT" > "$FRONTEND_LOG" 2>&1 &
+nohup env VITE_PROXY_TARGET="$VITE_PROXY_TARGET" pnpm exec vite --host 0.0.0.0 --port "$FRONTEND_PORT" > "$FRONTEND_LOG" 2>&1 &
 echo $! > "$FRONTEND_PID_FILE"
 
 frontend_pids=""

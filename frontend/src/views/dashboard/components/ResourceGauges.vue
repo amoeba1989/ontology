@@ -113,7 +113,7 @@ function formatPercent(value: number): string {
 }
 .gauge-detail {
   font-size: 12px;
-  color: var(--color-text-secondary, #888);
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 

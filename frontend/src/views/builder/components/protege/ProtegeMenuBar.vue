@@ -64,7 +64,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeMenus))
   top: 100%;
   left: 0;
   z-index: 100;
-  background: #fff;
+  background: var(--pg-panel-bg);
   border: 1px solid var(--pg-border);
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   min-width: 160px;

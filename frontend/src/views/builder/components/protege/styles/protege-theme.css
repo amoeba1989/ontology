@@ -316,3 +316,25 @@
   color: var(--pg-text-dim);
   font-size: 12px;
 }
+
+/* ── 深色态：重定义 --pg-* 令牌，整体翻转 Protégé 编辑器（面板/菜单/树/表格/边框/文本）── */
+html[data-theme="dark"] .protege-editor {
+  --pg-bg: #1a1b1e;
+  --pg-panel-bg: #212226;
+  --pg-border: #37383d;
+  --pg-border-light: #2c2d31;
+  --pg-text: #e0e1e3;
+  --pg-text-muted: #c1c2c5;
+  --pg-text-dim: #9a9ba1;
+  --pg-accent: #91a7ff;
+  --pg-accent-light: rgba(92, 124, 250, 0.16);
+  --pg-select-bg: #3b5bdb;
+  --pg-select-text: #ffffff;
+  --pg-toolbar-bg: #2c2d31;
+  --pg-header-bg: #37383d;
+}
+html[data-theme="dark"] .protege-editor .pg-input { background: #1a1b1e; color: var(--pg-text); }
+html[data-theme="dark"] .protege-editor .pg-btn { background: linear-gradient(to bottom, #2c2d31, #212226); }
+html[data-theme="dark"] .protege-editor .pg-btn:hover { background: linear-gradient(to bottom, #37383d, #2c2d31); }
+html[data-theme="dark"] .protege-editor .pg-tag { background: #2c2d31; }
+html[data-theme="dark"] .protege-editor .pg-tag__remove:hover { color: #ff8787; }

@@ -284,4 +284,20 @@ function getErrorMessage(error: unknown): string {
 :deep(.vue-flow__controls-button:hover) { background: #f1f5f9; color: #334155; }
 :deep(.vue-flow__minimap) { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; }
 :deep(.vue-flow__edge path) { transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease; }
+
+/* ── 深色态覆盖：页面底/加载遮罩/图例 ── */
+html[data-theme="dark"] .canvas-page { background: var(--neutral-50); }
+html[data-theme="dark"] .canvas-loading { background: rgba(20, 21, 25, 0.9); color: var(--neutral-500); }
+html[data-theme="dark"] .canvas-loading__spinner { border-color: var(--neutral-300); border-top-color: var(--semantic-400); }
+html[data-theme="dark"] .tier-legend { background: rgba(26, 27, 30, 0.92); border-color: var(--neutral-200); }
+html[data-theme="dark"] .tier-legend__item { color: var(--neutral-700); }
+</style>
+
+<style>
+/* vue-flow 控件/背景/小地图为库类名，需非 scoped 选择器随主题翻转 */
+html[data-theme="dark"] .vue-flow__background { background: var(--neutral-50); }
+html[data-theme="dark"] .vue-flow__controls { background: var(--surface-card); border: 1px solid var(--neutral-200); }
+html[data-theme="dark"] .vue-flow__controls-button { background: var(--surface-card); border-color: var(--neutral-200); color: var(--neutral-600); fill: var(--neutral-600); }
+html[data-theme="dark"] .vue-flow__controls-button:hover { background: var(--neutral-100); color: var(--neutral-800); }
+html[data-theme="dark"] .vue-flow__minimap { background: var(--neutral-100); border: 1px solid var(--neutral-200); }
 </style>

@@ -255,4 +255,22 @@ onBeforeUnmount(clearTimers)
 .narrator-fade-leave-to .narrator-card {
   transform: translateY(20px);
 }
+
+/* ── 深色态覆盖：磨砂玻璃卡翻为深色磨砂，与全局一致（琥珀图标保留）── */
+html[data-theme="dark"] .narrator-card {
+  background: rgba(26, 27, 30, 0.92);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+html[data-theme="dark"] .narrator-card::before { background: linear-gradient(90deg, transparent, rgba(116, 143, 252, 0.4), transparent); }
+html[data-theme="dark"] .narrator-card__head { border-bottom-color: rgba(255, 255, 255, 0.08); }
+html[data-theme="dark"] .narrator-card__title { color: var(--neutral-800); }
+html[data-theme="dark"] .narrator-card__name { color: var(--neutral-900); }
+html[data-theme="dark"] .narrator-card__obj { background: rgba(116,143,252,0.16); color: #91c7ff; }
+html[data-theme="dark"] .narrator-card__source { color: var(--neutral-500); }
+html[data-theme="dark"] .narrator-card__close { color: var(--neutral-600); }
+html[data-theme="dark"] .narrator-card__close:hover { background: rgba(255,255,255,0.08); color: var(--neutral-900); }
+html[data-theme="dark"] .narrator-card__loading { color: var(--neutral-500); }
+html[data-theme="dark"] .narrator-card__text { color: var(--neutral-800); }
+html[data-theme="dark"] .narrator-card__cursor { color: #91c7ff; }
 </style>

@@ -896,4 +896,53 @@ onUnmounted(() => {
 .step3-modal-stats { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: #475569; }
 .step3-modal-stats strong { color: #0f172a; }
 .step3-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+/* ── 深色态覆盖：页底/面板/文本 slate 色系随主题翻转 ── */
+html[data-theme="dark"] .step3-root { background: var(--neutral-50); }
+html[data-theme="dark"] .step3-topbar,
+html[data-theme="dark"] .step3-panel { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .step3-back-btn { color: var(--neutral-600); }
+html[data-theme="dark"] .step3-back-btn:hover { background: var(--neutral-100); color: var(--neutral-900); }
+html[data-theme="dark"] .step3-topbar-title,
+html[data-theme="dark"] .step3-panel__title,
+html[data-theme="dark"] .step3-ds-name,
+html[data-theme="dark"] .step3-drill-header,
+html[data-theme="dark"] .phase-label,
+html[data-theme="dark"] .step3-result-title,
+html[data-theme="dark"] .phase-card-name,
+html[data-theme="dark"] .phase-metric__val,
+html[data-theme="dark"] .step3-summary-val,
+html[data-theme="dark"] .step3-gate__label,
+html[data-theme="dark"] .step3-version-row strong,
+html[data-theme="dark"] .step3-success__title,
+html[data-theme="dark"] .step3-success-stat .num,
+html[data-theme="dark"] .step3-modal-title,
+html[data-theme="dark"] .step3-modal-stats strong { color: var(--neutral-900); }
+html[data-theme="dark"] .step3-progress-label,
+html[data-theme="dark"] .step3-progress-pct,
+html[data-theme="dark"] .step3-result-sub,
+html[data-theme="dark"] .step3-ds-kind,
+html[data-theme="dark"] .step3-success__sub { color: var(--neutral-600); }
+html[data-theme="dark"] .step3-progress-track { background: var(--neutral-200); }
+html[data-theme="dark"] .step3-progress-label--done { color: var(--dynamic-300); }
+html[data-theme="dark"] .step3-ds-action,
+html[data-theme="dark"] .step3-retry-btn { background: var(--neutral-200); border-color: var(--neutral-300); color: var(--neutral-700); }
+html[data-theme="dark"] .step3-ds-action:hover,
+html[data-theme="dark"] .step3-retry-btn:hover { background: var(--neutral-300); }
+html[data-theme="dark"] .step3-ds-item:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .step3-ds-item--selected { background: rgba(79, 70, 229, 0.14); border-color: var(--semantic-500); }
+html[data-theme="dark"] .step3-ds-empty__text { color: var(--neutral-700); }
+html[data-theme="dark"] .step3-phase-pill { background: var(--neutral-100); }
+html[data-theme="dark"] .step3-phase-card { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .phase-metric { background: var(--neutral-0); }
+html[data-theme="dark"] .phase-card-status--pass,
+html[data-theme="dark"] .phase-metric__val--pass { color: var(--dynamic-300); }
+html[data-theme="dark"] .phase-card-status--warn,
+html[data-theme="dark"] .phase-metric__val--warn { color: var(--kinetic-300); }
+html[data-theme="dark"] .phase-card-status--error { color: #ff8787; }
+html[data-theme="dark"] .step3-summary-item { background: var(--neutral-100); }
+html[data-theme="dark"] .step3-gate__icon { border-color: var(--neutral-400); }
+html[data-theme="dark"] .step3-version-row,
+html[data-theme="dark"] .step3-modal-text,
+html[data-theme="dark"] .step3-modal-stats { color: var(--neutral-700); }
 </style>

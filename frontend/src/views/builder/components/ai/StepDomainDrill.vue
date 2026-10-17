@@ -173,4 +173,20 @@ async function loadAndRecommend() {
 .step-drill__btn--load { background: #4a6fa5; }
 .step-drill__btn--load:hover:not(:disabled) { background: #3d5f8c; }
 .step-drill__error { color: #d32f2f; font-size: 12px; margin-top: 8px; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-drill__sub { color: var(--neutral-600); }
+html[data-theme="dark"] .step-drill__label { color: var(--neutral-700); }
+html[data-theme="dark"] .step-drill__hint { color: var(--neutral-500); }
+html[data-theme="dark"] .step-drill__card { border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-drill__card:hover { background: var(--neutral-100); border-color: var(--semantic-500); }
+html[data-theme="dark"] .step-drill__card--active { background: rgba(74, 111, 165, 0.18); color: var(--semantic-300); border-color: var(--semantic-500); }
+html[data-theme="dark"] .step-drill__table-list { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-drill__search-input { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-drill__table-item { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .step-drill__table-item:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .step-drill__table-item--recommended { background: rgba(46, 125, 50, 0.12); }
+html[data-theme="dark"] .step-drill__table-desc { color: var(--neutral-600); }
+html[data-theme="dark"] .step-drill__table-tag { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .step-drill__error { color: #ff8787; }
 </style>

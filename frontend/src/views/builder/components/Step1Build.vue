@@ -447,4 +447,18 @@ function confirmAll() {
   background: linear-gradient(135deg, #10b981, #059669); color: #fff;
   font-size: 13px; font-weight: 600; cursor: pointer;
 }
+
+/* ── 深色态覆盖：白底对话侧/图头/消息气泡随主题翻转 ── */
+html[data-theme="dark"] .chat-root { background: var(--neutral-50); }
+html[data-theme="dark"] .chat-side { background: var(--surface-card); border-right-color: var(--neutral-200); }
+html[data-theme="dark"] .chat-header { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .copilot-name { color: var(--neutral-900); }
+html[data-theme="dark"] .msg-row.assistant .msg-bubble { background: var(--neutral-100); border-color: var(--neutral-200); color: var(--neutral-800); }
+html[data-theme="dark"] .msg-thinking { background: var(--neutral-100); color: var(--neutral-600); }
+html[data-theme="dark"] .msg-note { color: var(--semantic-300); }
+html[data-theme="dark"] .msg-draft-summary { color: var(--dynamic-300); }
+html[data-theme="dark"] .chat-composer { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .chat-input { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .graph-header { background: var(--surface-card); border-bottom-color: var(--neutral-200); color: var(--neutral-900); }
+html[data-theme="dark"] .graph-stats { color: var(--neutral-600); }
 </style>

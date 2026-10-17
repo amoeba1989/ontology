@@ -430,4 +430,34 @@ function confirmAll() {
 
 .extract-empty { padding: 16px; text-align: center; color: #94a3b8; font-size: 12px; }
 .extract-empty--big { padding: 60px 16px; font-size: 13px; }
+
+/* ── 深色态覆盖：白底面板/浅底卡片/深色标题随主题翻转 ── */
+html[data-theme="dark"] .extract-root { background: var(--neutral-50); }
+html[data-theme="dark"] .extract-topbar,
+html[data-theme="dark"] .extract-files,
+html[data-theme="dark"] .extract-stream { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .extract-topbar-title span,
+html[data-theme="dark"] .ext-card-name,
+html[data-theme="dark"] .extract-stream-head,
+html[data-theme="dark"] .suggest-card strong,
+html[data-theme="dark"] .extract-drop-title { color: var(--neutral-900); }
+html[data-theme="dark"] .extract-drop { border-color: var(--neutral-400); }
+html[data-theme="dark"] .extract-file-item { background: var(--neutral-100); }
+html[data-theme="dark"] .ef-name { color: var(--neutral-900); }
+html[data-theme="dark"] .iconbtn-danger:hover { background: rgba(239, 68, 68, 0.16); color: #ff8787; }
+html[data-theme="dark"] .extract-stream-head { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .extract-stream-stats,
+html[data-theme="dark"] .suggest-card span,
+html[data-theme="dark"] .ext-card-tier,
+html[data-theme="dark"] .ext-prop-req { color: var(--neutral-600); }
+html[data-theme="dark"] .suggest-zone { border-bottom-color: rgba(245, 158, 11, 0.24); }
+html[data-theme="dark"] .suggest-title { color: var(--kinetic-300); }
+html[data-theme="dark"] .suggest-card,
+html[data-theme="dark"] .ext-card--obj { background: var(--surface-card); }
+html[data-theme="dark"] .ext-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .ext-card--rel { background: var(--neutral-100); }
+html[data-theme="dark"] .ext-card-name:focus { background: var(--neutral-200); }
+html[data-theme="dark"] .ext-card-tier { background: var(--neutral-200); }
+html[data-theme="dark"] .ext-prop input,
+html[data-theme="dark"] .ext-prop select { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
 </style>

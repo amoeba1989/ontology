@@ -312,4 +312,50 @@ onBeforeUnmount(() => { document.removeEventListener('mousemove', onMove); docum
 .aip-bd__agent-thought { font-size: 11px; color: #475569; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aip-bd__agent-tool { display: flex; align-items: center; gap: 6px; margin-top: 2px; padding-left: 26px; }
 .aip-bd__agent-obs { font-size: 10px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
+
+/* ── 深色态覆盖：抽屉白底/面板/表格/日志/彩签随主题翻转 ── */
+html[data-theme="dark"] .aip-bd { background: var(--surface-card); border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__header,
+html[data-theme="dark"] .aip-bd__left,
+html[data-theme="dark"] .aip-bd__right-head { border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__tab { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-bd__tab:hover { background: var(--neutral-100); color: var(--neutral-900); }
+html[data-theme="dark"] .aip-bd__tab:not(.active) .aip-bd__count { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .aip-bd__btn-ghost { background: var(--neutral-100); color: var(--neutral-700); border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__btn-ghost:hover { background: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__sub-tab,
+html[data-theme="dark"] .aip-bd__view-tab { background: var(--neutral-100); color: var(--neutral-600); border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__log { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__log-level { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .aip-bd__log--success .aip-bd__log-level { background: rgba(5, 150, 105, 0.18); color: var(--dynamic-300); }
+html[data-theme="dark"] .aip-bd__log--warn .aip-bd__log-level { background: rgba(180, 83, 9, 0.2); color: var(--kinetic-300); }
+html[data-theme="dark"] .aip-bd__log--error .aip-bd__log-level { background: rgba(185, 28, 28, 0.2); color: #ff8787; }
+html[data-theme="dark"] .aip-bd__log-msg { color: var(--neutral-800); }
+html[data-theme="dark"] .aip-bd__reason-card { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__reason-name { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-bd__reason-output { color: var(--neutral-700); border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-tag--blue { background: rgba(37, 99, 235, 0.18); color: #91a7ff; }
+html[data-theme="dark"] .aip-tag--orange { background: rgba(194, 65, 12, 0.2); color: #ffa94d; }
+html[data-theme="dark"] .aip-tag--purple { background: rgba(124, 58, 237, 0.2); color: #b197fc; }
+html[data-theme="dark"] .aip-tag--green { background: rgba(5, 150, 105, 0.18); color: var(--dynamic-300); }
+html[data-theme="dark"] .aip-tag--gray { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .aip-bd__table th { background: var(--neutral-100); color: var(--neutral-600); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__table td { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__cell-key { color: #91a7ff; }
+html[data-theme="dark"] .aip-bd__cell-val { color: var(--neutral-800); }
+html[data-theme="dark"] .aip-bd__cell-type { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-bd__schema-row { background: var(--neutral-100); }
+html[data-theme="dark"] .aip-bd__history-row { border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__history-row:hover { background: var(--neutral-100); border-color: var(--semantic-500); }
+html[data-theme="dark"] .aip-bd__history-status--success,
+html[data-theme="dark"] .aip-bd__reason-status--success { background: rgba(5, 150, 105, 0.18); color: var(--dynamic-300); }
+html[data-theme="dark"] .aip-bd__history-status--failed,
+html[data-theme="dark"] .aip-bd__reason-status--failed { background: rgba(220, 38, 38, 0.2); color: #ff8787; }
+html[data-theme="dark"] .aip-bd__history-status--running { background: rgba(37, 99, 235, 0.18); color: #91a7ff; }
+html[data-theme="dark"] .aip-bd__history-status--cancelled { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .aip-bd__history-time { color: var(--neutral-800); }
+html[data-theme="dark"] .aip-bd__agent-loop { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-bd__agent-round { background: var(--neutral-100); }
+html[data-theme="dark"] .aip-bd__agent-round-num { color: var(--semantic-300); }
+html[data-theme="dark"] .aip-bd__agent-thought { color: var(--neutral-700); }
 </style>

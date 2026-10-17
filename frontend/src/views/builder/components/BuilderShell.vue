@@ -191,4 +191,15 @@ function goPrev() { currentStep.value = Math.max(1, currentStep.value - 1) }
 .ob-step--active + .ob-step-connector { background: linear-gradient(90deg, #4f46e5, #e2e8f0); }
 
 .ob-shell-body { flex: 1; overflow: hidden; }
+
+/* ── 深色态覆盖：页底/顶栏/步骤条/标题文本随主题翻转 ── */
+html[data-theme="dark"] .ob-shell { background: var(--neutral-50); }
+html[data-theme="dark"] .ob-shell-topbar, html[data-theme="dark"] .ob-steps { background: var(--surface-card); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .ob-shell-title .name, html[data-theme="dark"] .ob-step-title { color: var(--neutral-900); }
+html[data-theme="dark"] .ob-shell-title .meta, html[data-theme="dark"] .ob-step-sub { color: var(--neutral-500); }
+html[data-theme="dark"] .ob-step--active .ob-step-title { color: var(--semantic-300); }
+html[data-theme="dark"] .ob-step-circle { background: var(--surface-card); border-color: var(--neutral-400); color: var(--neutral-500); }
+html[data-theme="dark"] .ob-step--active .ob-step-circle { background: linear-gradient(135deg, #4f46e5, #7c3aed); border-color: transparent; color: #fff; }
+html[data-theme="dark"] .ob-step--done .ob-step-circle { background: var(--semantic-600); border-color: var(--semantic-600); color: #fff; }
+html[data-theme="dark"] .ob-step-connector { background: var(--neutral-300); }
 </style>

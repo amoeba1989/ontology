@@ -734,4 +734,32 @@ watch(() => props.session.ontologyObjects, (v) => {
 
 .step2-right { overflow-y: auto; }
 .step2-editor-props { max-height: 360px; overflow-y: auto; }
+
+/* ── 深色态覆盖：白底提示/绑定面板/徒章色随主题翻转 ── */
+html[data-theme="dark"] .step2-hints { border-color: rgba(245, 158, 11, 0.24); }
+html[data-theme="dark"] .step2-hint-card,
+html[data-theme="dark"] .step2-binding-panel,
+html[data-theme="dark"] .step2-modal { background: var(--surface-card); }
+html[data-theme="dark"] .step2-hints-head,
+html[data-theme="dark"] .step2-approve-hint,
+html[data-theme="dark"] .step2-attach-tip,
+html[data-theme="dark"] .step2-hint-tag--rule { color: var(--kinetic-300); }
+html[data-theme="dark"] .step2-hint-tag--action,
+html[data-theme="dark"] .step2-rel-label,
+html[data-theme="dark"] .step2-editor-link { color: var(--semantic-300); }
+html[data-theme="dark"] .step2-hint-desc { color: var(--neutral-700); }
+html[data-theme="dark"] .btn-mini.btn-ghost { background: var(--neutral-100); color: var(--neutral-700); border-color: var(--neutral-300); }
+html[data-theme="dark"] .btn-mini.btn-ghost:hover { color: var(--semantic-300); border-color: var(--semantic-500); }
+html[data-theme="dark"] .step2-binding-panel { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step2-binding-head { color: var(--neutral-800); }
+html[data-theme="dark"] .step2-binding-head:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .step2-binding-row label,
+html[data-theme="dark"] .step2-form-row label { color: var(--neutral-600); }
+html[data-theme="dark"] .step2-stat--high { color: var(--dynamic-300); }
+html[data-theme="dark"] .step2-stat--medium { color: var(--kinetic-300); }
+html[data-theme="dark"] .step2-stat--low { color: #ff8787; }
+html[data-theme="dark"] .step2-stat--none { color: var(--neutral-600); }
+html[data-theme="dark"] .step2-rel-row { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .step2-modal-head { color: var(--neutral-900); }
+html[data-theme="dark"] .step2-form-row select { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
 </style>

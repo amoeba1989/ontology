@@ -762,4 +762,18 @@ onMounted(async () => {
 }
 .agent-detail__stale-detail ul { margin: 0; padding-left: 16px; }
 .agent-detail__stale-detail li { margin: 2px 0; }
+
+/* ── 深色态覆盖：白底按钮/建议/行动卡与发布、脏数据、失效提示跟随主题翻转 ── */
+html[data-theme="dark"] .agent-detail__btn { background: var(--surface-card); }
+html[data-theme="dark"] .agent-detail__btn--danger { background: var(--surface-card); color: #ff8787; border-color: rgba(250, 82, 82, 0.4); }
+html[data-theme="dark"] .agent-detail__btn--danger:hover { background: rgba(250, 82, 82, 0.12); }
+html[data-theme="dark"] .agent-detail__status-tag--published { background: rgba(18, 184, 134, 0.16); color: var(--dynamic-500); }
+html[data-theme="dark"] .agent-detail__sug { background: rgba(76, 110, 245, 0.14); color: var(--semantic-300); border-color: rgba(92, 124, 250, 0.4); }
+html[data-theme="dark"] .agent-detail__sug:hover { background: rgba(76, 110, 245, 0.24); }
+html[data-theme="dark"] .agent-detail__act { background: var(--surface-card); }
+html[data-theme="dark"] .agent-detail__dirty { color: var(--kinetic-500); }
+html[data-theme="dark"] .agent-detail__dirty-hint { background: rgba(245, 159, 0, 0.12); }
+html[data-theme="dark"] .agent-detail__stale-banner { background: rgba(245, 159, 0, 0.14); border-bottom-color: rgba(245, 159, 0, 0.3); }
+html[data-theme="dark"] .agent-detail__stale-text { color: var(--kinetic-300); }
+html[data-theme="dark"] .agent-detail__stale-detail { background: rgba(245, 159, 0, 0.1); border-bottom-color: rgba(245, 159, 0, 0.24); }
 </style>

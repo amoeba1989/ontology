@@ -82,4 +82,13 @@ async function analyze() {
 .step-input__domain-card--selected { border-color: #4a6fa5; background: #e8f0fc; color: #4a6fa5; font-weight: 500; }
 .step-input__domain-card--recommended { border-color: #2e7d32; }
 .step-input__badge { position: absolute; top: -8px; right: -4px; background: #2e7d32; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-input__title { color: var(--neutral-900); }
+html[data-theme="dark"] .step-input__sub { color: var(--neutral-600); }
+html[data-theme="dark"] .step-input__textarea { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-input__result { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-input__result-reason { color: var(--neutral-600); }
+html[data-theme="dark"] .step-input__domain-card { border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-input__domain-card--selected { background: rgba(74, 111, 165, 0.18); color: var(--semantic-300); border-color: var(--semantic-500); }
 </style>

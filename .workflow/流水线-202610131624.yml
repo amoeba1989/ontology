@@ -1,6 +1,15 @@
 version: "1.0"
 name: ontology-demo-deploy
 displayName: 知彼本体平台 · 编译检查并部署 ECS
+# 说明（双远程：Gitee + GitHub）
+#   1. Gitee Go 实际执行的是本文件（.workflow/ 目录）；仓库根目录的
+#      gitee-pipeline.yml 是同一份内容的可读副本，改动时两边必须一起改。
+#   2. 分支统一使用 master，与 .github/workflows/deploy.yml 保持一致。
+#   3. 两条流水线都会部署同一台 ECS 的 /opt/ontology，因此共用
+#      /opt/ontology/.deploy.lock 这把文件锁；两边推送的是同一个 commit，
+#      谁最后拿到锁谁收尾，最终状态一致。
+#   4. .deployment-revision 由本流水线用 git rev-parse 写入，部署脚本与演示
+#      校验报告据此核对版本；GitHub Actions 侧写入的是同一个 SHA。
 stages:
   # ── 阶段一：编译检查（在 ECS 上执行，失败则中止，不发布不重启） ──
   - stage:
@@ -17,8 +26,20 @@ stages:
           export GIT_TERMINAL_PROMPT=0
           unset GIT_ASKPASS SSH_ASKPASS
           cd /opt/ontology
+          # GitHub Actions 的 rsync -a 会把文件属主改成 runner 的 uid 1001（本机无此用户），
+          # 导致 root 执行 git 报 dubious ownership、本流水线的 fetch 直接失败。此处幂等登记可信目录。
+          git config --global --add safe.directory /opt/ontology
+          # 与 GitHub Actions 部署互斥：拿不到锁就等待，最长 30 分钟
+          exec 9>/opt/ontology/.deploy.lock
+          flock -w 1800 9
+          # 防御：origin 被改成别的地址时立刻中止，避免拉取失败原因难以定位
+          git remote get-url origin | grep -qi 'gitee\.com' || {
+            echo "[gitee-go] ECS 的 origin 不是 Gitee 仓库，中止：$(git remote get-url origin)"
+            exit 1
+          }
           git -c credential.helper=store fetch origin master
           git checkout --force --detach "${GITEE_COMMIT:-FETCH_HEAD}"
+          git rev-parse HEAD > .deployment-revision
           git log -1 --oneline
           sh scripts/deploy/docker-build.sh
         hostGroupID:
@@ -45,8 +66,12 @@ stages:
           export GIT_TERMINAL_PROMPT=0
           unset GIT_ASKPASS SSH_ASKPASS
           cd /opt/ontology
+          git config --global --add safe.directory /opt/ontology
+          exec 9>/opt/ontology/.deploy.lock
+          flock -w 1800 9
           git -c credential.helper=store fetch origin master
           git checkout --force --detach "${GITEE_COMMIT:-FETCH_HEAD}"
+          git rev-parse HEAD > .deployment-revision
           git log -1 --oneline
           sh scripts/deploy/deploy-docker.sh
         hostGroupID:

@@ -28,4 +28,8 @@ const expanded = ref(true)
 .vb-tree-item--selected { background: #1976d2 !important; color: #fff; }
 .vb-tree-item__toggle { width: 14px; font-size: 10px; text-align: center; flex-shrink: 0; }
 .vb-tree-item__icon { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── 深色态覆盖：悬停浅蓝→蓝调透明（节点图标内联 #e5b000 为彩色保留）── */
+html[data-theme="dark"] .vb-tree-item:hover { background: rgba(25, 118, 210, 0.18); }
+html[data-theme="dark"] .vb-tree-item--selected { background: #1976d2 !important; color: #fff; }
 </style>

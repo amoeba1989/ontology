@@ -116,4 +116,13 @@ function remove(id: string) {
 }
 .rpm-refresh:hover { color: #4f46e5; border-color: #4f46e5; }
 .rpm-empty { font-size: 11px; color: #94a3b8; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .rpm-tag { background: rgba(79, 70, 229, 0.16); color: var(--semantic-300); }
+html[data-theme="dark"] .rpm-tag-x { color: var(--semantic-300); }
+html[data-theme="dark"] .rpm-tag-x:hover { color: #ff8787; }
+html[data-theme="dark"] .rpm-add select { background: var(--neutral-100); color: var(--neutral-600); border-color: var(--neutral-400); }
+html[data-theme="dark"] .rpm-add select:focus { color: var(--neutral-900); border-color: var(--semantic-500); }
+html[data-theme="dark"] .rpm-refresh { background: var(--neutral-100); color: var(--neutral-600); border-color: var(--neutral-200); }
+html[data-theme="dark"] .rpm-refresh:hover { color: var(--semantic-300); border-color: var(--semantic-500); }
 </style>

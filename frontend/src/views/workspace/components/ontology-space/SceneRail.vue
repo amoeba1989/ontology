@@ -179,4 +179,25 @@ const groups = computed(() => {
   cursor: pointer;
 }
 .rail__reset:hover { border-color: #4c6ef5; color: #3b5bdb; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .rail { background: rgba(33, 34, 38, 0.86); border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45); }
+html[data-theme="dark"] .rail::-webkit-scrollbar-thumb { background: rgba(122, 123, 130, 0.5); }
+html[data-theme="dark"] .rail__search input { background: #1a1b1e; border-color: #37383d; color: #f1f2f4; }
+html[data-theme="dark"] .rail__search input:focus { border-color: #5c7cfa; }
+html[data-theme="dark"] .rail__none { color: #7a7b82; }
+html[data-theme="dark"] .rail__group h4 { color: #c1c2c5; }
+html[data-theme="dark"] .rail__group h4 i { background: rgba(92, 124, 250, 0.18); color: #91a7ff; }
+html[data-theme="dark"] .rail__item { background: rgba(44, 45, 49, 0.6); }
+html[data-theme="dark"] .rail__item:hover { background: #2c2d31; border-color: rgba(92, 124, 250, 0.45); }
+html[data-theme="dark"] .rail__item.is-on { background: rgba(76, 110, 245, 0.16); border-color: #5c7cfa; }
+html[data-theme="dark"] .rail__glyph { background: #91a7ff; }
+html[data-theme="dark"] .rail__item.is-draft .rail__glyph { background: #7a7b82; }
+html[data-theme="dark"] .rail__item.is-hollow .rail__glyph { background: transparent; border-color: #7a7b82; }
+html[data-theme="dark"] .rail__body b { color: #e0e1e3; }
+html[data-theme="dark"] .rail__body em { color: #868e96; }
+html[data-theme="dark"] .rail__nums u { color: #91a7ff; }
+html[data-theme="dark"] .rail__nums s { color: #ffa94d; }
+html[data-theme="dark"] .rail__reset { background: #212226; border-color: #37383d; color: #c1c2c5; }
+html[data-theme="dark"] .rail__reset:hover { border-color: #5c7cfa; color: #dbe4ff; }
 </style>

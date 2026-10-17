@@ -228,4 +228,28 @@ function onDelete() { store.deleteCurrentScene() }
 .aip-sb__trigger--webhook { color: #0891b2; background: #ecfeff; border-color: #a5f3fc; }
 .aip-sb__trigger--manual { color: #475569; }
 .aip-sb__trigger--paused { color: #94a3b8; }
+
+/* ── 深色态覆盖：侧栏白底/卡片/徒章/触发器标签随主题翻转 ── */
+html[data-theme="dark"] .aip-sb { background: var(--surface-card); border-right-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-sb__title,
+html[data-theme="dark"] .aip-sb__card-name { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-sb__search { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-sb__search-input { color: var(--neutral-800); }
+html[data-theme="dark"] .aip-sb__group-head { color: var(--neutral-700); }
+html[data-theme="dark"] .aip-sb__group-head:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .aip-sb__group-count { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .aip-sb__card:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .aip-sb__card.active { border-color: var(--semantic-500); background: rgba(46, 91, 255, 0.12); }
+html[data-theme="dark"] .aip-sb__card-status--published { background: rgba(16, 185, 129, 0.16); color: var(--dynamic-300); }
+html[data-theme="dark"] .aip-sb__card-status--draft { background: rgba(245, 158, 11, 0.14); color: var(--kinetic-300); }
+html[data-theme="dark"] .aip-sb__card-stale { color: var(--kinetic-300); }
+html[data-theme="dark"] .aip-sb__current { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-sb__danger-btn:hover { background: rgba(239, 68, 68, 0.12); color: #ff8787; }
+html[data-theme="dark"] .aip-sb__current-desc { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-sb__trigger { background: var(--neutral-100); border-color: var(--neutral-300); }
+html[data-theme="dark"] .aip-sb__trigger:hover { border-color: var(--semantic-500); }
+html[data-theme="dark"] .aip-sb__trigger--schedule { color: var(--semantic-300); background: rgba(37, 99, 235, 0.14); border-color: rgba(37, 99, 235, 0.4); }
+html[data-theme="dark"] .aip-sb__trigger--event { color: #b197fc; background: rgba(124, 58, 237, 0.16); border-color: rgba(124, 58, 237, 0.4); }
+html[data-theme="dark"] .aip-sb__trigger--webhook { color: #66d9e8; background: rgba(8, 145, 178, 0.16); border-color: rgba(8, 145, 178, 0.4); }
+html[data-theme="dark"] .aip-sb__trigger--manual { color: var(--neutral-700); }
 </style>

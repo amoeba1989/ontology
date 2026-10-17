@@ -198,4 +198,8 @@ function submit() {
 .ob-method-card.ob-method-import { border-color: #10b981; }
 .ob-method-card.ob-method-import.selected { border-color: #059669; box-shadow: 0 4px 12px -2px rgba(16,185,129,0.3); }
 .ob-method-card.ob-method-import .ob-method-icon { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+
+/* ── 深色态覆盖：提示条随主题翻转（方法卡为彩色强调保留）── */
+html[data-theme="dark"] .ob-new-tip { background: var(--neutral-100); color: var(--neutral-700); }
+html[data-theme="dark"] .ob-new-tip strong { color: var(--neutral-900); }
 </style>

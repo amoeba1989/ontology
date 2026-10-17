@@ -16,6 +16,7 @@ class ImportResult:
     entities_created: int = 0
     entities_skipped: int = 0
     attributes_created: int = 0
+    attributes_skipped: int = 0
     relations_created: int = 0
     rules_created: int = 0
     actions_created: int = 0
@@ -536,9 +537,11 @@ def parse_owl_ontology(content: bytes, fmt: str, db: Session) -> ImportResult:
         description = str(comments[0]) if comments else ""
 
         eid = name
-        existing = db.query(OntologyEntity).filter(OntologyEntity.id == eid).first()
+        # 幂等去重按业务唯一键 name（而非 id）：已发布对象可能持有自定义 id（如 shopping_product），
+        # 若按 id==name 判重会漏判并撞 name 唯一约束，故命中同名实体时复用其真实主键 id。
+        existing = db.query(OntologyEntity).filter(OntologyEntity.name == name).first()
         if existing:
-            entity_map[uri] = eid
+            entity_map[uri] = existing.id
             result.entities_skipped += 1
             continue
 
@@ -578,13 +581,12 @@ def parse_owl_ontology(content: bytes, fmt: str, db: Session) -> ImportResult:
         prop_uri = str(prop)
         prop_name = _local_name(prop_uri)
 
-        # rdfs:domain → 关联实体
-        domains = list(g.objects(prop, RDFS.domain))
+        # rdfs:domain → 关联实体（支持多 domain：同一属性可归属多个实体）
+        domains = [str(d) for d in g.objects(prop, RDFS.domain) if isinstance(d, URIRef)]
         if not domains:
             continue
-        domain_uri = str(domains[0])
-        entity_id = entity_map.get(domain_uri)
-        if not entity_id:
+        entity_ids = [entity_map[d] for d in domains if d in entity_map]
+        if not entity_ids:
             continue
 
         # rdfs:range → 类型
@@ -596,15 +598,25 @@ def parse_owl_ontology(content: bytes, fmt: str, db: Session) -> ImportResult:
         labels = list(g.objects(prop, RDFS.label))
         description = str(labels[0]) if labels else prop_name
 
-        attr = EntityAttribute(
-            entity_id=entity_id,
-            name=prop_name,
-            type=attr_type,
-            description=description,
-            required=False,
-        )
-        db.add(attr)
-        result.attributes_created += 1
+        for entity_id in entity_ids:
+            # 幂等去重：同实体同名属性已存在则跳过，避免重复导入导致属性翻倍
+            dup = db.query(EntityAttribute).filter(
+                EntityAttribute.entity_id == entity_id,
+                EntityAttribute.name == prop_name,
+            ).first()
+            if dup:
+                result.attributes_skipped += 1
+                continue
+
+            attr = EntityAttribute(
+                entity_id=entity_id,
+                name=prop_name,
+                type=attr_type,
+                description=description,
+                required=False,
+            )
+            db.add(attr)
+            result.attributes_created += 1
 
     # ── owl:ObjectProperty → EntityRelation ──
     for prop in g.subjects(RDF.type, OWL.ObjectProperty):
@@ -640,4 +652,6 @@ def parse_owl_ontology(content: bytes, fmt: str, db: Session) -> ImportResult:
         db.add(rel)
         result.relations_created += 1
 
+    # autoflush=False：新增属性/关系必须显式 flush，后续同事务的语义补齐（enrich）才能查询到
+    db.flush()
     return result

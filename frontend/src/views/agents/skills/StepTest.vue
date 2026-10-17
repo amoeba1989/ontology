@@ -108,4 +108,12 @@ async function runBatch() {
 .step-test__batch-btn { margin-top: 8px; padding: 6px 16px; background: #fff; border: 1px solid #4a6fa5; color: #4a6fa5; border-radius: 6px; font-size: 12px; cursor: pointer; }
 .step-test__btn { padding: 10px 24px; background: #4a6fa5; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
 .step-test__btn:disabled { opacity: 0.5; cursor: default; }
+
+/* ── 深色态覆盖：结果卡/用例区/批量按钮随主题翻转 ── */
+html[data-theme="dark"] .step-test__result--pass { background: rgba(26, 138, 58, 0.16); }
+html[data-theme="dark"] .step-test__result--fail { background: rgba(211, 47, 47, 0.16); }
+html[data-theme="dark"] .step-test__placeholder { color: var(--neutral-500); }
+html[data-theme="dark"] .step-test__cases { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-test__case { background: var(--neutral-100); }
+html[data-theme="dark"] .step-test__batch-btn { background: var(--surface-card); color: var(--semantic-300); border-color: rgba(92, 124, 250, 0.4); }
 </style>

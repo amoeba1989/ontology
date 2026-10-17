@@ -235,4 +235,16 @@ const iconSvg = computed(() => {
 .aip-status-error .aip-node-card { border-color: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239,68,68,.15) !important; }
 .aip-status-waiting .aip-node-card { border-color: #f59e0b !important; box-shadow: 0 0 0 2px rgba(245,158,11,.15) !important; }
 @keyframes aip-node-pulse { 0% { box-shadow: 0 0 0 0 rgba(59,130,246,.35) } 50% { box-shadow: 0 0 0 6px rgba(59,130,246,0) } 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0) } }
+
+/* ── 深色态覆盖：节点卡片白底/字段文本/标签徐章随主题翻转 ── */
+html[data-theme="dark"] .aip-node-card { background: var(--surface-card); border-color: var(--neutral-300); }
+html[data-theme="dark"] .aip-node-card__header { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-node-card__title { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-field__value, html[data-theme="dark"] .aip-line { color: var(--neutral-700); }
+html[data-theme="dark"] .aip-field__empty { color: var(--neutral-500); }
+html[data-theme="dark"] .aip-tag--blue { background: rgba(37, 99, 235, 0.18); color: #91a7ff; border-color: rgba(37, 99, 235, 0.4); }
+html[data-theme="dark"] .aip-tag--green { background: rgba(5, 150, 105, 0.18); color: var(--dynamic-300); border-color: rgba(5, 150, 105, 0.4); }
+html[data-theme="dark"] .aip-tag--orange { background: rgba(194, 65, 12, 0.2); color: #ffa94d; border-color: rgba(194, 65, 12, 0.45); }
+html[data-theme="dark"] .aip-tag--gold { background: rgba(180, 83, 9, 0.2); color: #ffd43b; border-color: rgba(180, 83, 9, 0.45); }
+html[data-theme="dark"] .aip-tag--gray { background: var(--neutral-100); color: var(--neutral-600); }
 </style>

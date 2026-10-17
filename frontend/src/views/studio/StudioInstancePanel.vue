@@ -166,11 +166,11 @@ watch(() => props.objectName, () => { offset.value = 0; loadPage() }, { immediat
 .instances__graph text { font-size: 8px; pointer-events: none; }
 .instances__graph .instances__edge-label { fill: #64748b; font-size: 7px; }
 .instances__graph-target { cursor: pointer; }
-:global([data-theme="dark"]) .instances { color: #e0e1e3; }
-:global([data-theme="dark"]) .instances__notice,
-:global([data-theme="dark"]) .instances__relation,
-:global([data-theme="dark"]) .instances__graph { background: #25262b; border-color: #44454a; }
-:global([data-theme="dark"]) .instances__item,
-:global([data-theme="dark"]) .instances__related { background: #2c2d31; color: #e0e1e3; border-color: #44454a; }
-:global([data-theme="dark"]) .instances__item.is-selected { border-color: #748ffc; background: #343856; }
+html[data-theme="dark"] .instances { color: #e0e1e3; }
+html[data-theme="dark"] .instances__notice,
+html[data-theme="dark"] .instances__relation,
+html[data-theme="dark"] .instances__graph { background: #25262b; border-color: #44454a; }
+html[data-theme="dark"] .instances__item,
+html[data-theme="dark"] .instances__related { background: #2c2d31; color: #e0e1e3; border-color: #44454a; }
+html[data-theme="dark"] .instances__item.is-selected { border-color: #748ffc; background: #343856; }
 </style>

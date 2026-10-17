@@ -144,7 +144,7 @@ function confirm() {
 
 <style scoped>
 .ap-toolbar { display: flex; gap: 12px; margin-bottom: 12px; }
-.ap-table { background: #fff; }
+.ap-table { background: var(--surface-card); }
 .ap-mono { font-family: var(--font-mono, 'Menlo', 'Consolas', monospace); font-size: 11px; }
 .ap-muted { color: var(--neutral-400, #9ca3af); }
 </style>

@@ -502,4 +502,44 @@ function toggleExpand(name: string) {
   color: #94a3b8;
   font-size: 12px;
 }
+
+/* ── 深色态覆盖：表格/徒注/页内 chip 随主题翻转（品牌图标、进度条渐变保留）── */
+html[data-theme="dark"] .threebox__tabs { background: var(--neutral-100); }
+html[data-theme="dark"] .threebox__tab { color: var(--neutral-600); }
+html[data-theme="dark"] .threebox__tab:hover { background: rgba(255,255,255,0.06); }
+html[data-theme="dark"] .threebox__tab--active { background: var(--neutral-200); color: var(--neutral-900); box-shadow: none; }
+html[data-theme="dark"] .threebox__owl-hint { color: var(--neutral-500); background: var(--neutral-100); }
+html[data-theme="dark"] .threebox__notice--tbox { background: rgba(29,78,216,.16); border-color: rgba(145,199,255,.3); color: #91c7ff; }
+html[data-theme="dark"] .threebox__notice--abox { background: rgba(22,163,74,.16); border-color: rgba(105,219,124,.3); color: #69db7c; }
+html[data-theme="dark"] .threebox__notice--rbox { background: rgba(194,65,12,.18); border-color: rgba(255,169,77,.3); color: #ffa94d; }
+html[data-theme="dark"] .threebox__table { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .threebox__table th { background: var(--neutral-100); color: var(--neutral-600); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .threebox__table td { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .threebox__row:hover,
+html[data-theme="dark"] .threebox__row-detail { background: var(--neutral-100); }
+html[data-theme="dark"] .threebox__obj-name { color: var(--neutral-900); }
+html[data-theme="dark"] .threebox__obj-en { color: var(--neutral-500); }
+html[data-theme="dark"] .threebox__count--blue { background: rgba(29,78,216,.2); color: #91c7ff; }
+html[data-theme="dark"] .threebox__count--cyan { background: rgba(14,116,144,.22); color: #66dfec; }
+html[data-theme="dark"] .threebox__count--orange { background: rgba(194,65,12,.22); color: #ffa94d; }
+html[data-theme="dark"] .threebox__none { color: var(--neutral-500); }
+html[data-theme="dark"] .threebox__scenario { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .threebox__sub-title { color: var(--neutral-900); }
+html[data-theme="dark"] .threebox__props-title { color: var(--neutral-600); }
+html[data-theme="dark"] .threebox__sub-table { background: var(--neutral-0); border-color: var(--neutral-200); }
+html[data-theme="dark"] .threebox__sub-table th { background: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .threebox__sub-table td { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .threebox__prop-en,
+html[data-theme="dark"] .threebox__prop-type,
+html[data-theme="dark"] .threebox__prop-field,
+html[data-theme="dark"] .threebox__link-end { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .threebox__link-end { color: var(--neutral-800); }
+html[data-theme="dark"] .threebox__prop-desc { color: var(--neutral-600); }
+html[data-theme="dark"] .threebox__hydration--full { background: rgba(22,163,74,.18); color: #69db7c; border-color: transparent; }
+html[data-theme="dark"] .threebox__hydration--partial { background: rgba(37,99,235,.18); color: #91c7ff; border-color: transparent; }
+html[data-theme="dark"] .threebox__hydration--mapping { background: rgba(180,83,9,.2); color: #ffd43b; border-color: transparent; }
+html[data-theme="dark"] .threebox__hydration--none { color: var(--neutral-500); border-color: var(--neutral-500); }
+html[data-theme="dark"] .threebox__progress { background: var(--neutral-200); }
+html[data-theme="dark"] .threebox__progress-text { color: var(--neutral-600); }
+html[data-theme="dark"] .threebox__empty { color: var(--neutral-500); }
 </style>

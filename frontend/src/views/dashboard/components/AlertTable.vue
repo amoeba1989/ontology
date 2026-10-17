@@ -113,7 +113,7 @@ function formatTimeFull(iso: string) {
 }
 .detail-label {
   font-size: 13px;
-  color: var(--color-text-secondary, #888);
+  color: var(--text-secondary);
   min-width: 70px;
   flex-shrink: 0;
 }
@@ -124,6 +124,6 @@ function formatTimeFull(iso: string) {
   margin: 4px 0 0;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--color-text-primary, #333);
+  color: var(--text-primary);
 }
 </style>

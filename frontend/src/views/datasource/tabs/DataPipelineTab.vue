@@ -266,6 +266,12 @@ import type { Pipeline, PipelineRun, PipelineSummary, PipelineConfig, ColumnMap,
 import { listConnections, listTablesOfConnection, getConnectionTableSchema } from '../../../api/connection'
 import type { Connection } from '../../../types/connection'
 import type { DataSource } from '../../../types/datasource'
+import { useThemeStore } from '../../../store/theme'
+
+const theme = useThemeStore()
+// 步骤/数据源/目标 小徐章的内联样式需随主题翻转（内联 style 优先于 scoped CSS）
+function chipBg() { return theme.isDark ? 'rgba(148, 163, 184, 0.14)' : '#fff' }
+function chipBorder(c = '#e5e7eb') { return '1px solid ' + (theme.isDark ? 'rgba(148, 163, 184, 0.28)' : c) }
 
 const STATUS_LABEL: Record<string, string> = {
   idle: '空闲', running: '运行中', stopped: '已停止', error: '错误', success: '成功', pending: '排队中',
@@ -416,13 +422,13 @@ function engineTagStyle(engine: string) {
   return { background: c + '12', color: c, border: '1px solid ' + c + '30' }
 }
 function badgeStyle(color: string, _border: string, _bold: boolean) {
-  return { color, border: '1px solid #e5e7eb', background: '#fff', fontWeight: 400 }
+  return { color, border: chipBorder(), background: chipBg(), fontWeight: 400 }
 }
 function stepBadgeStyle(p: Pipeline, idx: number) {
   const run = activeRuns[p.id]
-  if (run && run.step_index === idx) return { color: '#10b981', border: '1px solid #10b981', background: '#fff', fontWeight: 600 }
-  if (run && run.step_index > idx) return { color: '#10b981', border: '1px solid #a7f3d0', background: '#fff', fontWeight: 400 }
-  return { color: '#9ca3af', border: '1px solid #e5e7eb', background: '#fff', fontWeight: 400 }
+  if (run && run.step_index === idx) return { color: '#10b981', border: theme.isDark ? '1px solid rgba(16,185,129,0.4)' : '1px solid #10b981', background: chipBg(), fontWeight: 600 }
+  if (run && run.step_index > idx) return { color: '#10b981', border: theme.isDark ? '1px solid rgba(16,185,129,0.3)' : '1px solid #a7f3d0', background: chipBg(), fontWeight: 400 }
+  return { color: '#9ca3af', border: chipBorder(), background: chipBg(), fontWeight: 400 }
 }
 function dsName(id?: string | null) {
   if (!id) return ''
@@ -744,4 +750,11 @@ onBeforeUnmount(stopPolling)
 
 .pl-preview__meta { font-size: 12px; color: var(--neutral-600); margin-bottom: 12px; }
 .pl-preview__err { color: #ef4444; font-size: 13px; padding: 12px; }
+
+/* ── 深色态覆盖：白底卡片/步骤芯片/最近运行徐章随主题翻转 ── */
+html[data-theme="dark"] .pl-header, html[data-theme="dark"] .pl-empty, html[data-theme="dark"] .pl-card, html[data-theme="dark"] .pl-step { background: var(--surface-card); }
+html[data-theme="dark"] .pl-empty { border-color: var(--neutral-300); }
+html[data-theme="dark"] .pl-lastrun { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.35); color: var(--dynamic-300); }
+html[data-theme="dark"] .pl-lastrun--real { background: rgba(124,58,237,0.14); border-color: rgba(124,58,237,0.35); color: #b197fc; }
+html[data-theme="dark"] .pl-preview__err { color: #ff8787; }
 </style>

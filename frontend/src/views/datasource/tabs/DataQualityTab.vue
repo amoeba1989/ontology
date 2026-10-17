@@ -429,4 +429,20 @@ onMounted(load)
 .ql-rule__body { margin-top: 6px; font-size: 12px; color: #4b5563; }
 .ql-rule__body code { background: #f3f4f6; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
 .ql-rule__msg { margin-top: 4px; font-size: 12px; color: #ef4444; }
+
+/* ── 深色态覆盖：卡片/资产卡/健态徐章随主题翻转 ── */
+html[data-theme="dark"] .ql-card, html[data-theme="dark"] .ql-overview, html[data-theme="dark"] .ql-asset-card { background: var(--surface-card); }
+html[data-theme="dark"] .ql-asset-card { border-color: var(--neutral-200); }
+html[data-theme="dark"] .ql-asset-card__name { color: var(--neutral-900); }
+html[data-theme="dark"] .ql-asset-card__meta { color: var(--neutral-500); }
+html[data-theme="dark"] .ql-asset-card__count { color: var(--neutral-500); }
+html[data-theme="dark"] .ql-pill--healthy { background: rgba(16,185,129,0.16); color: var(--dynamic-300); }
+html[data-theme="dark"] .ql-pill--warning { background: rgba(245,158,11,0.16); color: var(--kinetic-300); }
+html[data-theme="dark"] .ql-pill--failure { background: rgba(239,68,68,0.16); color: #ff8787; }
+html[data-theme="dark"] .ql-pill--unknown { background: var(--neutral-100); color: var(--neutral-600); }
+html[data-theme="dark"] .ql-detail__head { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .ql-rule { border-color: var(--neutral-200); }
+html[data-theme="dark"] .ql-rule__body { color: var(--neutral-600); }
+html[data-theme="dark"] .ql-rule__body code { background: var(--neutral-100); }
+html[data-theme="dark"] .ql-rule__msg { color: #ff8787; }
 </style>

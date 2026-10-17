@@ -48,4 +48,10 @@ defineEmits<{ layout: []; fit: []; direction: [d: 'LR' | 'TB']; toggleDataLayer:
 .toolbar-btn--active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
 .toolbar-sep { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
 .toolbar-stats { color: #94a3b8; font-size: 12px; }
+
+/* ── 深色态覆盖：工具栏白底与按钮随主题翻转 ── */
+html[data-theme="dark"] .canvas-toolbar { background: var(--surface-card); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .toolbar-btn { background: var(--neutral-100); border-color: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .toolbar-btn:hover { background: var(--neutral-200); color: var(--neutral-900); }
+html[data-theme="dark"] .toolbar-sep { background: var(--neutral-200); }
 </style>

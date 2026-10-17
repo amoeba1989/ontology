@@ -105,4 +105,9 @@ onMounted(() => {
   color: #999;
   font-size: 14px;
 }
+
+/* ── 深色态覆盖：工具栏/下拉框随主题翻转 ── */
+html[data-theme="dark"] .builder-page__toolbar { background: var(--surface-secondary); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .builder-page__toolbar-label { color: var(--neutral-600); }
+html[data-theme="dark"] .builder-page__select { background: var(--surface-card); border-color: var(--neutral-300); color: var(--neutral-800); }
 </style>

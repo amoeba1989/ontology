@@ -208,4 +208,34 @@ onMounted(async () => {
 <style scoped>
 .example-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.example-grid article{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid #e2e8f0;border-radius:9px}.example-grid p{font-size:13px;line-height:1.6;margin:0}.example-grid small{font-size:11px;color:#64748b;line-height:1.6;flex:1}
 .delivery{padding:28px;max-width:1600px;margin:auto;color:var(--neutral-900,#17233d)}.heading,.toolbar,.project-title,.step-nav{display:flex;align-items:center;justify-content:space-between;gap:12px}.heading{margin-bottom:24px}.eyebrow{color:#6366f1;font-size:12px;font-weight:700}h1{font-size:24px;margin:8px 0}h2{font-size:20px;margin:0}h3{font-size:15px;margin:0 0 12px}.heading p,.muted{color:var(--neutral-500,#768197);font-size:13px}.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px}.projects,.workspace{min-width:0}.projects h3 span{color:#8b91a0}.project{display:flex;flex-direction:column;width:100%;align-items:flex-start;text-align:left;margin-bottom:8px;padding:14px;gap:8px}.project strong{overflow-wrap:anywhere}.project small{font-size:11px;color:#737e91}.project.selected{border-color:#6366f1;background:#eef2ff}button{border:1px solid #dce1eb;background:var(--surface-card,#fff);border-radius:8px;padding:9px 14px;cursor:pointer;color:inherit;font-size:13px}button:hover:not(:disabled){border-color:#6366f1}button:disabled{opacity:.5;cursor:not-allowed}button.primary{background:#4f46e5;color:#fff;border-color:#4f46e5}.project-title input{font-size:18px;font-weight:600;flex:1}.badge{font-size:12px;color:#6366f1;white-space:nowrap}.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:22px 0 12px}.steps button{padding:12px 4px;display:flex;align-items:center;flex-direction:column;gap:8px}.steps span{display:grid;place-items:center;border-radius:50%;width:25px;height:25px;background:#f0f2f7}.steps .ready span{background:#dcfce7;color:#15803d}.steps .active{border-color:#6366f1;background:#eef2ff}.progress{height:4px;background:#eef0f4;border-radius:4px;overflow:hidden}.progress div{height:100%;background:#22c55e;transition:width .2s}.toolbar{margin:16px 0}.toolbar .muted{margin-right:auto}.editor,.panel{border:1px solid #e3e7ee;border-radius:12px;background:var(--surface-card,#fff);padding:22px;margin-bottom:18px}fieldset{border:0;padding:0;margin:20px 0;min-width:0}label{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:600;margin:18px 0}input,textarea,select{width:100%;box-sizing:border-box;font:inherit;border:1px solid #dce1eb;background:var(--surface-card,#fff);color:inherit;border-radius:7px;padding:10px;font-weight:400}textarea{min-height:80px;resize:vertical}input:focus,textarea:focus{outline:2px solid #c7d2fe}.links{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}a{color:#4f46e5;font-size:13px}.tip{font-size:12px;color:#737e91;line-height:1.8}.validation{padding:14px;background:#f8fafc;border-radius:8px;font-size:13px}.validation ul{padding-left:20px;color:#a16207;line-height:1.8}.ok{color:#15803d}.fail{color:#b91c1c}.step-nav{margin-top:18px}.application{padding:18px;background:#eef2ff;border-radius:9px}.application p{font-size:13px;color:#64748b}.message{padding:14px;border-radius:8px;margin:12px 0;font-size:13px;white-space:pre-wrap}.error{background:#fff1f2;color:#be123c}.success{background:#ecfdf5;color:#047857}.table-scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}td,th{padding:9px 12px;text-align:left;border-bottom:1px solid #e5e7eb}th{background:#f8fafc}.event{display:flex;gap:12px;font-size:12px;padding:10px 0;border-bottom:1px solid #eee}.event small{margin-left:auto;color:#8892a3}.event span:nth-child(2){flex:1;overflow-wrap:anywhere}@media(max-width:1000px){.layout{grid-template-columns:1fr}.projects{display:flex;gap:8px;overflow:auto}.projects h3{display:none}.project{min-width:180px}.steps{grid-template-columns:repeat(3,1fr)}.heading{align-items:flex-start}.delivery{padding:16px}}
+
+/* ── 深色态覆盖：步骤卡/表单/样例卡/校验区/消息条/表格随主题翻转 ── */
+html[data-theme="dark"] .example-grid article{border-color:var(--neutral-200)}
+html[data-theme="dark"] .example-grid small{color:var(--neutral-600)}
+html[data-theme="dark"] .project small{color:var(--neutral-500)}
+html[data-theme="dark"] .project.selected{border-color:var(--semantic-500);background:rgba(76,110,245,0.16)}
+html[data-theme="dark"] button{border-color:var(--neutral-200);background:var(--surface-card)}
+html[data-theme="dark"] button:hover:not(:disabled){border-color:var(--semantic-500)}
+html[data-theme="dark"] button.primary{background:var(--semantic-600);border-color:var(--semantic-600);color:#fff}
+html[data-theme="dark"] .steps span{background:var(--neutral-100);color:var(--neutral-700)}
+html[data-theme="dark"] .steps .ready span{background:rgba(32,201,151,0.18);color:var(--dynamic-500)}
+html[data-theme="dark"] .steps .active{border-color:var(--semantic-500);background:rgba(76,110,245,0.16)}
+html[data-theme="dark"] .progress{background:var(--neutral-100)}
+html[data-theme="dark"] .editor,html[data-theme="dark"] .panel{border-color:var(--neutral-200);background:var(--surface-card)}
+html[data-theme="dark"] input,html[data-theme="dark"] textarea,html[data-theme="dark"] select{border-color:var(--neutral-200);background:var(--surface-card);color:var(--neutral-900)}
+html[data-theme="dark"] input:focus,html[data-theme="dark"] textarea:focus{outline-color:var(--semantic-700)}
+html[data-theme="dark"] .tip{color:var(--neutral-500)}
+html[data-theme="dark"] .validation{background:var(--neutral-100)}
+html[data-theme="dark"] .validation ul{color:var(--kinetic-500)}
+html[data-theme="dark"] .ok{color:var(--dynamic-500)}
+html[data-theme="dark"] .fail{color:var(--status-error)}
+html[data-theme="dark"] .application{background:rgba(76,110,245,0.14)}
+html[data-theme="dark"] .application p{color:var(--neutral-600)}
+html[data-theme="dark"] a{color:var(--semantic-300)}
+html[data-theme="dark"] .message.error{background:rgba(250,82,82,0.12);color:#ffa8a8}
+html[data-theme="dark"] .message.success{background:rgba(18,184,134,0.14);color:var(--dynamic-300)}
+html[data-theme="dark"] th{background:var(--neutral-100)}
+html[data-theme="dark"] td,html[data-theme="dark"] th{border-bottom-color:var(--neutral-200)}
+html[data-theme="dark"] .event{border-bottom-color:var(--neutral-200)}
+html[data-theme="dark"] .event small{color:var(--neutral-500)}
 </style>

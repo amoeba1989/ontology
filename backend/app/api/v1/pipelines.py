@@ -193,63 +193,6 @@ def _recent_runs(db: Session, pipeline_id: str, limit: int = 10) -> list[Pipelin
     )
 
 
-def _seed_if_empty(db: Session) -> None:
-    if db.query(Pipeline).count() > 0:
-        return
-    from app.utils.identifiers import gen_uuid
-
-    presets = [
-        {
-            "name": "客户主数据接入",
-            "description": "从 B 域数仓抽取客户主数据，落入 Customer 本体对象",
-            "source": "B域数仓 · DWA_V_D_CUS_CB_USER_INFO",
-            "target": "Customer 对象",
-            "steps": ["抽取", "清洗", "主键解析", "本体映射"],
-            "tags": ["核心", "日更"],
-            "schedule": "0 2 * * *",
-            "last_records": 40929,
-            "last_objects": 40929,
-            "last_duration_ms": 6800,
-            "status": "success",
-        },
-        {
-            "name": "合约数据接入",
-            "description": "同步合约表，构建 Contract 实例",
-            "source": "CBSS · DWA_V_D_CUS_CB_ACT_INFO",
-            "target": "Contract 对象",
-            "steps": ["抽取", "过期标记", "本体映射"],
-            "tags": ["日更"],
-            "schedule": "0 3 * * *",
-            "last_records": 40929, "last_objects": 40929, "last_duration_ms": 4900,
-            "status": "success",
-        },
-        {
-            "name": "工单数据接入",
-            "description": "客服工单全量接入",
-            "source": "客服工单系统 · DWD_D_EVT_KF_ORDER_MAIN",
-            "target": "WorkOrder 对象",
-            "steps": ["抽取", "工单去重", "本体映射"],
-            "tags": [],
-            "schedule": "*/30 * * * *",
-            "last_records": 82757, "last_objects": 82757, "last_duration_ms": 12300,
-            "status": "idle",
-        },
-        {
-            "name": "携转预警结果回写",
-            "description": "将携转风险评分写入 t_mnp_risk_warning",
-            "source": "风险评分模型",
-            "target": "t_mnp_risk_warning",
-            "steps": ["模型推理", "阈值过滤", "结果落库"],
-            "tags": ["MNP"],
-            "schedule": "",
-            "last_records": 1284, "last_objects": 1284, "last_duration_ms": 5400,
-            "status": "idle",
-        },
-    ]
-    now = datetime.utcnow()
-    for p in presets:
-        db.add(Pipeline(id=gen_uuid(), step_duration_ms=1500, last_run_at=now, **p))
-    db.commit()
 # __APPEND_2__
 
 
@@ -259,6 +202,7 @@ _worker_task: asyncio.Task | None = None
 
 
 def _mock_records(p: Pipeline, db: Session) -> int:
+    """演示引擎的同步条数：只取库内真实值（资产画像行数 / 上次记录数），不随机编造。"""
     if p.datasource_id:
         asset = db.query(Asset).filter(Asset.id == p.datasource_id).first()
         if asset and asset.profile:
@@ -266,9 +210,8 @@ def _mock_records(p: Pipeline, db: Session) -> int:
             if row_count:
                 return int(row_count)
     if p.last_records:
-        jitter = int((random.random() - 0.5) * max(100, p.last_records * 0.05))
-        return max(0, p.last_records + jitter)
-    return 1000 + random.randint(0, 100000)
+        return p.last_records
+    return 0
 
 
 def _advance_runs_once() -> None:
@@ -344,7 +287,6 @@ def list_pipelines(
     status: str | None = None,
     db: Session = Depends(get_db),
 ):
-    _seed_if_empty(db)
     q = db.query(Pipeline)
     if status:
         q = q.filter(Pipeline.status == status)

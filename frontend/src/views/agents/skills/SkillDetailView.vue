@@ -168,4 +168,24 @@ th, td { text-align: left; padding: 10px; border-bottom: 1px solid #dfe6ef; whit
 .skill-detail__ver-time { font-size: 11px; color: #999; }
 .skill-detail__ver-rollback { font-size: 11px; padding: 3px 8px; border: 1px solid #4a6fa5; color: #4a6fa5; background: #fff; border-radius: 4px; cursor: pointer; }
 .skill-detail__empty { color: #999; font-size: 13px; }
+
+/* ── 深色态覆盖：详情页/运行卡/版本列表/代码块随主题翻转 ── */
+html[data-theme="dark"] .skill-run { border-color: var(--neutral-200); background: var(--surface-secondary); }
+html[data-theme="dark"] .skill-run p { color: var(--neutral-600); }
+html[data-theme="dark"] .run-button { background: var(--semantic-600); color: #fff; }
+html[data-theme="dark"] .run-button.secondary { background: rgba(76, 110, 245, 0.16); color: var(--semantic-300); }
+html[data-theme="dark"] .skill-run th, html[data-theme="dark"] .skill-run td { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .skill-detail__title { color: var(--neutral-900); }
+html[data-theme="dark"] .skill-detail__desc, html[data-theme="dark"] .skill-detail__ver-log, html[data-theme="dark"] .skill-detail__section h3 { color: var(--neutral-600); }
+html[data-theme="dark"] .skill-detail__badge--active { background: rgba(26, 138, 58, 0.16); color: var(--dynamic-500); }
+html[data-theme="dark"] .skill-detail__badge--draft { background: rgba(245, 159, 0, 0.14); color: var(--kinetic-500); }
+html[data-theme="dark"] .skill-detail__badge--deprecated { background: var(--neutral-100); color: var(--neutral-500); }
+html[data-theme="dark"] .skill-detail__version, html[data-theme="dark"] .skill-detail__ver-num { color: var(--semantic-300); }
+html[data-theme="dark"] .skill-detail__btn { background: var(--surface-card); color: #ff8787; border-color: rgba(250, 82, 82, 0.4); }
+html[data-theme="dark"] .skill-detail__section pre { background: var(--neutral-100); color: var(--neutral-800); }
+html[data-theme="dark"] .skill-detail__versions { border-color: var(--neutral-200); }
+html[data-theme="dark"] .skill-detail__ver-item { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .skill-detail__ver-item--current { background: rgba(76, 110, 245, 0.12); }
+html[data-theme="dark"] .skill-detail__ver-time { color: var(--neutral-500); }
+html[data-theme="dark"] .skill-detail__ver-rollback { background: var(--surface-card); color: var(--semantic-300); border-color: rgba(92, 124, 250, 0.4); }
 </style>

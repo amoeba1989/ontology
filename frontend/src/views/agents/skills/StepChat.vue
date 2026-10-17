@@ -122,4 +122,14 @@ onMounted(() => {
 .step-chat__input { flex: 1; padding: 10px 14px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; }
 .step-chat__send { padding: 10px 20px; background: #4a6fa5; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
 .step-chat__send:disabled { opacity: 0.5; }
+
+/* ── 深色态覆盖：侧栏/气泡/输入栏/汇总条随主题翻转 ── */
+html[data-theme="dark"] .step-chat__sidebar, html[data-theme="dark"] .step-chat__main { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__context { color: var(--neutral-600); }
+html[data-theme="dark"] .step-chat__msg--user .step-chat__msg-content { background: rgba(76, 110, 245, 0.22); color: var(--neutral-900); }
+html[data-theme="dark"] .step-chat__msg--assistant .step-chat__msg-content { background: var(--neutral-100); color: var(--neutral-800); }
+html[data-theme="dark"] .step-chat__summary-bar { background: rgba(26, 138, 58, 0.16); border-top-color: rgba(26, 138, 58, 0.3); }
+html[data-theme="dark"] .step-chat__summary-bar span { color: var(--dynamic-500); }
+html[data-theme="dark"] .step-chat__input-bar { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .step-chat__input { border-color: var(--neutral-200); background: var(--surface-card); }
 </style>

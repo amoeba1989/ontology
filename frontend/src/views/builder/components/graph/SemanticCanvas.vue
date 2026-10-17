@@ -288,4 +288,13 @@ function resetView() { vx.value = -400; vy.value = -300; vw.value = 800; vh.valu
 .graph-ctrl:hover { background: #f1f5f9; }
 .graph-ctrl:disabled { opacity: 0.4; cursor: not-allowed; }
 .canvas-divider { padding: 6px 12px; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; background: #fff; }
+
+/* ── 深色态覆盖：画布底/控件/节点标签随主题翻转 ── */
+html[data-theme="dark"] .canvas-wrap { background: var(--neutral-50); }
+html[data-theme="dark"] .graph-controls { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .graph-ctrl { color: var(--neutral-600); }
+html[data-theme="dark"] .graph-ctrl:hover { background: var(--neutral-200); }
+html[data-theme="dark"] .canvas-divider { background: var(--surface-card); border-top-color: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .graph-link-label { fill: var(--neutral-500); }
+html[data-theme="dark"] .graph-node-label { fill: var(--neutral-800); }
 </style>

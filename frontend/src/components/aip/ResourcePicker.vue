@@ -100,4 +100,9 @@ function jumpTo() {
   cursor: pointer; flex-shrink: 0; font-size: 12px;
 }
 .rp__jump:hover, .rp__refresh:hover { border-color: #2E5BFF; color: #2E5BFF; }
+
+/* ── 深色态覆盖：选择器/跳转与刷新按钮白底随主题翻转 ── */
+html[data-theme="dark"] .rp__select { background: var(--surface-card); border-color: var(--neutral-200); color: var(--neutral-900); }
+html[data-theme="dark"] .rp__jump, html[data-theme="dark"] .rp__refresh { background: var(--surface-card); border-color: var(--neutral-200); color: var(--neutral-600); }
+html[data-theme="dark"] .rp__jump:hover, html[data-theme="dark"] .rp__refresh:hover { border-color: var(--semantic-500); color: var(--semantic-300); }
 </style>

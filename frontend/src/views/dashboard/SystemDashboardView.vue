@@ -229,7 +229,7 @@ onUnmounted(() => {
 }
 .last-update {
   font-size: 13px;
-  color: var(--color-text-secondary, #888);
+  color: var(--text-secondary);
 }
 .middle-row,
 .bottom-row {

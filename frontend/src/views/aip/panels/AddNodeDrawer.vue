@@ -290,4 +290,16 @@ function iconSvg(name: string) {
   padding: 40px 0; text-align: center;
   color: #cbd5e1; font-size: 12px;
 }
+
+/* ── 深色态覆盖：抽屉白底/标题/搜索/节点卡随主题翻转 ── */
+html[data-theme="dark"] .and { background: var(--surface-card); border-left-color: var(--neutral-200); }
+html[data-theme="dark"] .and__head { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .and__title { color: var(--neutral-900); }
+html[data-theme="dark"] .and__close:hover { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .and__search { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .and__search:focus-within { background: var(--neutral-0); border-color: var(--semantic-500); }
+html[data-theme="dark"] .and__search input { color: var(--neutral-900); }
+html[data-theme="dark"] .and__node { background: var(--neutral-100); }
+html[data-theme="dark"] .and__node:hover { background: var(--neutral-200); }
+html[data-theme="dark"] .and__node-label { color: var(--neutral-900); }
 </style>

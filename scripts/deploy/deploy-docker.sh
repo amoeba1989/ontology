@@ -19,6 +19,35 @@ else
 fi
 
 sh "$(dirname "$0")/docker-build.sh"
+# Use SQLite's backup API so live WAL transactions are included. Keep snapshots
+# in the existing persistent data volume before recreating any running backend.
+if [ -n "$($DC ps -q backend)" ]; then
+  log "更新前备份现有 SQLite 数据（快照保存在持久化 data/deployment-backups）"
+  $DC exec -T backend python - <<'PY'
+from datetime import datetime, timezone
+from pathlib import Path
+import sqlite3
+
+root = Path('/app/backend')
+backup = root / 'data' / 'deployment-backups' / datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+sources = [p for p in root.glob('*') if p.is_file() and p.suffix in ('.db', '.sqlite', '.sqlite3')]
+data = root / 'data'
+if data.exists():
+    sources += [p for p in data.rglob('*') if p.is_file()
+                and p.suffix in ('.db', '.sqlite', '.sqlite3')
+                and 'deployment-backups' not in p.relative_to(data).parts]
+for path in sources:
+    target = backup / path.relative_to(root)
+    target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    target.touch(mode=0o600, exist_ok=False)
+    with sqlite3.connect(path.as_uri() + '?mode=ro', uri=True) as source:
+        with sqlite3.connect(target) as destination:
+            source.backup(destination)
+            if destination.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                raise RuntimeError('Database backup integrity check failed')
+print('SQLite snapshots verified:', len(sources))
+PY
+fi
 log "启动/更新容器"
 $DC up -d
 log "等待后端就绪（经 nginx:$WEB_PORT 探测）"

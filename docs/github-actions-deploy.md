@@ -1,7 +1,9 @@
 # GitHub 自动部署到阿里云 ECS
 
-当前流程：推送到 `main` → 运行六步链路与场景测试、构建前端 → 同步代码到 ECS 的 `/opt/ontology` → 在 ECS 构建 Docker 镜像 → 更新容器 → 检查服务。日常部署不执行演示数据初始化。
+当前流程：推送到 `master` → 运行六步链路与场景测试、构建前端 → 同步代码到 ECS 的 `/opt/ontology` → 在 ECS 构建 Docker 镜像 → 更新容器 → 检查服务。日常部署不执行演示数据初始化。
 构建失败不会更新运行中的容器；更新后健康检查失败会报告失败，但暂不自动回滚。请在首次部署前备份数据库。
+
+仓库同时挂在 Gitee 上、由 Gitee Go 走另一条部署流程，两者的分工与互斥见 [Gitee + GitHub 双远程管理](./dual-remote-gitee-github.md)。
 
 ## 1. 在 Workbench 检查服务器
 
@@ -64,17 +66,17 @@ ECS 安全组和系统防火墙需要允许 GitHub 托管运行器访问 SSH 端
 
 ## 4. 开启并试运行
 
-1. 停止旧 Gitee Go 自动部署，避免两边同时覆盖 `/opt/ontology`。
+1. Gitee Go 现在与本工作流并存，两边都部署 `/opt/ontology`，靠同一个 `/opt/ontology/.deploy.lock` 文件锁串行执行；推送的又是同一个 commit，所以后完成的一方收尾，结果一致。首次两边都跑一次，确认日志里没有出现并发覆盖。
 2. 备份 `/opt/ontology/data`，确认已有 `.env` 的端口与当前服务一致。
-3. GitHub **Settings → Environments** 创建 `production`，可将部署分支限制为 `main`。如果设置人工审批，每次发布会等待审批。
+3. GitHub **Settings → Environments** 创建 `production`，可将部署分支限制为 `master`。如果设置人工审批，每次发布会等待审批。
 4. **Settings → Secrets and variables → Actions → Variables** 新增仓库变量 `DEPLOY_ENABLED`，值为 `true`。
-5. 在 **Actions → Deploy to Alibaba Cloud ECS → Run workflow** 中选择 `main` 并执行。
-6. 成功后访问生产网站确认；之后每次推送或合并到 `main` 都会部署。
+5. 在 **Actions → Deploy to Alibaba Cloud ECS → Run workflow** 中选择 `master` 并执行。
+6. 成功后访问生产网站确认；之后每次推送或合并到 `master` 都会部署。
 
 尚未设置 `DEPLOY_ENABLED=true` 时，部署任务会跳过。设为 `false` 可停止后续自动部署，但不会停止已经开始的任务。
 
 同步会删除生产目录中源码已经移除的文件，但保留 `.git`、`.env`、`.env.*`、数据库、上传目录和指定运行目录。服务器若有其他需要保留的本地文件，先补充流水线的 rsync 排除规则。
-无需更改 ECS 现有 Git remote，也无需让 ECS 自行拉取 GitHub：源码由 Actions 传输。
+无需让 ECS 自行拉取 GitHub：源码由 Actions 打包传输，也不会改动 ECS 上的 `.git`。但 ECS 现有 `origin` 必须继续指向 Gitee，Gitee Go 那条流水线靠它在主机上 `git fetch`；误改成 GitHub 会让 Gitee Go 在 origin 校验处直接中止。
 
 ## 常见失败
 

@@ -1,6 +1,6 @@
 <template>
   <div class="scene-graph" :class="{ 'is-pointing': !!hoveredId }" @click="onSurfaceClick">
-    <TresCanvas clear-color="#eef4fb" antialias>
+    <TresCanvas :clear-color="clearColor" antialias>
       <SceneRoot
         ref="rootRef"
         :layout="layout"
@@ -19,11 +19,16 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef } from 'vue'
+import { computed, shallowRef } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import type { SceneEvent } from '../../../../api/ontologyScene'
+import { useThemeStore } from '../../../../store/theme'
 import type { SceneLayout } from './layout'
 import SceneRoot from './SceneRoot.vue'
+
+// WebGL 画布清屏色随主题翻转：明快节奏用浅蓝天空，暗黑用近黑深空
+const theme = useThemeStore()
+const clearColor = computed(() => theme.isDark ? '#141519' : '#eef4fb')
 
 const props = defineProps<{
   layout: SceneLayout
@@ -78,4 +83,12 @@ function onSurfaceClick() {
   color: #6b87b0;
   pointer-events: none;
 }
+
+/* ── 深色态覆盖：画布外围渐变底与操作提示胶囊随主题翻转 ── */
+html[data-theme="dark"] .scene-graph {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(58, 66, 84, 0.5), rgba(20, 21, 25, 0) 55%),
+    linear-gradient(180deg, #141519 0%, #16181d 62%, #121317 100%);
+}
+html[data-theme="dark"] .scene-graph__tip { background: rgba(33, 34, 38, 0.72); border-color: rgba(255, 255, 255, 0.1); color: #9a9ba1; }
 </style>

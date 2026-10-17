@@ -49,9 +49,15 @@ def _table_row_count(db: Session, connection_id: str | None, table: str) -> int 
     if cached and cached[0] > now:
         return cached[1]
     from app.services.data_plane.execute_service import ExecuteService
+    from app.connectors import ConnectorRegistry
+    from app.models.connection import Connection
+    # 表名可能是 SQL 保留字（如 demo 本体实体 Order），必须按连接方言加标识符引号
+    conn = db.get(Connection, connection_id)
+    quote = ConnectorRegistry.get(conn.type).quote_identifier() if conn else '"'
+    safe_table = f"{quote}{table}{quote}"
     try:
         res = ExecuteService(db).execute_on_connection(
-            connection_id=connection_id, sql=f"SELECT COUNT(*) AS n FROM {table}",
+            connection_id=connection_id, sql=f"SELECT COUNT(*) AS n FROM {safe_table}",
             purpose="dashboard.row_count",
         )
         n = int(res.rows[0][0]) if res.rows else 0

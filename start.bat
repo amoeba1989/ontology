@@ -6,17 +6,22 @@ echo.
 
 cd /d "%~dp0"
 
-echo [1/3] Installing backend dependencies...
+echo [1/4] Installing backend dependencies...
 cd /d "%~dp0backend"
 pip install -r requirements.txt --quiet 2>nul
 echo Dependencies ready.
 echo.
 
-echo [2/3] Starting backend (port 8001)...
+echo [2/4] Starting backend (port 8001)...
 start "Ontology-Backend" cmd /k "cd /d %~dp0backend && uvicorn app.main:app --reload --port 8001 --log-level info"
 timeout /t 3 /nobreak >nul
 
-echo [3/3] Starting frontend (port 5177)...
+echo [3/4] Installing frontend dependencies (npm install)...
+cd /d "%~dp0frontend"
+call npm install
+echo.
+
+echo [4/4] Starting frontend (port 5177)...
 start "Ontology-Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
 timeout /t 3 /nobreak >nul
 

@@ -335,20 +335,20 @@ onMounted(reload)
 <style scoped>
 .ap-page { padding: 24px; }
 .ap-page__header { margin-bottom: 16px; }
-.ap-page__title { font-size: 24px; font-weight: 600; color: #111827; margin: 0; }
-.ap-page__subtitle { font-size: 13px; color: #6b7280; margin-top: 4px; }
+.ap-page__title { font-size: 24px; font-weight: 600; color: var(--neutral-900); margin: 0; }
+.ap-page__subtitle { font-size: 13px; color: var(--neutral-600); margin-top: 4px; }
 .ap-stats {
   display: flex; align-items: center; gap: 32px; padding: 16px;
-  background: #fff; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 12px;
+  background: var(--neutral-0); border: 1px solid var(--neutral-200); border-radius: 8px; box-shadow: var(--shadow-xs); margin-bottom: 12px;
 }
 .ap-spacer { flex: 1; }
-.ap-tabs { background: #fff; padding: 0 16px; border-radius: 8px; margin-bottom: 12px; }
+.ap-tabs { background: var(--neutral-0); border: 1px solid var(--neutral-200); padding: 0 16px; border-radius: 8px; margin-bottom: 12px; }
 .ap-doc-filter { margin-bottom: 12px; }
-.ap-toolbar { display: flex; gap: 12px; padding: 12px 16px; background: #fff; border-radius: 8px; margin-bottom: 12px; align-items: center; }
-.ap-name { color: #1d4ed8; cursor: pointer; }
+.ap-toolbar { display: flex; gap: 12px; padding: 12px 16px; background: var(--neutral-0); border: 1px solid var(--neutral-200); border-radius: 8px; margin-bottom: 12px; align-items: center; }
+.ap-name { color: var(--semantic-600); cursor: pointer; }
 .ap-name:hover { text-decoration: underline; }
-.ap-mono { font-family: 'Menlo','Consolas',monospace; font-size: 11px; color: #4b5563; }
-.ap-muted { color: #9ca3af; font-size: 12px; }
+.ap-mono { font-family: 'Menlo','Consolas',monospace; font-size: 11px; color: var(--neutral-700); }
+.ap-muted { color: var(--neutral-500); font-size: 12px; }
 
 /* 卡片网格视图 */
 .ap-card {
@@ -366,7 +366,7 @@ onMounted(reload)
   flex-wrap: wrap;
 }
 .ap-card__name {
-  font-size: 14px; flex: 1; color: #111827;
+  font-size: 14px; flex: 1; color: var(--neutral-900);
   min-width: 0;
 }
 .ap-card__tag { font-size: 11px; }
@@ -387,7 +387,7 @@ onMounted(reload)
   padding-top: 8px;
   border-top: 1px dashed var(--neutral-100, #e5e7eb);
 }
-.ap-card__num { font-weight: 600; color: #111827; margin-left: 4px; }
+.ap-card__num { font-weight: 600; color: var(--neutral-900); margin-left: 4px; }
 .ap-card__owner {
   font-size: 11px; color: var(--neutral-500, #6b7280); margin-top: 4px;
 }

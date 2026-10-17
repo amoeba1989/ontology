@@ -307,4 +307,19 @@ function confirmImport() {
 .icc-en { font-size: 10px; color: #94a3b8; }
 
 .import-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .import-demo { background: var(--neutral-100); }
+html[data-theme="dark"] .import-demo p { color: var(--neutral-600); }
+html[data-theme="dark"] .import-demo button { background: var(--neutral-200); border-color: var(--neutral-300); color: var(--neutral-800); }
+html[data-theme="dark"] .step1-import__title,
+html[data-theme="dark"] .import-summary__title,
+html[data-theme="dark"] .card-num,
+html[data-theme="dark"] .icc-name,
+html[data-theme="dark"] .import-drop__title { color: var(--neutral-900); }
+html[data-theme="dark"] .step1-import__sub { color: var(--neutral-600); }
+html[data-theme="dark"] .import-drop { background: var(--surface-card); border-color: var(--neutral-400); }
+html[data-theme="dark"] .import-summary { background: var(--surface-card); border-color: var(--neutral-200); }
+html[data-theme="dark"] .import-summary__card,
+html[data-theme="dark"] .import-class-card { background: var(--neutral-100); }
 </style>

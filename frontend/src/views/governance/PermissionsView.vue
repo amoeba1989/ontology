@@ -531,4 +531,9 @@ onMounted(() => { fetchUsers(); fetchRoles(); fetchModules() })
 
 @media (max-width: 1440px) { .role-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 1280px) { .role-grid { grid-template-columns: 1fr; } }
+
+/* ── 深色态覆盖：头像/角标图标浅色底改透射色 ── */
+html[data-theme="dark"] .user-table__avatar--admin, html[data-theme="dark"] .role-card__icon--admin { background: rgba(250, 82, 82, 0.18); }
+html[data-theme="dark"] .user-table__avatar--editor, html[data-theme="dark"] .role-card__icon--editor { background: rgba(92, 124, 250, 0.18); }
+html[data-theme="dark"] .user-table__avatar--operator, html[data-theme="dark"] .role-card__icon--operator { background: rgba(16, 185, 129, 0.18); }
 </style>

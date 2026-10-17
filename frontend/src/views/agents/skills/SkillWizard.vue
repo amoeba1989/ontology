@@ -68,4 +68,11 @@ function onTestNext() {
 .skill-wizard__step--active .skill-wizard__step-num { background: rgba(255,255,255,0.3); color: #fff; }
 .skill-wizard__step--done .skill-wizard__step-num { background: #e6f7e9; color: #1a8a3a; }
 .skill-wizard__body { min-height: 400px; }
+
+/* ── 深色态覆盖：步骤条/步骤号/完成态随主题翻转 ── */
+html[data-theme="dark"] .skill-wizard__steps { background: var(--neutral-100); }
+html[data-theme="dark"] .skill-wizard__step { color: var(--neutral-500); }
+html[data-theme="dark"] .skill-wizard__step--done { color: var(--dynamic-500); }
+html[data-theme="dark"] .skill-wizard__step-num { background: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .skill-wizard__step--done .skill-wizard__step-num { background: rgba(32, 201, 151, 0.16); color: var(--dynamic-500); }
 </style>

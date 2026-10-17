@@ -106,4 +106,15 @@ const tierLabels: Record<number, string> = { 1: '核心对象', 2: '领域对象
 }
 .config-detail-btn:hover { background: #4338ca; }
 .config-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #94a3b8; font-size: 12px; }
+
+/* ── 深色态覆盖：配置面板白底/文本层级/状态徐章随主题翻转 ── */
+html[data-theme="dark"] .config-panel { background: var(--surface-card); border-left-color: var(--neutral-200); }
+html[data-theme="dark"] .config-panel__name { color: var(--neutral-900); }
+html[data-theme="dark"] .config-panel__cn, html[data-theme="dark"] .config-label, html[data-theme="dark"] .config-edge__card { color: var(--neutral-600); }
+html[data-theme="dark"] .config-row { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .config-value, html[data-theme="dark"] .config-edge__from, html[data-theme="dark"] .config-edge__to { color: var(--neutral-900); }
+html[data-theme="dark"] .config-status--active { background: rgba(18, 184, 134, 0.16); color: var(--dynamic-500); }
+html[data-theme="dark"] .config-status--warning { background: rgba(245, 159, 0, 0.16); color: var(--kinetic-500); }
+html[data-theme="dark"] .config-status--error { background: rgba(250, 82, 82, 0.16); color: #ff8787; }
+html[data-theme="dark"] .config-edge { border-bottom-color: var(--neutral-100); }
 </style>

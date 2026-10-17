@@ -1,0 +1,63 @@
+{
+  "type": "telemetry",
+  "tick": 123,
+  "client": "",
+  "sim_time_s": 2.4600,
+  "scenario_id": 1,
+  "scenario_name": "demo_area_defense",
+  "entity_count": 6,
+  "reported_count": 6,
+  "step_ms": 0.0430,
+  "entities": [
+    {
+      "id": 512,
+      "name": "uav_quad_01",
+      "blocks": 63,
+      "transform": {
+        "latitude_deg": 39.90429810,
+        "longitude_deg": 116.39450838,
+        "altitude_m": 50.000,
+        "yaw_deg": 0.000,
+        "pitch_deg": 0.000,
+        "roll_deg": 0.000
+      },
+      "motion": { "speed_mps": 12.000, "mode": 6 },
+      "flight": { "airspeed_mps": 12.000 },
+      "faction": { "side": 2 },
+      "rf_link": {
+        "gnss_locked": true,
+        "rc_linked": true,
+        "telemetry_linked": true,
+        "gnss_sir_db": 20.00,
+        "rc_sir_db": 18.00
+      },
+      "health": { "hp": 100.0, "max_hp": 100.0, "destroyed": false }
+    },
+    {
+      "id": 513,
+      "name": "jammer_01",
+      "blocks": 73,
+      "transform": {
+        "latitude_deg": 39.90700000,
+        "longitude_deg": 116.39100000,
+        "altitude_m": 70.000,
+        "yaw_deg": 0.000,
+        "pitch_deg": 0.000,
+        "roll_deg": 0.000
+      },
+      "faction": { "side": 1 },
+      "jammer": {
+        "enabled": true,
+        "emitting": true,
+        "style": 1,
+        "eirp_dbm": 59.0,
+        "freq_hz": 1575420000,
+        "bandwidth_hz": 20000000,
+        "boresight_yaw_deg": 0.00,
+        "boresight_pitch_deg": 15.00,
+        "half_angle_deg": 30.00,
+        "sidelobe_gain_dbi": 0.00
+      }
+    }
+  ]
+}

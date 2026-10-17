@@ -68,4 +68,13 @@ function formatCount(n: number) {
   background: #94a3b8; border: 2px solid #fff;
   border-radius: 50%;
 }
+
+/* ── 深色态覆盖：数据源节点白底/边框随画布主题翻转 ── */
+html[data-theme="dark"] .data-node { background: var(--neutral-100); border-color: var(--neutral-400); }
+html[data-theme="dark"] .data-node:hover { border-color: var(--neutral-500); background: var(--neutral-200); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+html[data-theme="dark"] .data-node--selected { border-color: var(--neutral-500); background: var(--neutral-200); }
+html[data-theme="dark"] .data-node__header { color: var(--neutral-600); }
+html[data-theme="dark"] .data-node__table { color: var(--neutral-800); }
+html[data-theme="dark"] .data-node__count { color: var(--neutral-600); }
+html[data-theme="dark"] .data-node__handle { border-color: var(--neutral-0); }
 </style>

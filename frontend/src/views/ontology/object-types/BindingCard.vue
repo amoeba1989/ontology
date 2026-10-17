@@ -185,4 +185,10 @@ function kindLabel(a: Asset) {
 .bc-mono { font-family: 'Menlo','Consolas',monospace; font-size: 12px; }
 .bc-extra { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e5e7eb; }
 .bc-extra__label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+
+/* ── 深色态覆盖：卡片白底/警告条/分隔随主题翻转 ── */
+html[data-theme="dark"] .bc { background: var(--surface-card); }
+html[data-theme="dark"] .bc-warn { background: rgba(245,159,0,.14); color: var(--kinetic-300); }
+html[data-theme="dark"] .bc-extra { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .bc-extra__label { color: var(--neutral-600); }
 </style>

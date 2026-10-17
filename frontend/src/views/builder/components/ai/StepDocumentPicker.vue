@@ -181,4 +181,17 @@ onMounted(async () => {
 .step-doc__btn { padding: 10px 24px; background: #2e7d32; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
 .step-doc__btn:disabled { opacity: 0.5; cursor: default; }
 .step-doc__btn--skip { background: transparent; color: #666; border: 1px solid #d0d0d0; }
+
+/* ── 深色态覆盖 ── */
+html[data-theme="dark"] .step-doc__sub { color: var(--neutral-600); }
+html[data-theme="dark"] .step-doc__input { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .step-doc__upload-btn { background: rgba(46, 125, 50, 0.14); color: var(--dynamic-300); border-color: var(--dynamic-500); }
+html[data-theme="dark"] .step-doc__upload-btn:hover { background: rgba(46, 125, 50, 0.22); }
+html[data-theme="dark"] .step-doc__uploaded { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-doc__uploaded-head { background: var(--neutral-100); color: var(--neutral-700); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .step-doc__uploaded-item { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .step-doc__list { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-doc__item:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .step-doc__loading { color: var(--neutral-600); }
+html[data-theme="dark"] .step-doc__btn--skip { color: var(--neutral-600); border-color: var(--neutral-300); }
 </style>

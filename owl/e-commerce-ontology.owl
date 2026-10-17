@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  电商环境场景本体（e-commerce ontology）
+  场景：domain=shopping ｜ 命名空间：http://yuanshu.ontology/ecommerce#
+  导入：backend/scripts/import_owl.py（file=owl/e-commerce-ontology.owl, domain=shopping）
+  约定：tier / primary_key / required / enum 由 rdfs:comment 标注，
+        导入后由脚本确定性补齐（OWL 原生无法表达平台语义）。
+  对象分层：T1 核心（顾客/商品/订单）、T2 领域（购物车项/支付流水/优惠券）、T3 计算结果（风险评估/风控预警事件）
+-->
+<rdf:RDF xmlns="http://yuanshu.ontology/ecommerce#"
+     xml:base="http://yuanshu.ontology/ecommerce"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+  <owl:Ontology rdf:about="http://yuanshu.ontology/ecommerce">
+    <rdfs:label>电商环境场景本体</rdfs:label>
+    <rdfs:comment>顾客-商品-订单主链路，配套支付、优惠券与风控闭环；domain=shopping</rdfs:comment>
+  </owl:Ontology>
+
+  <!-- ════════════════ 类（owl:Class）════════════════ -->
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#Customer">
+    <rdfs:label>顾客</rdfs:label>
+    <rdfs:comment>下单购买的注册用户。tier=1, primary_key=customer_id</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#Product">
+    <rdfs:label>商品</rdfs:label>
+    <rdfs:comment>可被购买的在售商品。tier=1, primary_key=product_id</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#Order">
+    <rdfs:label>订单</rdfs:label>
+    <rdfs:comment>顾客一次购买行为产生的订单，风控分析的核心对象。tier=1, primary_key=order_id</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#CartItem">
+    <rdfs:label>购物车项</rdfs:label>
+    <rdfs:comment>顾客加入购物车尚未下单的商品条目。tier=2, primary_key=cart_item_id</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#PaymentTransaction">
+    <rdfs:label>支付流水</rdfs:label>
+    <rdfs:comment>订单的一次支付动作产生的资金流水。tier=2, primary_key=txn_id</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#Coupon">
+    <rdfs:label>优惠券</rdfs:label>
+    <rdfs:comment>营销发放、可被订单核销的优惠凭证。tier=2, primary_key=coupon_id</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#OrderRiskAssessment">
+    <rdfs:label>订单风险评估</rdfs:label>
+    <rdfs:comment>规则引擎对单笔订单的风险评估结论（电商场景 T3；与无人机场景 RiskAssessment 互不冲突）。tier=3, primary_key=assessment_id</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://yuanshu.ontology/ecommerce#FraudWarningEvent">
+    <rdfs:label>风控预警事件</rdfs:label>
+    <rdfs:comment>高风险评估触发的待处置预警事件（电商场景 T3；与无人机场景 WarningEvent 互不冲突）。tier=3, primary_key=event_id</rdfs:comment>
+  </owl:Class>
+
+  <!-- ════════════════ 对象属性（owl:ObjectProperty）════════════════ -->
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#customer_places_order">
+    <rdfs:label>顾客下单</rdfs:label>
+    <rdfs:comment>一个顾客可有多笔订单。cardinality=1:N</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#order_contains_product">
+    <rdfs:label>订单包含商品</rdfs:label>
+    <rdfs:comment>每笔订单对应一个商品（最小模型，多商品走拆单）。cardinality=N:1</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#order_paid_by">
+    <rdfs:label>订单支付流水</rdfs:label>
+    <rdfs:comment>一笔订单可产生多次支付尝试（含失败重试）。cardinality=1:N</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#cart_item_belongs_to">
+    <rdfs:label>购物车项归属</rdfs:label>
+    <rdfs:comment>每个购物车项属于一个顾客。cardinality=N:1</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#CartItem"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#cart_item_references_product">
+    <rdfs:label>购物车项引用商品</rdfs:label>
+    <rdfs:comment>购物车项指向被加入的商品。cardinality=N:1</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#CartItem"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#order_applies_coupon">
+    <rdfs:label>订单核销优惠券</rdfs:label>
+    <rdfs:comment>下单时可核销一张优惠券。cardinality=N:1</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#assessed_order">
+    <rdfs:label>评估对象订单</rdfs:label>
+    <rdfs:comment>风险评估针对一笔订单给出结论。cardinality=N:1</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://yuanshu.ontology/ecommerce#triggered_event">
+    <rdfs:label>触发预警事件</rdfs:label>
+    <rdfs:comment>一次高风险评估可触发多个预警事件。cardinality=1:N</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+  </owl:ObjectProperty>
+
+  <!-- ════════════════ 数据属性：顾客 ════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#customer_id">
+    <rdfs:label>顾客编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#customer_name">
+    <rdfs:label>顾客姓名</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#member_level">
+    <rdfs:label>会员等级</rdfs:label>
+    <rdfs:comment>会员体系分层。required=true, enum=[normal|silver|gold|vip], enum_labels=[普通|银卡|金卡|VIP]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#city">
+    <rdfs:label>所在城市</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#phone">
+    <rdfs:label>手机号</rdfs:label>
+    <rdfs:comment>风控关联设备/身份的特征字段</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#risk_score">
+    <rdfs:label>顾客风险分</rdfs:label>
+    <rdfs:comment>0-100，越高越可疑</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#registered_at">
+    <rdfs:label>注册时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Customer"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <!-- ════════════════ 数据属性：商品（对齐库内已发布 Product 对象的既有属性集）════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#product_id">
+    <rdfs:label>商品编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#product_name">
+    <rdfs:label>商品名称</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#category">
+    <rdfs:label>类目</rdfs:label>
+    <rdfs:comment>商品分类。enum=[electronics|clothing|food|home], enum_labels=[数码|服饰|食品|家居]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#brand">
+    <rdfs:label>品牌</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#price">
+    <rdfs:label>售价(元)</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#cost_price">
+    <rdfs:label>成本价(元)</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#stock">
+    <rdfs:label>库存</rdfs:label>
+    <rdfs:comment>当前可售数量</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#status">
+    <rdfs:label>状态</rdfs:label>
+    <rdfs:comment>商品：在售/下架/停产；订单：待支付/已支付/已发货/已收货/已取消（具体枚举由导入脚本按实体分治补齐）</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#rating">
+    <rdfs:label>评分</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#description">
+    <rdfs:label>商品描述</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#sales_count">
+    <rdfs:label>累计销量</rdfs:label>
+    <rdfs:comment>风控参考：异常爆款/刷单特征（新增字段，导入脚本幂等补齐）</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#created_at">
+    <rdfs:label>创建时间</rdfs:label>
+    <rdfs:comment>商品为上架时间，订单为下单时间。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Product"/>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <!-- ════════════════ 数据属性：订单（对齐库内已发布 Order 对象的既有属性集）════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#order_id">
+    <rdfs:label>订单编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#user_id">
+    <rdfs:label>下单用户ID</rdfs:label>
+    <rdfs:comment>冗余外键，指向 Customer.customer_id。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#product_ids">
+    <rdfs:label>商品ID列表</rdfs:label>
+    <rdfs:comment>逗号分隔，指向 Product.product_id。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#total_amount">
+    <rdfs:label>订单总金额(元)</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#discount_amount">
+    <rdfs:label>优惠金额(元)</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#pay_amount">
+    <rdfs:label>实付金额(元)</rdfs:label>
+    <rdfs:comment>total_amount - discount_amount</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#pay_method">
+    <rdfs:label>支付方式</rdfs:label>
+    <rdfs:comment>订单与支付流水均有。required=true, enum=[alipay|wechat|card|cod], enum_labels=[支付宝|微信|银行卡|货到付款]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#shipping_address">
+    <rdfs:label>收货地址</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#risk_flag">
+    <rdfs:label>风险标记</rdfs:label>
+    <rdfs:comment>风控结论回写（新增字段）。enum=[none|suspicious|confirmed_fraud], enum_labels=[无|可疑|确认欺诈]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#channel">
+    <rdfs:label>下单渠道</rdfs:label>
+    <rdfs:comment>新增字段。enum=[app|web|store], enum_labels=[APP|网页|门店]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#created_at">
+    <rdfs:label>下单时间</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#paid_at">
+    <rdfs:label>支付时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#shipped_at">
+    <rdfs:label>发货时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#delivered_at">
+    <rdfs:label>收货时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#remark">
+    <rdfs:label>订单备注</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Order"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <!-- ════════════════ 数据属性：购物车项 ════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#cart_item_id">
+    <rdfs:label>购物车项编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#CartItem"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#cart_customer_id">
+    <rdfs:label>归属顾客编号</rdfs:label>
+    <rdfs:comment>冗余外键。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#CartItem"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#cart_product_id">
+    <rdfs:label>商品编号</rdfs:label>
+    <rdfs:comment>冗余外键。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#CartItem"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#quantity">
+    <rdfs:label>数量</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#CartItem"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#added_at">
+    <rdfs:label>加入时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#CartItem"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <!-- ════════════════ 数据属性：支付流水 ════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#txn_id">
+    <rdfs:label>流水编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#txn_order_id">
+    <rdfs:label>关联订单编号</rdfs:label>
+    <rdfs:comment>冗余外键。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#txn_amount">
+    <rdfs:label>支付金额(元)</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#pay_status">
+    <rdfs:label>支付状态</rdfs:label>
+    <rdfs:comment>required=true, enum=[initiated|success|failed|refunded], enum_labels=[已发起|成功|失败|已退款]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#gateway_ref">
+    <rdfs:label>支付网关流水号</rdfs:label>
+    <rdfs:comment>第三方支付回执，对账用</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#txn_paid_at">
+    <rdfs:label>流水完成时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#PaymentTransaction"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <!-- ════════════════ 数据属性：优惠券 ════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#coupon_id">
+    <rdfs:label>优惠券编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#coupon_name">
+    <rdfs:label>优惠券名称</rdfs:label>
+    <rdfs:comment>required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#discount_type">
+    <rdfs:label>优惠类型</rdfs:label>
+    <rdfs:comment>required=true, enum=[fixed|percent], enum_labels=[立减|折扣]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#discount_value">
+    <rdfs:label>优惠面额</rdfs:label>
+    <rdfs:comment>立减为元，折扣为百分数。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#min_order_amount">
+    <rdfs:label>使用门槛(元)</rdfs:label>
+    <rdfs:comment>订单满额可用</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#coupon_status">
+    <rdfs:label>券状态</rdfs:label>
+    <rdfs:comment>enum=[active|used|expired], enum_labels=[可用|已核销|已过期]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#valid_from">
+    <rdfs:label>生效时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#valid_to">
+    <rdfs:label>失效时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#Coupon"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <!-- ════════════════ 数据属性：风险评估 ════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#assessment_id">
+    <rdfs:label>评估编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#assessment_order_id">
+    <rdfs:label>被评估订单编号</rdfs:label>
+    <rdfs:comment>冗余外键。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#assessment_risk_score">
+    <rdfs:label>订单风险分</rdfs:label>
+    <rdfs:comment>0-100，规则引擎产出</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#risk_level">
+    <rdfs:label>风险等级</rdfs:label>
+    <rdfs:comment>enum=[low|medium|high|critical], enum_labels=[低|中|高|严重]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#hit_rules">
+    <rdfs:label>命中规则</rdfs:label>
+    <rdfs:comment>JSON 数组：命中规则 ID 与证据（证据链）</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#model_version">
+    <rdfs:label>规则/模型版本</rdfs:label>
+    <rdfs:comment>评估时的规则集版本，支撑复算与回溯</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#assessed_at">
+    <rdfs:label>评估时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#OrderRiskAssessment"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <!-- ════════════════ 数据属性：风控预警事件 ════════════════ -->
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#event_id">
+    <rdfs:label>事件编号</rdfs:label>
+    <rdfs:comment>全局唯一标识。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#event_assessment_id">
+    <rdfs:label>来源评估编号</rdfs:label>
+    <rdfs:comment>冗余外键。required=true</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#warning_type">
+    <rdfs:label>预警类型</rdfs:label>
+    <rdfs:comment>enum=[high_amount|fraud_pattern|device_abuse|coupon_abuse], enum_labels=[高额订单|欺诈模式|设备滥用|优惠券滥用]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#priority">
+    <rdfs:label>优先级</rdfs:label>
+    <rdfs:comment>enum=[p1|p2|p3], enum_labels=[紧急|重要|一般]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#event_status">
+    <rdfs:label>处置状态</rdfs:label>
+    <rdfs:comment>enum=[open|processing|resolved|false_positive], enum_labels=[待处置|处置中|已解决|误报关闭]</rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#handler">
+    <rdfs:label>处置人</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#handled_at">
+    <rdfs:label>处置时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="http://yuanshu.ontology/ecommerce#event_created_at">
+    <rdfs:label>事件产生时间</rdfs:label>
+    <rdfs:comment></rdfs:comment>
+    <rdfs:domain rdf:resource="http://yuanshu.ontology/ecommerce#FraudWarningEvent"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+  </owl:DatatypeProperty>
+</rdf:RDF>

@@ -1,6 +1,6 @@
 from alembic import context
-from sqlalchemy import create_engine
 from app.config import settings
+from app.db_engine import create_platform_engine
 
 config = context.config
 
@@ -14,5 +14,5 @@ if context.is_offline_mode():
 elif config.attributes.get("connection") is not None:
     migrate(config.attributes["connection"])
 else:
-    with create_engine(settings.DATABASE_URL).begin() as connection:
+    with create_platform_engine(settings).begin() as connection:
         migrate(connection)

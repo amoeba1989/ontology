@@ -39,4 +39,7 @@ defineProps<{ data: { label: string } }>()
   border: none;
 }
 .ln-node__handle--hidden { visibility: hidden; }
+
+/* ── 深色态覆盖：行动/规则节点浅底→橙色半透（彩色描边保留）── */
+html[data-theme="dark"] .ln-node--app { background: rgba(245,158,11,.15); color: #ffa94d; }
 </style>

@@ -380,4 +380,43 @@ async function onTestFire() {
 .aip-history__meta { font-size: 11px; color: #94a3b8; padding-top: 4px; display: flex; gap: 6px; }
 
 .aip-bd__empty { color: #94a3b8; text-align: center; padding: 32px 16px; font-size: 12px; }
+
+/* ── 深色态覆盖：抽屉白底/输入/卡片/标签随主题翻转 ── */
+html[data-theme="dark"] .aip-sd { background: var(--surface-card); }
+html[data-theme="dark"] .aip-sd__header { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-sd__title { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-sd__sub { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-sd__close:hover { background: var(--neutral-100); color: var(--neutral-900); }
+html[data-theme="dark"] .aip-sd__tabs { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-sd__tab { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-sd__tab:hover { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-sd__tab.active { color: var(--semantic-300); border-bottom-color: var(--semantic-500); }
+html[data-theme="dark"] .aip-field--row { color: var(--neutral-700); }
+html[data-theme="dark"] .aip-field > label { color: var(--neutral-700); }
+html[data-theme="dark"] .aip-field__inline-label { color: var(--neutral-500); }
+html[data-theme="dark"] .aip-field__hint { color: var(--neutral-500); }
+html[data-theme="dark"] .aip-input { background: var(--neutral-100); border-color: var(--neutral-300); color: var(--neutral-800); }
+html[data-theme="dark"] .aip-input:focus { border-color: var(--semantic-500); box-shadow: 0 0 0 2px rgba(92,124,250,.18); }
+html[data-theme="dark"] .aip-status-pill--published { background: rgba(16,185,129,.16); color: var(--dynamic-300); }
+html[data-theme="dark"] .aip-status-pill--draft { background: rgba(245,158,11,.16); color: var(--kinetic-300); }
+html[data-theme="dark"] .aip-tag--blue { background: rgba(37,99,235,.18); color: #91c7ff; }
+html[data-theme="dark"] .aip-stat { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-stat__val { color: var(--semantic-300); }
+html[data-theme="dark"] .aip-stat__label { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-trigger-card { background: var(--neutral-100); border-color: var(--neutral-300); color: var(--neutral-700); }
+html[data-theme="dark"] .aip-trigger-card:hover { border-color: var(--neutral-400); }
+html[data-theme="dark"] .aip-trigger-card.active { border-color: var(--semantic-500); background: rgba(92,124,250,.1); color: var(--semantic-300); }
+html[data-theme="dark"] .aip-trigger-card__desc { color: var(--neutral-500); }
+html[data-theme="dark"] .aip-trigger-card.active .aip-trigger-card__desc { color: var(--semantic-300); }
+html[data-theme="dark"] .aip-switch { color: var(--neutral-700); }
+html[data-theme="dark"] .aip-cron-preset__label { color: var(--neutral-500); }
+html[data-theme="dark"] .aip-cron-chip { background: var(--neutral-100); border-color: var(--neutral-300); color: var(--neutral-700); }
+html[data-theme="dark"] .aip-cron-chip:hover { border-color: var(--semantic-500); color: var(--semantic-300); }
+html[data-theme="dark"] .aip-history { background: var(--neutral-100); }
+html[data-theme="dark"] .aip-history__status--success { background: rgba(5,150,105,.18); color: #69db7c; }
+html[data-theme="dark"] .aip-history__status--error { background: rgba(220,38,38,.18); color: #ff8787; }
+html[data-theme="dark"] .aip-history__status--running { background: rgba(37,99,235,.18); color: #91c7ff; }
+html[data-theme="dark"] .aip-history__time { color: var(--neutral-800); }
+html[data-theme="dark"] .aip-history__trigger { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-history__meta { color: var(--neutral-500); }
 </style>

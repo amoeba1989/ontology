@@ -129,4 +129,14 @@ onMounted(async () => {
 .step-assets__remove { border: none; background: none; color: #d00; cursor: pointer; font-size: 16px; }
 .step-assets__btn { margin-top: 12px; padding: 10px 24px; background: #4a6fa5; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
 .step-assets__btn:disabled { opacity: 0.5; cursor: default; }
+
+/* ── 深色态覆盖：面板边框/页签/悬停/已选项随主题翻转 ── */
+html[data-theme="dark"] .step-assets__sub, html[data-theme="dark"] .step-assets__item-sub, html[data-theme="dark"] .step-assets__empty, html[data-theme="dark"] .step-assets__selected-label { color: var(--neutral-500); }
+html[data-theme="dark"] .step-assets__left, html[data-theme="dark"] .step-assets__right { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-assets__tab { background: var(--surface-card); border-color: var(--neutral-200); color: var(--neutral-700); }
+html[data-theme="dark"] .step-assets__tab--active { background: var(--semantic-600); border-color: var(--semantic-600); color: #fff; }
+html[data-theme="dark"] .step-assets__search { border-color: var(--neutral-200); background: var(--surface-card); }
+html[data-theme="dark"] .step-assets__item:hover { background: var(--neutral-100); }
+html[data-theme="dark"] .step-assets__selected-item { background: rgba(76, 110, 245, 0.12); }
+html[data-theme="dark"] .step-assets__remove { color: #ff8787; }
 </style>

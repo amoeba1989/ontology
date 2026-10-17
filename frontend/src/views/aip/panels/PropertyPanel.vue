@@ -1,6 +1,6 @@
 <template>
   <div v-if="node" class="aip-pp">
-    <div class="aip-pp__header" :style="{ background: '#fff' }">
+    <div class="aip-pp__header">
       <div class="aip-pp__icon" :style="{ background: meta?.color || '#94a3b8' }" v-html="iconSvg"></div>
       <div class="aip-pp__title-wrap">
         <div class="aip-pp__title">{{ node.data.label || '节点' }}</div>
@@ -460,4 +460,27 @@ const iconSvg = computed(() => {
 }
 .aip-btn--danger { background: #fff; color: #ef4444; border-color: #fecaca; }
 .aip-btn--danger:hover { background: #fef2f2; }
+
+/* ── 深色态覆盖：面板白底/输入/列表项/徒章随主题翻转 ── */
+html[data-theme="dark"] .aip-pp { background: var(--surface-card); }
+html[data-theme="dark"] .aip-pp__header { border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-pp__title { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-pp__btn-ghost { background: transparent; color: var(--semantic-300); border-color: var(--semantic-500); }
+html[data-theme="dark"] .aip-pp__close:hover { background: var(--neutral-200); color: var(--neutral-900); }
+html[data-theme="dark"] .aip-field > label { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-input { background: var(--neutral-100); color: var(--neutral-800); border-color: var(--neutral-300); }
+html[data-theme="dark"] .aip-input:focus { border-color: var(--semantic-500); }
+html[data-theme="dark"] .aip-filter-line,
+html[data-theme="dark"] .aip-list-item,
+html[data-theme="dark"] .aip-branch { background: var(--neutral-100); border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-filter-line { color: var(--neutral-700); }
+html[data-theme="dark"] .aip-tag--gold { background: rgba(180, 83, 9, 0.2); color: var(--kinetic-300); }
+html[data-theme="dark"] .aip-icon-btn:hover { color: #ff8787; }
+html[data-theme="dark"] .aip-add-btn { background: transparent; color: var(--neutral-700); border-color: var(--neutral-400); }
+html[data-theme="dark"] .aip-add-btn:hover { color: var(--semantic-300); border-color: var(--semantic-500); }
+html[data-theme="dark"] .aip-branch__label { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-branch__action { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-pp__actions { border-top-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-btn--danger { background: transparent; color: #ff8787; border-color: rgba(239, 68, 68, 0.4); }
+html[data-theme="dark"] .aip-btn--danger:hover { background: rgba(239, 68, 68, 0.12); }
 </style>

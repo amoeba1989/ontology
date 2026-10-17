@@ -69,6 +69,7 @@ from app.connectors.sqlserver import SQLServerConnector  # noqa: F401,E402
 from app.connectors.s3 import S3Connector  # noqa: F401,E402
 from app.connectors.ftp import FTPConnector, SFTPConnector  # noqa: F401,E402
 from app.connectors.kafka import KafkaConnector  # noqa: F401,E402
+from app.connectors.mqtt import MQTTConnector  # noqa: F401,E402
 from app.connectors.http_api import HTTPApiConnector as _HTTPApiConn  # noqa: F401,E402
 
 # 手动注册 — DB connector 内部用 @ConnectorRegistry.register 装饰器
@@ -76,6 +77,7 @@ ConnectorRegistry._by_kt[("object_storage", "s3")] = S3Connector
 ConnectorRegistry._by_kt[("file_transfer", "ftp")] = FTPConnector
 ConnectorRegistry._by_kt[("file_transfer", "sftp")] = SFTPConnector
 ConnectorRegistry._by_kt[("message_queue", "kafka")] = KafkaConnector
+ConnectorRegistry._by_kt[("message_queue", "mqtt")] = MQTTConnector
 ConnectorRegistry._by_kt[("api", "rest")] = _HTTPApiConn
 
 __all__ = [

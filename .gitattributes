@@ -1,1 +1,7 @@
 backend/ontology.db merge=ours
+
+# 部署脚本与容器配置在 ECS 上必须是 LF：带 CRLF 时 sh 会把 \r 当成命令的一部分，
+# Gitee Go 的 git checkout 和 Actions 的 git archive 两条路径都会在这里出问题。
+*.sh text eol=lf
+*.conf text eol=lf
+*.service text eol=lf

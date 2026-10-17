@@ -535,4 +535,10 @@ const filteredRules = computed(() =>
   font-size: 12px;
   color: #b91c1c;
 }
+
+/* ── 深色态覆盖：命中高亮/结论/错误文本随主题翻转 ── */
+html[data-theme="dark"] .eval-result--hit { background: rgba(250, 82, 82, 0.14); border-color: rgba(250, 82, 82, 0.4); }
+html[data-theme="dark"] .eval-result--hit .eval-summary { color: #ff8787; }
+html[data-theme="dark"] .eval-cond--ok { color: var(--dynamic-300); }
+html[data-theme="dark"] .eval-error { color: #ff8787; }
 </style>

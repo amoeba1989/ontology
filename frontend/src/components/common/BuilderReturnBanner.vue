@@ -64,4 +64,10 @@ function cancel() {
   color: #4f46e5; font-size: 11px; cursor: pointer;
 }
 .brb-cancel:hover { border-color: #4f46e5; background: #eef2ff; }
+
+/* ── 深色态覆盖：横幅文本/取消按钮随主题翻转 ── */
+html[data-theme="dark"] .brb { background: rgba(99, 102, 241, 0.14); border-color: rgba(99, 102, 241, 0.4); color: var(--semantic-200); }
+html[data-theme="dark"] .brb-text strong { color: var(--neutral-900); }
+html[data-theme="dark"] .brb-cancel { background: var(--surface-card); color: var(--semantic-300); border-color: rgba(99, 102, 241, 0.4); }
+html[data-theme="dark"] .brb-cancel:hover { background: rgba(99, 102, 241, 0.2); }
 </style>

@@ -756,4 +756,20 @@ onMounted(initSession)
   transition: background 0.15s;
 }
 .btn-primary:hover { background: var(--semantic-700, #4338ca); }
+
+/* ── 深色态覆盖：硬编码白底/pill/不翻转的令牌文字 ── */
+html[data-theme="dark"] .suggestion-btn { background: var(--surface-card); color: var(--neutral-700); }
+html[data-theme="dark"] .suggestion-btn--required { background: var(--semantic-50); }
+html[data-theme="dark"] .guided-input { background: var(--surface-card); }
+html[data-theme="dark"] .guided-input__upload,
+html[data-theme="dark"] .guided-input__send { background: var(--neutral-100); color: var(--neutral-500); }
+html[data-theme="dark"] .build-progress-card__step { color: var(--semantic-300); }
+html[data-theme="dark"] .stat-badge--blue { background: rgba(59,130,246,.18); color: #91c7ff; }
+html[data-theme="dark"] .stat-badge--green { background: rgba(22,163,74,.18); color: #69db7c; }
+html[data-theme="dark"] .stat-badge--amber { background: rgba(180,83,9,.2); color: #ffd43b; }
+html[data-theme="dark"] .tier-dot--t1 { color: #91c7ff; }
+html[data-theme="dark"] .tier-dot--t2 { color: #b197fc; }
+html[data-theme="dark"] .tier-dot--t3 { color: #63e6be; }
+html[data-theme="dark"] .conflict-title,
+html[data-theme="dark"] .conflict-msg { color: var(--kinetic-300); }
 </style>

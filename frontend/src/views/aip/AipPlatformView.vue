@@ -469,4 +469,25 @@ function pad(n: number) { return String(n).padStart(2, '0') }
 }
 .aip-stale-detail ul { margin: 0; padding-left: 16px; }
 .aip-stale-detail li { margin: 2px 0; }
+
+/* ── 深色态覆盖：AIP 平台顶栏/画布底/右侧抽屉/按钮/状态徐章随主题翻转 ── */
+html[data-theme="dark"] .aip-page { background: var(--neutral-50); }
+html[data-theme="dark"] .aip-header { background: var(--surface-card); border-bottom-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-header__title, html[data-theme="dark"] .aip-header__scene { color: var(--neutral-900); }
+html[data-theme="dark"] .aip-header__divider { color: var(--neutral-400); }
+html[data-theme="dark"] .aip-header__version { background: var(--neutral-100); color: var(--neutral-600); }
+html[data-theme="dark"] .aip-header__status-tag--published { background: rgba(18, 184, 134, 0.16); color: var(--dynamic-500); }
+html[data-theme="dark"] .aip-header__status-tag--draft { background: rgba(245, 159, 0, 0.14); color: var(--kinetic-500); }
+html[data-theme="dark"] .aip-header__trigger:hover { background: var(--neutral-100); color: var(--semantic-300); }
+html[data-theme="dark"] .aip-header__trigger, html[data-theme="dark"] .aip-header__count, html[data-theme="dark"] .aip-progress__text { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-btn { background: var(--surface-card); color: var(--neutral-700); }
+html[data-theme="dark"] .aip-btn--ghost { border-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-btn--ghost:hover:not(:disabled) { border-color: var(--semantic-500); color: var(--semantic-300); background: rgba(92, 124, 250, 0.1); }
+html[data-theme="dark"] .aip-progress__bar { background: var(--neutral-100); }
+html[data-theme="dark"] .aip-canvas-wrap { background: radial-gradient(rgba(92, 124, 250, 0.06) 0%, rgba(92, 124, 250, 0.03) 30%, var(--neutral-50) 70%, var(--neutral-50) 100%); }
+html[data-theme="dark"] .aip-canvas-loading { color: var(--neutral-600); }
+html[data-theme="dark"] .aip-right-drawer { background: var(--surface-card); border-left-color: var(--neutral-200); }
+html[data-theme="dark"] .aip-stale-banner { background: rgba(245, 159, 0, 0.14); border-bottom-color: rgba(245, 159, 0, 0.3); }
+html[data-theme="dark"] .aip-stale-banner__text { color: var(--kinetic-300); }
+html[data-theme="dark"] .aip-stale-detail { background: rgba(245, 159, 0, 0.1); border-bottom-color: rgba(245, 159, 0, 0.24); }
 </style>

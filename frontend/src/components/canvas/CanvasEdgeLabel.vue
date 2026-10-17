@@ -54,4 +54,7 @@ const labelStyle = computed(() => ({
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 .edge-label__card { color: #94a3b8; font-size: 9px; }
+
+/* ── 深色态覆盖：连线标签白底随主题翻转 ── */
+html[data-theme="dark"] .edge-label { background: rgba(33, 34, 38, 0.9); border-color: var(--neutral-200); color: var(--neutral-600); }
 </style>

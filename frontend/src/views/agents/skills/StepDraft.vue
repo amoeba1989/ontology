@@ -122,4 +122,13 @@ async function handleNext() {
 .step-draft__warning { font-size: 11px; color: #d32f2f; margin-top: 4px; }
 .step-draft__btn { padding: 10px 24px; background: #4a6fa5; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
 .step-draft__btn:hover { background: #3d5f8c; }
+
+/* ── 深色态覆盖：分区卡/重生成按钮/输入边框/工具块随主题翻转 ── */
+html[data-theme="dark"] .step-draft__section { border-color: var(--neutral-200); }
+html[data-theme="dark"] .step-draft__regen { background: var(--surface-card); color: var(--semantic-300); border-color: rgba(92, 124, 250, 0.4); }
+html[data-theme="dark"] .step-draft__regen:hover { background: rgba(76, 110, 245, 0.12); }
+html[data-theme="dark"] .step-draft__form label { color: var(--neutral-500); }
+html[data-theme="dark"] .step-draft__form input, html[data-theme="dark"] .step-draft__code, html[data-theme="dark"] .step-draft__tool-name, html[data-theme="dark"] .step-draft__tool-desc { border-color: var(--neutral-200); background: var(--surface-card); }
+html[data-theme="dark"] .step-draft__tool { background: var(--neutral-100); }
+html[data-theme="dark"] .step-draft__warning { color: #ff8787; }
 </style>
