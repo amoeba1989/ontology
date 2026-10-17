@@ -33,6 +33,7 @@ export interface DataAsset {
 
 // ── 对象、属性、关系（全平台统一术语） ──
 export interface OntologyProperty {
+  _confidence_score?: number
   id: string
   name: string
   displayName: string
@@ -161,6 +162,7 @@ export interface DrillResult {
 }
 
 export interface BuilderSession {
+  mappingScope?: 'all' | 'selected' | string
   sessionId: string
   ontologyName: string
   scenarioId?: string

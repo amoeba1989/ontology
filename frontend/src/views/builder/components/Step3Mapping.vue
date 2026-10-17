@@ -188,9 +188,8 @@ function tableOptionsForObj(obj: any) {
 function filterTableOption(input: string, option: any) {
   return option.label.toLowerCase().includes(input.toLowerCase())
 }
-
-function onTableBindChange(obj: any) {
-  syncStore()
+function onTableBindChange(_obj: any) {
+    syncStore();
 }
 
 function columnOptionsForObj(obj: any) {
@@ -208,19 +207,20 @@ function columnOptionsForObj(obj: any) {
 function filterColumnOption(input: string, option: any) {
   return option.label.toLowerCase().includes(input.toLowerCase())
 }
-
 function onColumnChange(p: any, val: string | undefined) {
-  if (val) {
-    const [assetId, col] = val.split('::')
-    p.source_asset_id = assetId
-    p.source_column = val
-    if (!p._confidence_score) p._confidence_score = 1
-  } else {
-    p.source_asset_id = undefined
-    p.source_column = undefined
-    p._confidence_score = 0
-  }
-  syncStore()
+    if (val) {
+        const [assetId] = val.split('::');
+        p.source_asset_id = assetId;
+        p.source_column = val;
+        if (!p._confidence_score)
+            p._confidence_score = 1;
+    }
+    else {
+        p.source_asset_id = undefined;
+        p.source_column = undefined;
+        p._confidence_score = 0;
+    }
+    syncStore();
 }
 
 function syncStore() {

@@ -37,14 +37,15 @@ export interface RuleEvaluateResult {
 
 export const ruleApi = {
   list(query?: RuleQuery) {
-    return get<BusinessRule[]>('/rules', { params: query })
+    const { entityId, ...rest } = query ?? {}
+    return get<BusinessRule[]>('/rules', { params: { ...rest, entity_id: entityId } })
   },
 
   detail(id: string) {
     return get<BusinessRule>(`/rules/${id}`)
   },
 
-  create(data: Partial<BusinessRule>) {
+  create(data: Partial<BusinessRule> & { entity_id?: string; condition_expr?: string; action_desc?: string }) {
     return post<BusinessRule>('/rules', data)
   },
 

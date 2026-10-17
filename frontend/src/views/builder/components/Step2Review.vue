@@ -238,23 +238,16 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
 import { useBuilderStore } from '../../../store/builder'
 import { ruleApi } from '../../../api/rules'
 import { actionApi } from '../../../api/actions'
-import type {
-  BuilderSession,
-  OntologyHints,
-  SuggestedRule,
-  SuggestedAction,
-} from '../../../types/builder'
+import type { BuilderSession, OntologyHints, SuggestedRule, SuggestedAction } from '../../../types/builder';
 import SemanticCanvas from './graph/SemanticCanvas.vue'
 import ResourcePickerMulti from './manual/ResourcePickerMulti.vue'
 
 const props = defineProps<{ session: BuilderSession }>()
 const emit = defineEmits<{ (e: 'prev'): void; (e: 'next'): void }>()
 const store = useBuilderStore()
-const router = useRouter()
 
 const selectedId = ref<string | null>(props.session.ontologyObjects[0]?.id || null)
 const objects = ref([...props.session.ontologyObjects])
@@ -458,46 +451,54 @@ function ignoreHint(id: string, kind: 'rule' | 'action') {
   syncStore()
 }
 async function createFromHint(h: SuggestedRule | SuggestedAction, kind: 'rule' | 'action') {
-  const objectId = h.targetObjectId || selected.value?.id || objects.value[0]?.id || ''
-  if (!objectId) { message.warning('没有可挂载的对象'); return }
-  hintCreating.value = true
-  try {
-    if (kind === 'rule') {
-      const rh = h as SuggestedRule
-      const created = await ruleApi.create({
-        entity_id: objectId,
-        name: rh.name,
-        condition_expr: rh.conditionHint || rh.description || '',
-        action_desc: rh.actionHint || '',
-        status: 'active',
-        priority: 'medium',
-      })
-      const obj = objects.value.find(o => o.id === objectId)
-      if (obj && created?.id) {
-        obj.rules = [...new Set([...obj.rules, created.id])]
-      }
-      message.success(`规则「${rh.name}」已创建`)
-    } else {
-      const ah = h as SuggestedAction
-      const created = await actionApi.create({
-        entity_id: objectId,
-        name: ah.name,
-        type: 'manual',
-        status: 'active',
-      })
-      const obj = objects.value.find(o => o.id === objectId)
-      if (obj && created?.id) {
-        obj.actions = [...new Set([...obj.actions, created.id])]
-      }
-      message.success(`动作「${ah.name}」已创建`)
+    const objectId = h.targetObjectId || selected.value?.id || objects.value[0]?.id || '';
+    if (!objectId) {
+        message.warning('没有可挂载的对象');
+        return;
     }
-    ignoreHint(h.id, kind)
-    syncStore()
-  } catch (e: any) {
-    message.error('创建失败：' + (e.message || e))
-  } finally {
-    hintCreating.value = false
-  }
+    hintCreating.value = true;
+    try {
+        if (kind === 'rule') {
+            const rh = h as SuggestedRule;
+            const created = await ruleApi.create({
+                entity_id: objectId,
+                name: rh.name,
+                condition_expr: rh.conditionHint || rh.description || '',
+                action_desc: rh.actionHint || '',
+                status: 'active',
+                priority: 'medium',
+            });
+            const obj = objects.value.find(o => o.id === objectId);
+            if (obj && created?.id) {
+                obj.rules = [...new Set([...obj.rules, created.id])];
+            }
+            message.success(`规则「${rh.name}」已创建`);
+        }
+        else {
+            const ah = h as SuggestedAction;
+            const created = await actionApi.create({
+                entity_id: objectId,
+                name: ah.name,
+                action_type: 'notification',
+                category: 'domain',
+                type_config: { channel: 'system', recipient: 'operator', message_template: ah.description || ah.name },
+                status: 'inactive',
+            });
+            const obj = objects.value.find(o => o.id === objectId);
+            if (obj && created?.id) {
+                obj.actions = [...new Set([...obj.actions, created.id])];
+            }
+            message.success(`动作「${ah.name}」已创建`);
+        }
+        ignoreHint(h.id, kind);
+        syncStore();
+    }
+    catch (e: any) {
+        message.error('创建失败：' + (e.message || e));
+    }
+    finally {
+        hintCreating.value = false;
+    }
 }
 
 const attachModal = reactive<{ open: boolean; kind: 'rule' | 'action'; objectId: string; picked: string[]; hintId: string }>({

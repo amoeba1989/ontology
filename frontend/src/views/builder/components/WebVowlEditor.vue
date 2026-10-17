@@ -219,7 +219,7 @@ import type { Node, Edge, Connection, NodeMouseEvent, EdgeMouseEvent, NodeDragEv
 
 import { useOwlEditorStore } from '../../../store/owlEditor'
 import { owlEditorApi } from '../../../api/owlEditor'
-import type { OwlClass, OwlDataProperty, OwlObjectProperty, ObjectPropertyCharacteristic } from '../../../types/owl'
+import type { OwlClass, OwlDataProperty, ObjectPropertyCharacteristic } from '../../../types/owl';
 import { uid } from '../../../utils/owl/iri'
 
 const store = useOwlEditorStore()
@@ -516,13 +516,13 @@ function removeProp() {
   clearSelection()
   rebuild()
 }
-
 // ── 文档持久化 ──
-
 function flash(msg: string, err = false) {
-  saveMsg.value = msg
-  saveErr.value = err
-  if (!err) setTimeout(() => { if (saveMsg.value === msg) saveMsg.value = '' }, 2600)
+    saveMsg.value = msg;
+    saveErr.value = err;
+    if (!err)
+        setTimeout(() => { if (saveMsg.value === msg)
+            saveMsg.value = ''; }, 2600);
 }
 
 async function onOpenDoc(e: Event) {

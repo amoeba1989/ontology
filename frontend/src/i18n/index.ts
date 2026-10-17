@@ -26,7 +26,7 @@ export default i18n
 
 // 语言切换工具函数
 export function setLocale(locale: string) {
-  i18n.global.locale.value = locale
+  i18n.global.locale.value = locale === 'en' ? 'en' : 'zh-CN'
   localStorage.setItem('language', locale)
   document.documentElement.lang = locale
 }

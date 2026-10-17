@@ -105,14 +105,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { useBuilderStore } from '../../../store/builder'
-import type {
-  BuilderSession,
-  OntologyObjectDraft,
-  OntologyProperty,
-  OntologyRelationDraft,
-  SuggestedRule,
-  SuggestedAction,
-} from '../../../types/builder'
+import type { BuilderSession, OntologyObjectDraft, OntologyProperty, OntologyRelationDraft, SuggestedRule, SuggestedAction } from '../../../types/builder';
 import SemanticCanvas from './graph/SemanticCanvas.vue'
 import AssetPickerCard from './copilot/AssetPickerCard.vue'
 
@@ -320,18 +313,22 @@ function handleToolResult(ev: any) {
     if (last) last.draft = draft.value
   }
 }
-
-function onPickerSubmit(payload: { kind: string; ids: string[]; names: string[] }, msgId: string) {
-  if (payload.kind === 'datasource') {
-    selectedDsIds.value = payload.ids
-    pushMessage({ role: 'user', content: `已选好 ${payload.ids.length} 个数据源：${payload.names.join('、')}（ids=${payload.ids.join(',')}）` })
-    callChat(`用户已选好数据源，ids=[${payload.ids.map(i => `"${i}"`).join(',')}]，请继续列出业务文档。`)
-  } else if (payload.kind === 'document') {
-    selectedDocIds.value = payload.ids
-    pushMessage({ role: 'user', content: `已选好 ${payload.ids.length} 份文档：${payload.names.join('、')}（ids=${payload.ids.join(',')}）` })
-    const ctx = messages.value.filter(m => m.role === 'user').map(m => m.content).join(' ')
-    callChat(`用户已选好文档，ids=[${payload.ids.map(i => `"${i}"`).join(',')}]，已选数据源 ids=[${selectedDsIds.value.map(i => `"${i}"`).join(',')}]，业务上下文：${ctx.slice(0, 500)}。请调用 analyze_assets_for_ontology 抽取本体草稿。`)
-  }
+function onPickerSubmit(payload: {
+    kind: string;
+    ids: string[];
+    names: string[];
+}, _msgId: string) {
+    if (payload.kind === 'datasource') {
+        selectedDsIds.value = payload.ids;
+        pushMessage({ role: 'user', content: `已选好 ${payload.ids.length} 个数据源：${payload.names.join('、')}（ids=${payload.ids.join(',')}）` });
+        callChat(`用户已选好数据源，ids=[${payload.ids.map(i => `"${i}"`).join(',')}]，请继续列出业务文档。`);
+    }
+    else if (payload.kind === 'document') {
+        selectedDocIds.value = payload.ids;
+        pushMessage({ role: 'user', content: `已选好 ${payload.ids.length} 份文档：${payload.names.join('、')}（ids=${payload.ids.join(',')}）` });
+        const ctx = messages.value.filter(m => m.role === 'user').map(m => m.content).join(' ');
+        callChat(`用户已选好文档，ids=[${payload.ids.map(i => `"${i}"`).join(',')}]，已选数据源 ids=[${selectedDsIds.value.map(i => `"${i}"`).join(',')}]，业务上下文：${ctx.slice(0, 500)}。请调用 analyze_assets_for_ontology 抽取本体草稿。`);
+    }
 }
 
 function confirmAll() {

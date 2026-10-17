@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { OwlOntology, OwlClass, OwlObjectProperty, OwlDataProperty, OwlIndividual, OwlAnnotation, ObjectPropertyCharacteristic, OwlNamespace } from '../types/owl'
+import type { OwlOntology, OwlClass, OwlObjectProperty, OwlDataProperty, OwlIndividual, OwlNamespace } from '../types/owl';
 import { uid } from '../utils/owl/iri'
 // 前端序列化/解析仍被 Protege 编辑器视图使用；WebVowl 编辑器统一走后端 owlEditorApi
 import { serializeToOwlXml, downloadOwlFile } from '../utils/owl/serializer'

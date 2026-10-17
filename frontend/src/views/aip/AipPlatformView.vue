@@ -279,7 +279,7 @@ function onConnect(conn: any) {
   const before = new Set(flowEdges.value.map((e: any) => e.id))
   flowEdges.value = newEdges
   for (const e of newEdges) {
-    if (!before.has(e.id)) {
+    if (!before.has(e.id) && 'source' in e && 'target' in e) {
       store.addEdge({
         id: e.id,
         source: e.source,

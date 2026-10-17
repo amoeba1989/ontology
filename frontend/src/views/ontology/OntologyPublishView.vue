@@ -228,7 +228,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { get, post, put, del } from '../../api/client'
+import { get, post, del } from '../../api/client';
 import { ontologyPublishApi } from '../../api/aip'
 
 interface VersionSummary {
@@ -286,10 +286,9 @@ onMounted(async () => {
 async function loadVersions() {
   versions.value = await get('/ontology-publish/versions')
 }
-
 async function loadAllEntities() {
-  const list = await get('/entities')
-  allEntities.value = (list.items || list).map((e: any) => ({ id: e.id, name: e.name, name_cn: e.name_cn, tier: e.tier }))
+    const list = await get<Array<{ id: string; name_cn: string; name: string; tier: number }>>('/entities');
+    allEntities.value = list.map((e: any) => ({ id: e.id, name: e.name, name_cn: e.name_cn, tier: e.tier }));
 }
 
 async function selectVersion(id: string) {
@@ -297,14 +296,13 @@ async function selectVersion(id: string) {
   checkResult.value = null
   detail.value = await get(`/ontology-publish/versions/${id}`)
 }
-
 async function createVersion() {
-  const v = await post('/ontology-publish/versions', { name: newVersion.name, description: newVersion.description || null })
-  showCreateDialog.value = false
-  newVersion.name = ''
-  newVersion.description = ''
-  await loadVersions()
-  await selectVersion(v.id)
+    const v = await post<{ id: string }>('/ontology-publish/versions', { name: newVersion.name, description: newVersion.description || null });
+    showCreateDialog.value = false;
+    newVersion.name = '';
+    newVersion.description = '';
+    await loadVersions();
+    await selectVersion(v.id);
 }
 
 async function deleteVersion() {
@@ -370,14 +368,14 @@ async function rejectVersion() {
   await loadVersions()
   await selectVersion(detail.value.id)
 }
-
 async function rollbackVersion() {
-  if (!detail.value) return
-  loading.value = true
-  const v = await post(`/ontology-publish/versions/${detail.value.id}/rollback`)
-  await loadVersions()
-  await selectVersion(v.id)
-  loading.value = false
+    if (!detail.value)
+        return;
+    loading.value = true;
+    const v = await post<{ id: string }>(`/ontology-publish/versions/${detail.value.id}/rollback`);
+    await loadVersions();
+    await selectVersion(v.id);
+    loading.value = false;
 }
 
 async function previewImpact() {

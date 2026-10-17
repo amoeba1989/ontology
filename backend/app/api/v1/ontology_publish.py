@@ -19,6 +19,7 @@ from app.models.version import (
     OntologyVersionAttribute, OntologyVersionRelation,
 )
 from app.models.user import User
+from app.services.scene_scope import scene_entity_ids
 from app.models.scene import AipScene
 from app.models.agent import Agent
 from app.services.ontology_impact import (
@@ -34,6 +35,7 @@ router = APIRouter(prefix="/ontology-publish", tags=["ontology-publish"])
 class CreateVersionRequest(BaseModel):
     name: str
     description: str | None = None
+    scene_id: str | None = None
 
 class UpdateVersionRequest(BaseModel):
     name: str | None = None
@@ -78,8 +80,14 @@ def get_version(version_id: str, db: Session = Depends(get_db)):
 
 @router.post("/versions")
 def create_version(req: CreateVersionRequest, db: Session = Depends(get_db), user: User | None = Depends(get_current_user)):
+    if req.scene_id:
+        from app.models.scene_registry import SceneRegistry
+        scene = db.get(SceneRegistry, req.scene_id)
+        if not scene or scene.status != "enabled":
+            raise HTTPException(404, "本体场景不存在或已停用")
     max_num = db.query(func.max(OntologyVersion.version_number)).scalar() or 0
     version = OntologyVersion(
+        scene_id=req.scene_id,
         version_number=max_num + 1,
         name=req.name,
         description=req.description,
@@ -122,6 +130,8 @@ def add_entities(version_id: str, req: AddEntitiesRequest, db: Session = Depends
     v = _get_version(version_id, db)
     if v.status != "draft":
         raise HTTPException(400, "只能在草稿状态添加实体")
+    if v.scene_id and set(req.entity_ids) - set(scene_entity_ids(db, v.scene_id)):
+        raise HTTPException(422, "不能把其他场景的对象加入当前场景版本")
 
     existing_source_ids = {ve.source_entity_id for ve in v.entities}
     added = []
@@ -256,7 +266,7 @@ def preview_impact(version_id: str, db: Session = Depends(get_db)):
     v = _get_version(version_id, db)
 
     old_active = db.query(OntologyVersion).filter(
-        OntologyVersion.is_active == True, OntologyVersion.id != v.id
+        OntologyVersion.is_active == True, OntologyVersion.id != v.id, OntologyVersion.scene_id == v.scene_id
     ).first()
 
     old_entities = []
@@ -322,10 +332,11 @@ def approve_version(version_id: str, db: Session = Depends(get_db), user: User |
         raise HTTPException(400, "只有待审批状态可以通过")
 
     old_active = db.query(OntologyVersion).filter(
-        OntologyVersion.is_active == True, OntologyVersion.id != v.id
+        OntologyVersion.is_active == True, OntologyVersion.id != v.id, OntologyVersion.scene_id == v.scene_id
     ).first()
 
-    db.query(OntologyVersion).filter(OntologyVersion.is_active == True).update({"is_active": False})
+    db.query(OntologyVersion).filter(OntologyVersion.is_active == True,
+        OntologyVersion.scene_id == v.scene_id).update({"is_active": False})
     v.status = "published"
     v.is_active = True
     v.published_at = datetime.utcnow()
@@ -333,8 +344,10 @@ def approve_version(version_id: str, db: Session = Depends(get_db), user: User |
 
     published_entity_ids = [ve.source_entity_id for ve in v.entities]
     if published_entity_ids:
+        previous_ids = {ve.source_entity_id for ve in old_active.entities} if old_active else set()
+        reset_ids = scene_entity_ids(db, v.scene_id) if v.scene_id else list(set(published_entity_ids) | previous_ids)
         db.query(OntologyEntity).filter(
-            OntologyEntity.status == "published"
+            OntologyEntity.status == "published", OntologyEntity.id.in_(reset_ids)
         ).update({"status": "active"})
         db.query(OntologyEntity).filter(
             OntologyEntity.id.in_(published_entity_ids)
@@ -373,6 +386,7 @@ def rollback_to_version(version_id: str, db: Session = Depends(get_db), user: Us
 
     max_num = db.query(func.max(OntologyVersion.version_number)).scalar() or 0
     new_version = OntologyVersion(
+        scene_id=target.scene_id,
         version_number=max_num + 1,
         name=f"回滚自 v{target.version_number}",
         description=f"从版本 v{target.version_number} ({target.name}) 回滚",

@@ -1,6 +1,7 @@
 import { get, post, put, del } from './client'
 
 export interface SceneAssets {
+  domains?: string[]
   object_classes?: string[]
   rule_ids?: string[]
   action_ids?: string[]

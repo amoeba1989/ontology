@@ -55,3 +55,28 @@ python -m scripts.migrate_platform_mysql --source /absolute/path/to/ontology.db 
 MySQL 建表使用 DATETIME(6)、DOUBLE、LONGTEXT，防止日期微秒丢失、浮点精度下降和长文档被 64 KiB TEXT 限制。已有目标表不会自动改变字段类型，因此推荐新建空库，并完成迁移校验。MySQL 默认排序规则可能与 SQLite 不同；若唯一键仅大小写不同，导入可能被拒绝，需要先明确标识符语义并选择合适排序规则。
 
 运行通用安全测试：`python -m pytest tests/test_platform_mysql.py -q`。实际 MySQL 集成测试需要设置仅指向隔离测试服务的 MYSQL_TEST_URL；测试会创建随机 ontology_test_* 数据库并在结束后删除，切勿指向生产实例。
+
+## ECS 一条命令交互切换（推荐）
+
+新版代码部署成功后，在 ECS Workbench 终端执行：
+
+```bash
+cd /opt/ontology
+python3 scripts/deploy/migrate-main-mysql.py --apply --with-demo
+```
+
+脚本默认连接本机 MySQL 管理端口，管理员用户名 `remote_root`，会在 ECS 终端隐藏输入管理密码。密码不会经过聊天或 GitHub。默认新库名为 `ontology_platform_当天日期`，默认应用访问地址为本 ECS 私网 IP `172.22.22.19`；其他环境需显式传入 `--database`、`--admin-user`、`--mysql-host`、`--port`。管理员账号需要创建独立库、独立账号及库级授权的权限。
+
+已有同名目标库时拒绝继续，不会清空。生成独立随机应用密码，权限仅限新库，保存在服务器 `.env`（0600）中。完整过程：获取部署锁 → 检查当前持久化 SQLite → 创建专用库及账号 → 从应用容器测试 MySQL → 停止 ontology 后端 → 一致性备份及逐表迁移校验 → 原子更新配置 → 重建后端并重载 Nginx → 检查 API 和实际 MySQL 连接 → 可选创建新版演示。不会停止 palantir 或 MySQL 服务。
+
+失败时尝试恢复原 `.env` 并启动原后端；保留新库和账号供排查，不擅自删除。原配置备份在 `data/mysql-migration/`，SQLite 备份在 `data/migration-backups/`。如果创建专用库后连通性预检失败，原服务仍运行，可排查 MySQL 的监听地址和授权后重新选择一个新库名执行。
+
+`--with-demo` 添加两个互相独立的新场景：“飞行观测 · 新版演示”和“电商订单 · 新版演示”，共 6 类对象、4 类关系、6 张合成数据表、数据绑定及草稿规则。重复运行 `docker exec ontology-backend python -m scripts.seed_scene_demo` 不会重复生成或覆盖已有记录。旧数据不删除。MySQL 演示连接通过 `platform://` 内部引用复用主库身份，不在数据库中另存密码。
+
+此次切换针对平台主存储；原 MQTT 落库文件和旧演示 SQLite 数据源不在本次迁移范围。新版演示的结构与记录均保存在新的 MySQL 主库。全局场景选择属于展示与查询范围，不替代用户权限或租户隔离。
+
+### 场景浏览与本次边界
+
+顶部「本体场景」选择器按场景登记中的 `domains`、`object_classes` 筛选对象、属性、关系、规则、动作、函数、绑定、资产、血缘、相关智能体及本体版本。对象卡片显示场景标签；跨场景关系不在单场景图谱中展示。新建版本保存场景归属，发布版本不会撤销其他场景的活动版本。
+
+「全部场景」可用于查看和整理历史未归属内容。共享连接、系统配置和建模草稿等尚未建立场景归属的资源仍为全局资源；此功能用于业务内容分类，不代替用户权限控制。MySQL 切换仅覆盖平台主库，外部数据源和原 MQTT/旧演示 SQLite 文件保留。本次新演示使用 MySQL 主库中的两组独立表与场景，不清空历史数据。

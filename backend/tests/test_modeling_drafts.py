@@ -212,10 +212,14 @@ def test_incremental_migration_preserves_legacy_data_and_is_repeatable(tmp_path)
     with engine.begin() as conn:
         conn.execute(text('CREATE TABLE legacy_data (id INTEGER PRIMARY KEY, value TEXT)'))
         conn.execute(text("INSERT INTO legacy_data VALUES (1, 'keep')"))
+        conn.execute(text('CREATE TABLE ontology_versions (id VARCHAR(36) PRIMARY KEY)'))
+        conn.execute(text("INSERT INTO ontology_versions VALUES ('old-version')"))
     upgrade_incremental_schema(engine)
     upgrade_incremental_schema(engine)
     assert {'modeling_drafts', 'modeling_draft_events', 'alembic_version'} <= set(inspect(engine).get_table_names())
     with engine.connect() as conn:
         assert conn.execute(text('SELECT value FROM legacy_data')).scalar() == 'keep'
-        assert conn.execute(text('SELECT version_num FROM alembic_version')).scalar() == '0001_modeling_drafts'
+        assert conn.execute(text('SELECT version_num FROM alembic_version')).scalar() == '0002_scene_versions'
+        assert conn.execute(text('SELECT id FROM ontology_versions')).scalar() == 'old-version'
+        assert conn.execute(text('SELECT scene_id FROM ontology_versions')).scalar() is None
     engine.dispose()

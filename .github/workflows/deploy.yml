@@ -38,7 +38,7 @@ jobs:
         run: |
           npm install -g pnpm@10
           pnpm install --frozen-lockfile --registry=https://registry.npmjs.org
-          pnpm exec vite build
+          pnpm run build
       - name: Save frontend production build
         uses: actions/upload-artifact@v4
         with:

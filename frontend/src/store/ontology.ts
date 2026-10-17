@@ -21,10 +21,12 @@ export const useOntologyStore = defineStore('ontology', () => {
   ])
 
   async function fetchEntities(query?: { tier?: Tier; search?: string }) {
+    const scene = localStorage.getItem('ontology.selected-scene')
     loading.value = true
     error.value = null
     try {
-      entities.value = await entityApi.list(query)
+      const result = await entityApi.list(query)
+      if (scene === localStorage.getItem('ontology.selected-scene')) entities.value = result
     } catch (e: unknown) {
       error.value = (e as Error).message
     } finally {
@@ -33,10 +35,12 @@ export const useOntologyStore = defineStore('ontology', () => {
   }
 
   async function fetchEntity(id: string) {
+    const scene = localStorage.getItem('ontology.selected-scene')
     loading.value = true
     error.value = null
     try {
-      currentEntity.value = await entityApi.detail(id)
+      const result = await entityApi.detail(id)
+      if (scene === localStorage.getItem('ontology.selected-scene')) currentEntity.value = result
     } catch (e: unknown) {
       error.value = (e as Error).message
     } finally {
@@ -45,11 +49,13 @@ export const useOntologyStore = defineStore('ontology', () => {
   }
 
   async function fetchGraph(entityId?: string) {
+    const scene = localStorage.getItem('ontology.selected-scene')
     loading.value = true
     try {
-      graphData.value = entityId
+      const result = entityId
         ? await entityApi.graph(entityId)
         : await entityApi.graphAll()
+      if (scene === localStorage.getItem('ontology.selected-scene')) graphData.value = result
     } catch (e: unknown) {
       error.value = (e as Error).message
     } finally {

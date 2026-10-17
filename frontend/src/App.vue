@@ -8,9 +8,9 @@
       <div class="app-main">
         <AppTopbar />
         <main class="app-content">
-          <RouterView v-slot="{ Component }">
+          <RouterView v-if="sceneScope.ready" v-slot="{ Component }">
             <Transition name="page" mode="out-in">
-              <component :is="Component" />
+              <component :is="Component" :key="`${route.path}:${sceneScope.selectedId}`" />
             </Transition>
           </RouterView>
         </main>
@@ -25,12 +25,14 @@ import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { theme as antdThemeApi } from 'ant-design-vue'
 import { useThemeStore } from './store/theme'
+import { useSceneScope } from './store/sceneScope'
 import AppSidebar from './components/common/AppSidebar.vue'
 import AppTopbar from './components/common/AppTopbar.vue'
 import ToastContainer from './components/common/ToastContainer.vue'
 
 const route = useRoute()
 const themeStore = useThemeStore()
+const sceneScope = useSceneScope()
 
 const isLoginPage = computed(() => route.path === '/login')
 

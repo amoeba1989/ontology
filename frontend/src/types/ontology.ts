@@ -2,7 +2,7 @@
 
 export type Tier = 1 | 2 | 3
 export type EntityStatus = 'active' | 'warning' | 'error'
-export type RuleStatus = 'active' | 'warning' | 'disabled'
+export type RuleStatus = 'active' | 'warning' | 'disabled' | 'draft'
 export type Priority = 'high' | 'medium' | 'low'
 export type Cardinality = '1:1' | '1:N' | 'N:1' | 'N:N'
 export type RelationType = 'has_one' | 'has_many' | 'belongs_to' | 'many_to_many'

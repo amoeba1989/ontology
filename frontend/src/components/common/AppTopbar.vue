@@ -4,6 +4,13 @@
       <OntologyBreadcrumb :items="breadcrumbs" />
     </div>
     <div class="topbar__right">
+      <label class="topbar__scene">本体场景
+        <select :value="sceneScope.selectedId" :disabled="!sceneScope.ready" @change="sceneScope.select(($event.target as HTMLSelectElement).value)">
+          <option value="">全部场景</option>
+          <option v-for="scene in sceneScope.scenes" :key="scene.id" :value="scene.id">{{ scene.name }}</option>
+        </select>
+      </label>
+      <button v-if="sceneScope.error" @click="sceneScope.load()">{{ sceneScope.error }}</button>
       <span class="topbar__version" :title="buildInfo">{{ buildInfo }}</span>
       <button class="topbar__theme" type="button" @click="themeStore.toggle()">
         {{ themeStore.isDark ? '☀ 明快' : '☾ 暗黑' }}
@@ -27,7 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useSceneScope } from '../../store/sceneScope'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
 import { useThemeStore } from '../../store/theme'
@@ -39,6 +47,8 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
+const sceneScope = useSceneScope()
+onMounted(() => sceneScope.load())
 const buildInfo = __APP_BUILD_INFO__
 const showSettings = ref(false)
 
@@ -65,6 +75,8 @@ const breadcrumbs = computed(() => {
   gap: 16px;
 }
 .topbar__left { display: flex; align-items: center; flex-shrink: 0; }
+.topbar__scene { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.topbar__scene select { max-width: 200px; padding: 6px; border: 1px solid var(--neutral-200); border-radius: 6px; background: var(--neutral-0); color: var(--neutral-800); }
 .topbar__right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .topbar__version { color: var(--neutral-500); font-size: 11px; white-space: nowrap; }
 .topbar__theme { border: 1px solid var(--neutral-200); border-radius: 7px; background: var(--neutral-0); color: var(--neutral-700); padding: 6px 9px; cursor: pointer; }

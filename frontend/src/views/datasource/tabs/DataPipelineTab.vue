@@ -430,11 +430,6 @@ function stepBadgeStyle(p: Pipeline, idx: number) {
   if (run && run.step_index > idx) return { color: '#10b981', border: theme.isDark ? '1px solid rgba(16,185,129,0.3)' : '1px solid #a7f3d0', background: chipBg(), fontWeight: 400 }
   return { color: '#9ca3af', border: chipBorder(), background: chipBg(), fontWeight: 400 }
 }
-function dsName(id?: string | null) {
-  if (!id) return ''
-  const d = datasources.value.find((x) => x.id === id)
-  return d?.name || id
-}
 
 async function refreshList() {
   try {

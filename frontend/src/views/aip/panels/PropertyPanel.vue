@@ -107,7 +107,7 @@
             <span class="aip-dot aip-dot--green"></span>
             <span style="flex:1">{{ s.name || s.skillId }}</span>
             <span v-if="s.isPrimary" class="aip-tag aip-tag--gold">主</span>
-            <button class="aip-icon-btn" @click="removeAt('skills', i)">×</button>
+            <button class="aip-icon-btn" @click="removeAt('skills', Number(i))">×</button>
           </div>
         </div>
       </template>
@@ -119,7 +119,7 @@
           <div v-for="(t, i) in (node.data.tools || [])" :key="i" class="aip-list-item">
             <span class="aip-dot aip-dot--cyan"></span>
             <span style="flex:1">{{ t.name || t.toolId }}</span>
-            <button class="aip-icon-btn" @click="removeAt('tools', i)">×</button>
+            <button class="aip-icon-btn" @click="removeAt('tools', Number(i))">×</button>
           </div>
         </div>
       </template>
@@ -205,7 +205,7 @@
         <div class="aip-field">
           <label>分支 ({{ (node.data.branches || []).length }})</label>
           <div v-for="(b, i) in (node.data.branches || [])" :key="i" class="aip-branch">
-            <span class="aip-branch__index">{{ i + 1 }}</span>
+            <span class="aip-branch__index">{{ Number(i) + 1 }}</span>
             <div style="flex:1">
               <input class="aip-input aip-input--sm" v-model="b.label" @input="touch" placeholder="分支名称" />
               <div class="aip-branch__expr">
@@ -217,7 +217,7 @@
               </div>
               <div class="aip-branch__handle">出口 Handle: <code>branch-{{ b.when || i }}</code></div>
             </div>
-            <button class="aip-icon-btn" @click="removeBranch(i)">×</button>
+            <button class="aip-icon-btn" @click="removeBranch(Number(i))">×</button>
           </div>
           <button class="aip-add-btn" @click="addBranch">+ 添加分支</button>
         </div>
@@ -296,7 +296,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAipStore } from '../../../store/aip'
-import { LLM_MODELS, OPERATORS, ACTION_TYPES, HTTP_METHODS, NODE_TYPES } from '../aipData'
+import { OPERATORS, HTTP_METHODS, NODE_TYPES } from '../aipData';
 import ResourcePicker from '../../../components/aip/ResourcePicker.vue'
 
 const store = useAipStore()
@@ -330,21 +330,17 @@ function removeAt(field: string, index: number) {
   touch()
 }
 function addBranch() {
-  if (!node.value) return
-  if (!node.value.data.branches) node.value.data.branches = []
-  const idx = node.value.data.branches.length
-  node.value.data.branches.push({ label: `分支 ${idx + 1}`, when: String(idx), field: '', operator: '==', value: '' })
-  touch()
+    if (!node.value)
+        return;
+    if (!node.value.data.branches)
+        node.value.data.branches = [];
+    const idx = node.value.data.branches.length;
+    node.value.data.branches.push({ label: `分支 ${Number(idx) + 1}`, when: String(idx), field: '', operator: '==', value: '' });
+    touch();
 }
 function removeBranch(index: number) {
   if (!node.value) return
   node.value.data.branches.splice(index, 1)
-  touch()
-}
-function setExpr(key: string, e: Event) {
-  if (!node.value) return
-  if (!node.value.data.expression) node.value.data.expression = { field: '', operator: 'switch', value: '' }
-  node.value.data.expression[key] = (e.target as HTMLInputElement).value
   touch()
 }
 function onDelete() {

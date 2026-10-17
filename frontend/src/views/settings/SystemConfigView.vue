@@ -228,7 +228,7 @@ const activeGroup = ref('basic')
 const showHistory = ref(false)
 
 const configData = ref<Record<string, ConfigItem[]>>({})
-const editingValues = reactive<Record<string, string | number | null>>({})
+const editingValues = reactive<Record<string, string | number | undefined>>({})
 const originalValues = reactive<Record<string, string | null>>({})
 
 const testing = ref(false)
@@ -311,7 +311,7 @@ function getSelectOptions(key: string) {
   if (key === 'password_complexity') return [{ label: '大写+小写+数字', value: 'upper,lower,digit' }, { label: '全部（含特殊字符）', value: 'upper,lower,digit,special' }]
   if (key === 'sso_enabled') return [{ label: '关闭', value: 'false' }, { label: '开启', value: 'true' }]
   if (key === 'sso_provider') return [{ label: 'OIDC', value: 'oidc' }, { label: 'SAML', value: 'saml' }, { label: 'LDAP', value: 'ldap' }]
-  return null
+  return undefined
 }
 
 function hasChanges(group: string) {
@@ -366,7 +366,7 @@ async function handleSave(group: string) {
     await systemConfigApi.save(group, items)
     success('保存成功')
     for (const item of items) originalValues[item.key] = item.value
-    changeHistory.value.unshift({ user: 'admin', time: new Date().toLocaleString('zh-CN'), desc: `修改了「${groupList.find(g => g.key === group)?.label || group}」配置`, type: 'update' })
+    changeHistory.value.unshift({ user: 'admin', time: new Date().toLocaleString('zh-CN'), desc: `修改了「${groupList.value.find(g => g.key === group)?.label || group}」配置`, type: 'update' })
   } catch (e: any) { error(e?.response?.data?.detail || '保存失败') } finally { saving.value = false }
 }
 

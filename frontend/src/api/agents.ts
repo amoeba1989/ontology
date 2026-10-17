@@ -19,6 +19,8 @@ export interface ReferencedScene {
 }
 
 export interface AgentItem {
+  ontology_stale?: boolean
+  ontology_stale_detail?: { message?: string; breaking_changes?: Array<{ entity_name: string; change_type: string; new_name?: string }> } | null
   id: string
   name: string
   description: string

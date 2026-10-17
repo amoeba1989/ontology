@@ -8,6 +8,7 @@
     <div class="entity-card__body">
       <div class="entity-card__header">
         <span class="entity-card__name">{{ entity.nameCn }}</span>
+        <span class="entity-card__scene">{{ entity.sceneLabel || '未归属场景' }}</span>
       </div>
       <div class="entity-card__meta">
         <span>属性: {{ entity.attrs }}</span>
@@ -27,6 +28,7 @@
 import TierBadge from './TierBadge.vue'
 
 export interface Entity {
+  sceneLabel?: string
   id: string
   name: string
   nameCn: string
@@ -78,6 +80,7 @@ defineEmits<{ click: [entity: Entity] }>()
   gap: 6px;
   margin-bottom: 3px;
 }
+.entity-card__scene { font-size: 10px; color: var(--neutral-500); white-space: nowrap; }
 
 .entity-card__name {
   font-size: var(--text-body-size);

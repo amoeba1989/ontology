@@ -14,7 +14,7 @@
             <DownOutlined v-if="!exporting" style="font-size: 10px; margin-left: 4px" />
           </a-button>
           <template #overlay>
-            <a-menu @click="handleExport">
+            <a-menu @click="info => handleExport({ key: String(info.key) })">
               <a-menu-item key="csv">
                 <FileTextOutlined style="margin-right: 8px" />导出 CSV
               </a-menu-item>
@@ -34,7 +34,7 @@
         :key="tab.key"
         class="log-audit-tab"
         :class="{ 'log-audit-tab--active': activeTab === tab.key }"
-        @click="activeTab = tab.key"
+        @click="activeTab = tab.key as 'logs' | 'audit'"
       >
         <span class="log-audit-tab__icon">{{ tab.icon }}</span>
         {{ tab.label }}

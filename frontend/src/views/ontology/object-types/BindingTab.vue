@@ -53,9 +53,9 @@
     <a-modal v-model:open="testResult.open" title="解析样本" :footer="null" width="640">
       <a-empty v-if="!testResult.data" description="无数据" />
       <a-table v-else size="small"
-               :columns="testResult.data.columns.map((c: string) => ({ title: c, dataIndex: c, key: c }))"
-               :data-source="(testResult.data.rows || []).map((r: any[], i: number) => ({
-                 ...Object.fromEntries(testResult.data.columns.map((c: string, j: number) => [c, r[j]])),
+               :columns="testResult.data?.columns.map((c: string) => ({ title: c, dataIndex: c, key: c }))"
+               :data-source="(testResult.data?.rows || []).map((r: any[], i: number) => ({
+                 ...Object.fromEntries((testResult.data?.columns || []).map((c: string, j: number) => [c, r[j]])),
                  _idx: i,
                }))"
                row-key="_idx"

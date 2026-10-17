@@ -359,10 +359,12 @@ import { relationApi } from '../../api/relations'
 import { entityApi } from '../../api/ontology'
 import { useToast } from '../../composables/useToast'
 import { useOntologyStore } from '../../store/ontology'
+import { useSceneScope } from '../../store/sceneScope'
 
 const router = useRouter()
 
 const store = useOntologyStore()
+const scope = useSceneScope()
 const toast = useToast()
 
 const showCreateEntity = ref(false)
@@ -396,6 +398,7 @@ onMounted(() => {
 const allEntities = computed<Entity[]>(() =>
   store.entities.map(e => ({
     id: e.id,
+    sceneLabel: scope.scenes.filter(s => s.assets?.domains?.includes(e.domain ?? '') || s.assets?.object_classes?.includes(e.name)).map(s => s.name).join('、') || e.domain || undefined,
     name: e.name,
     nameCn: e.name_cn,
     tier: e.tier as 1 | 2 | 3,

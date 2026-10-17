@@ -54,34 +54,29 @@ interface TreeNode {
   localName: string
   children: TreeNode[]
 }
-
 const thingNode = computed<TreeNode>(() => {
-  const classIRIs = new Set(store.ontology.classes.map(c => c.iri))
-  const childMap = new Map<string, string[]>()
-  const hasParent = new Set<string>()
-
-  for (const c of store.ontology.classes) {
-    for (const sup of c.superClassExpressions) {
-      if (sup.type === 'namedClass' && sup.classIRI) {
-        if (!childMap.has(sup.classIRI)) childMap.set(sup.classIRI, [])
-        childMap.get(sup.classIRI)!.push(c.iri)
-        hasParent.add(c.iri)
-      }
+    const childMap = new Map<string, string[]>();
+    const hasParent = new Set<string>();
+    for (const c of store.ontology.classes) {
+        for (const sup of c.superClassExpressions) {
+            if (sup.type === 'namedClass' && sup.classIRI) {
+                if (!childMap.has(sup.classIRI))
+                    childMap.set(sup.classIRI, []);
+                childMap.get(sup.classIRI)!.push(c.iri);
+                hasParent.add(c.iri);
+            }
+        }
     }
-  }
-
-  function buildNode(iri: string): TreeNode {
-    const c = store.ontology.classes.find(cl => cl.iri === iri)
-    const children = (childMap.get(iri) || []).map(buildNode)
-    return { id: c?.id || iri, iri, localName: c?.localName || iri.split(/[#/]/).pop() || '', children }
-  }
-
-  const rootChildren = store.ontology.classes
-    .filter(c => !hasParent.has(c.iri))
-    .map(c => buildNode(c.iri))
-
-  return { id: 'owl-thing', iri: 'owl:Thing', localName: 'Thing', children: rootChildren }
-})
+    function buildNode(iri: string): TreeNode {
+        const c = store.ontology.classes.find(cl => cl.iri === iri);
+        const children = (childMap.get(iri) || []).map(buildNode);
+        return { id: c?.id || iri, iri, localName: c?.localName || iri.split(/[#/]/).pop() || '', children };
+    }
+    const rootChildren = store.ontology.classes
+        .filter(c => !hasParent.has(c.iri))
+        .map(c => buildNode(c.iri));
+    return { id: 'owl-thing', iri: 'owl:Thing', localName: 'Thing', children: rootChildren };
+});
 
 function addSubclass() {
   const parentIRI = store.selectedClass?.iri || 'owl:Thing'

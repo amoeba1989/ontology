@@ -32,6 +32,15 @@ class PlainTextVault:
         return f"{self.SCHEME}://{encoded}"
 
     def fetch(self, ref: str) -> dict:
+        if ref == "platform://":
+            # Internal demo connection uses the configured main database identity;
+            # no second copy of its password is stored in the platform database.
+            from app.config import settings
+            from app.db_engine import database_url
+            url = database_url(settings)
+            if url.get_backend_name() != "mysql":
+                raise ValueError("Platform database identity requires MySQL")
+            return {"username": url.username, "password": url.password}
         if not ref:
             return {}
         prefix = f"{self.SCHEME}://"

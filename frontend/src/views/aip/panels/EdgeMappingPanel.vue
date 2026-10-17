@@ -33,7 +33,7 @@
       </div>
 
       <div class="edge-map__arrow-col">
-        <svg v-for="(m, i) in mappings" :key="i" width="24" height="20" viewBox="0 0 24 20">
+        <svg v-for="(_mapping, i) in mappings" :key="i" width="24" height="20" viewBox="0 0 24 20">
           <path d="M4 10h16M16 6l4 4-4 4" stroke="#2E5BFF" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </div>
@@ -72,7 +72,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useAipStore } from '../../../store/aip'
-import { NODE_TYPES } from '../aipData'
 
 const props = defineProps<{ edgeId: string | null }>()
 const emit = defineEmits<{ close: [] }>()

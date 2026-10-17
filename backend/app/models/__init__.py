@@ -1,4 +1,5 @@
 from app.models.entity import OntologyEntity, EntityAttribute
+from app.models import demo_records  # Registers synthetic demo tables for both database backends.
 from app.models.relation import EntityRelation
 from app.models.rule import BusinessRule, EntityAction
 from app.models.function import OntologyFunction

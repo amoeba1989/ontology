@@ -65,7 +65,7 @@
         <span class="log-tab__stats-sep">│</span>
         <span v-for="level in levels" :key="level.value" class="log-tab__stats-item" :style="{ color: level.color }">
           <span class="log-tab__stats-dot" :style="{ background: level.color }"></span>
-          {{ stats[level.value] || 0 }}
+          {{ stats[level.value as 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'] || 0 }}
         </span>
       </div>
       <div class="log-tab__stats-right">
@@ -177,13 +177,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
-import {
-  RangePicker as ARangePicker,
-  Select as ASelect,
-  InputSearch as AInputSearch,
-  Switch as ASwitch,
-} from 'ant-design-vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { RangePicker as ARangePicker, Select as ASelect, InputSearch as AInputSearch, Switch as ASwitch } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs'
 import { monitorApi, type AlertItem } from '../../api/monitor'
 import { tracesApi, type TraceItem } from '../../api/ops'
@@ -217,10 +212,11 @@ const sourceOptions = [
 const logs = ref<LogEntry[]>([])
 const loading = ref(false)
 const expandedId = ref<string | null>(null)
-const listRef = ref<HTMLElement | null>(null)
 const lastUpdate = ref('--:--')
-
-const dateRange = ref<[Dayjs, Dayjs] | null>(null)
+const dateRange = ref<[
+    Dayjs,
+    Dayjs
+] | undefined>(undefined);
 const selectedLevels = ref<string[]>(['DEBUG', 'INFO', 'WARN', 'ERROR'])
 const filterSource = ref<string | undefined>(undefined)
 const filterKeyword = ref('')
@@ -237,13 +233,12 @@ function toggleExpand(id: string) {
 function handleSearch() {
   fetchData()
 }
-
 function handleReset() {
-  dateRange.value = null
-  selectedLevels.value = ['DEBUG', 'INFO', 'WARN', 'ERROR']
-  filterSource.value = undefined
-  filterKeyword.value = ''
-  fetchData()
+    dateRange.value = undefined;
+    selectedLevels.value = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
+    filterSource.value = undefined;
+    filterKeyword.value = '';
+    fetchData();
 }
 
 function formatTime(ts: string) {
@@ -343,7 +338,8 @@ function startRealtime() {
 }
 
 onMounted(() => { fetchData(); startRealtime() })
-onUnmounted(() => { if (pollTimer) clearInterval(pollTimer) })
+onUnmounted(() => { if (pollTimer)
+    clearInterval(pollTimer); });
 </script>
 
 <style scoped>

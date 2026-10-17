@@ -66,7 +66,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { NODE_TYPES, type NodeTypeMeta } from '../aipData'
 import { useAipStore } from '../../../store/aip'
 
 interface NodeItem {

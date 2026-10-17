@@ -56,7 +56,7 @@
             v-if="preview && preview.columns && preview.rows"
             size="small"
             :columns="(preview.columns || []).map(c => ({ title: c, dataIndex: c, key: c }))"
-            :data-source="(preview.rows || []).map((row, i) => Object.fromEntries((preview!.columns || []).map((c, j) => [c, row[j]])).valueOf() as any)"
+            :data-source="(preview.rows || []).map((row, i) => ({ ...Object.fromEntries((preview!.columns || []).map((c, j) => [c, row[j]])), $rowIdx: i }))"
             :pagination="false"
             :scroll="{ x: 'max-content' }"
             row-key="$rowIdx"
@@ -147,11 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Button as AButton, Col as ACol, Descriptions as ADescriptions,
-  DescriptionsItem as ADescriptionsItem, Empty as AEmpty, List as AList,
-  ListItem as AListItem, Row as ARow, Spin as ASpin, Table as ATable, Tag as ATag,
-} from 'ant-design-vue'
+import { Button as AButton, Col as ACol, Descriptions as ADescriptions, DescriptionsItem as ADescriptionsItem, Empty as AEmpty, List as AList, ListItem as AListItem, Row as ARow, Spin as ASpin, Table as ATable, Tag as ATag } from 'ant-design-vue';
 import type { Asset, AssetWithUsage, PreviewResult } from '../../types/asset'
 import type { QualityMetric } from '../../types/quality'
 

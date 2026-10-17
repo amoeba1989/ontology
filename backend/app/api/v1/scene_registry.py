@@ -69,6 +69,7 @@ def create_scene(body: SceneCreate, db: Session = Depends(get_db)):
         route=body.route,
         status=body.status,
         sort_order=body.sort_order,
+        assets=body.assets,
     )
     db.add(s)
     db.commit()

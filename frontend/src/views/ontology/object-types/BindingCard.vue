@@ -35,7 +35,7 @@
         <template v-else-if="column.key === 'source_column'">
           <a-select
             v-if="editing"
-            v-model:value="rows[index].source_column"
+            :value="rows[index].source_column ?? undefined" @update:value="value => rows[index].source_column = value == null ? null : String(value)"
             :options="columnOptions"
             allow-clear
             show-search
@@ -46,7 +46,7 @@
           <code v-else class="bc-mono">{{ record.source_column || '—' }}</code>
         </template>
         <template v-else-if="column.key === 'transform'">
-          <a-input v-if="editing" v-model:value="rows[index].transform" placeholder="可选：CONCAT(...) 等" />
+          <a-input v-if="editing" :value="rows[index].transform ?? undefined" @update:value="value => rows[index].transform = value ?? null" placeholder="可选：CONCAT(...) 等" />
           <span v-else>{{ record.transform || '—' }}</span>
         </template>
         <template v-else-if="column.key === 'status'">
@@ -62,11 +62,11 @@
       <a-row :gutter="16">
         <a-col :span="12">
           <div class="bc-extra__label">主键列 (id_column)</div>
-          <a-select v-model:value="form.id_column" :options="columnOptions" allow-clear />
+          <a-select :value="form.id_column ?? undefined" @update:value="value => form.id_column = value == null ? null : String(value)" :options="columnOptions" allow-clear />
         </a-col>
         <a-col :span="12">
           <div class="bc-extra__label">过滤表达式 (filter_expr)</div>
-          <a-input v-model:value="form.filter_expr" placeholder="可选：限定该对象仅取此 Asset 中满足条件的行" />
+          <a-input :value="form.filter_expr ?? undefined" @update:value="value => form.filter_expr = value ?? null" placeholder="可选：限定该对象仅取此 Asset 中满足条件的行" />
         </a-col>
       </a-row>
       <div style="margin-top:12px">

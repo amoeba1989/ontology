@@ -386,7 +386,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router';
 import OntologyBreadcrumb from '../../components/common/OntologyBreadcrumb.vue'
 import MetricCard from '../../components/common/MetricCard.vue'
 import EntityLineageGraph from '../../components/canvas/EntityLineageGraph.vue'
@@ -398,7 +398,6 @@ import { get } from '../../api/client'
 import type { SourceDataPreview, SourceField } from '../../api/resolution'
 
 const route = useRoute()
-const router = useRouter()
 const store = useOntologyStore()
 const activeTab = ref('属性')
 const tabs = ['属性', '关系', '规则', '动作', '函数', '数据实例', '智能体', '血缘', '绑定数据']
@@ -406,7 +405,10 @@ const tabs = ['属性', '关系', '规则', '动作', '函数', '数据实例', 
 const entityId = computed(() => route.params.id as string)
 
 onMounted(() => { store.fetchEntity(entityId.value) })
-watch(entityId, (id) => { if (id) store.fetchEntity(id) })
+watch(entityId, (id) => {
+    if (id)
+        store.fetchEntity(id);
+});
 
 const detail = computed(() => store.currentEntity)
 
@@ -625,8 +627,10 @@ async function loadInstances() {
     instanceLoading.value = false
   }
 }
-
-watch(instancePage, () => { if (activeTab.value === '数据实例') loadInstances() })
+watch(instancePage, () => {
+    if (activeTab.value === '数据实例')
+        loadInstances();
+});
 
 const fieldAttrMap = computed(() => {
   const map: Record<string, string> = {}

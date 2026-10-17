@@ -43,8 +43,9 @@
 </template>
 
 <script setup lang="ts">
+import type { NodeTypesObject, EdgeTypesObject } from "@vue-flow/core"
 import { ref, onMounted, markRaw, watch } from 'vue'
-import { VueFlow, useVueFlow, MarkerType } from '@vue-flow/core'
+import { VueFlow, useVueFlow } from '@vue-flow/core';
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { entityApi } from '../../api/ontology'
@@ -62,9 +63,8 @@ const flowNodes = ref<Node[]>([])
 const flowEdges = ref<Edge[]>([])
 const depth = ref(2)
 const loading = ref(false)
-
-const nodeTypes = { ontologyNode: markRaw(OntologyNode) }
-const edgeTypes = { ontologyEdge: markRaw(CanvasEdgeLabel) }
+const nodeTypes = { ontologyNode: markRaw(OntologyNode) } as unknown as NodeTypesObject;
+const edgeTypes = { ontologyEdge: markRaw(CanvasEdgeLabel) } as unknown as EdgeTypesObject;
 
 async function loadLineage() {
   loading.value = true

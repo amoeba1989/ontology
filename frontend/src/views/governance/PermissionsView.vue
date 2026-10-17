@@ -8,7 +8,7 @@
     </div>
 
     <div class="perm-page__tabs">
-      <button v-for="tab in tabs" :key="tab.key" class="perm-tab" :class="{ 'perm-tab--active': activeTab === tab.key }" @click="activeTab = tab.key">
+      <button v-for="tab in tabs" :key="tab.key" class="perm-tab" :class="{ 'perm-tab--active': activeTab === tab.key }" @click="activeTab = tab.key as 'users' | 'roles' | 'matrix'">
         <span class="perm-tab__icon">{{ tab.icon }}</span>
         {{ tab.label }}
       </button>
@@ -19,7 +19,7 @@
       <div class="perm-section__toolbar">
         <a-input-search v-model:value="userKeyword" placeholder="搜索姓名或账号" style="width: 260px" allow-clear @search="fetchUsers" @change="(e: Event) => { if (!(e.target as HTMLInputElement).value) fetchUsers() }" />
         <a-select v-model:value="userRoleFilter" placeholder="全部角色" allow-clear style="width: 140px" :options="roleOptions" @change="fetchUsers" />
-        <a-select v-model:value="userStatusFilter" placeholder="全部状态" allow-clear style="width: 120px" :options="[{label:'启用',value:true},{label:'禁用',value:false}]" @change="fetchUsers" />
+        <a-select v-model:value="userStatusFilter" placeholder="全部状态" allow-clear style="width: 120px" :options="[{label:'启用',value:'true'},{label:'禁用',value:'false'}]" @change="fetchUsers" />
         <button class="perm-btn perm-btn--primary" style="margin-left:auto" @click="openCreateUser">
           <span style="margin-right:4px">＋</span> 新增用户
         </button>
@@ -228,7 +228,7 @@ const usersPageSize = ref(20)
 const usersLoading = ref(false)
 const userKeyword = ref('')
 const userRoleFilter = ref<string | undefined>(undefined)
-const userStatusFilter = ref<boolean | undefined>(undefined)
+const userStatusFilter = ref<'true' | 'false' | undefined>(undefined)
 
 const roleOptions = computed(() => roles.value.map(r => ({ label: r.label, value: r.key })))
 const roleLabelMap: Record<string, string> = { admin: '系统管理员', editor: '本体工程师', operator: '数据工程师', viewer: '只读用户' }
@@ -239,7 +239,7 @@ function formatTime(ts: string | null) { return ts ? ts.replace('T', ' ').slice(
 async function fetchUsers() {
   usersLoading.value = true
   try {
-    const res = await authApi.listUsers({ page: usersPage.value, page_size: usersPageSize.value, keyword: userKeyword.value || undefined, role: userRoleFilter.value, is_active: userStatusFilter.value })
+    const res = await authApi.listUsers({ page: usersPage.value, page_size: usersPageSize.value, keyword: userKeyword.value || undefined, role: userRoleFilter.value, is_active: userStatusFilter.value === undefined ? undefined : userStatusFilter.value === 'true' })
     users.value = res.items
     usersTotal.value = res.total
   } catch { users.value = []; usersTotal.value = 0 } finally { usersLoading.value = false }

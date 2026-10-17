@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, onMounted, ref, watch } from 'vue'
+import { computed, defineComponent, h, ref, watch } from 'vue';
 import { Drawer as ADrawer, Tag as ATag, Space as ASpace } from 'ant-design-vue'
 import { getAsset, getAssetUsage, syncAssetSchema, profileAsset, previewAsset, getAssetQuality } from '../../api/asset'
 import type { Asset, AssetWithUsage, PreviewResult } from '../../types/asset'
@@ -74,11 +74,8 @@ watch(
   },
   { immediate: true },
 )
-
-watch(
-  () => props.visible,
-  (v) => { if (v && props.assetId && !asset.value) load(props.assetId) },
-)
+watch(() => props.visible, (v) => { if (v && props.assetId && !asset.value)
+    load(props.assetId); });
 
 async function doSyncSchema() {
   if (!asset.value || asset.value.kind === 'document') return

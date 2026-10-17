@@ -166,7 +166,7 @@ const nodeIcon = computed(() => meta.value.icon)
 const nodeGradient = computed(() => meta.value.gradient)
 const execState = computed(() => props.data.execState || 'idle')
 
-const stateLabel = computed(() => ({ idle: '待执行', running: '执行中', done: '完成', error: '错误' }[execState.value] || '待执行'))
+const stateLabel = computed(() => (({ idle: '待执行', running: '执行中', done: '完成', error: '错误' } as Record<string, string>)[String(execState.value)] || '待执行'))
 
 const bodyExtra = computed(() => {
   if (nodeType.value === 'ontology-query') return props.data.ontology_type || ''

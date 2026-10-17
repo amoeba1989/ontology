@@ -11,6 +11,15 @@ const client: AxiosInstance = axios.create({
 
 // 请求拦截：附加 JWT，FormData 自动处理 Content-Type
 client.interceptors.request.use((config) => {
+  const scene = localStorage.getItem('ontology.selected-scene')
+  if (scene && (config.method ?? 'get').toLowerCase() === 'get' && config.url !== '/scene-registry') {
+    config.params = { scene_id: scene, ...config.params }
+  }
+  if (scene && config.method?.toLowerCase() === 'post' && config.data && typeof config.data === 'object') {
+    if (config.url === '/ontology-publish/versions' && !config.data.scene_id) config.data.scene_id = scene
+    const domain = localStorage.getItem('ontology.selected-domain')
+    if (config.url === '/entities' && domain && !config.data.domain) config.data.domain = domain
+  }
   const token = localStorage.getItem('token')
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`

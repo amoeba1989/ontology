@@ -7,7 +7,7 @@
           <a-form-item label="连接 *">
             <a-select v-model:value="form.connection_id" :options="connOptions"
                       :loading="!connStore.items.length" show-search optionFilterProp="label"
-                      @change="onConnectionChange" />
+                      @change="value => onConnectionChange(String(value))" />
           </a-form-item>
           <a-form-item label="表名 *">
             <a-select v-model:value="form.table" :options="tableOptions" allow-clear

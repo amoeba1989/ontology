@@ -36,7 +36,7 @@
           <div v-if="!store.reasoning.length" class="aip-bd__empty">执行场景后将显示 OAG 推理路径</div>
           <div v-for="(r, idx) in store.reasoning" :key="r.nodeId" class="aip-bd__reason-card" :style="{ marginLeft: (idx % 2 === 0 ? 0 : 40) + 'px' }">
             <div class="aip-bd__reason-head">
-              <span class="aip-bd__reason-step">{{ idx + 1 }}</span>
+              <span class="aip-bd__reason-step">{{ Number(idx) + 1 }}</span>
               <span class="aip-bd__reason-name">{{ r.nodeName }}</span>
               <span class="aip-bd__reason-status" :class="`aip-bd__reason-status--${r.status}`">{{ r.status === 'success' ? '✓' : '✘' }} {{ r.durationMs }}ms</span>
             </div>
@@ -62,7 +62,7 @@
                 <div class="aip-bd__agent-loop-title">Agent 推理轮次 ({{ r.raw.rounds }} 轮)</div>
                 <div v-for="(round, ri) in (r.raw.agent_rounds || [])" :key="ri" class="aip-bd__agent-round">
                   <div class="aip-bd__agent-round-head">
-                    <span class="aip-bd__agent-round-num">R{{ ri + 1 }}</span>
+                    <span class="aip-bd__agent-round-num">R{{ Number(ri) + 1 }}</span>
                     <span v-if="round.thought" class="aip-bd__agent-thought">{{ round.thought.slice(0, 100) }}</span>
                   </div>
                   <div v-if="round.tool_call" class="aip-bd__agent-tool">

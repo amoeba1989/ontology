@@ -38,17 +38,17 @@ import DomainRangePanel from '../panels/DomainRangePanel.vue'
 
 const store = useOwlEditorStore()
 const filter = ref('')
-
 const rootProperties = computed(() => {
-  const hasParent = new Set<string>()
-  for (const p of store.ontology.objectProperties) {
-    for (const sup of p.superProperties) hasParent.add(p.iri)
-  }
-  return store.ontology.objectProperties.filter(p => !hasParent.has(p.iri)).map(p => ({
-    id: p.id, iri: p.iri, localName: p.localName,
-    children: store.ontology.objectProperties.filter(c => c.superProperties.includes(p.iri)).map(c => ({ id: c.id, iri: c.iri, localName: c.localName, children: [] }))
-  }))
-})
+    const hasParent = new Set<string>();
+    for (const p of store.ontology.objectProperties) {
+        if (p.superProperties.length)
+            hasParent.add(p.iri);
+    }
+    return store.ontology.objectProperties.filter(p => !hasParent.has(p.iri)).map(p => ({
+        id: p.id, iri: p.iri, localName: p.localName,
+        children: store.ontology.objectProperties.filter(c => c.superProperties.includes(p.iri)).map(c => ({ id: c.id, iri: c.iri, localName: c.localName, children: [] }))
+    }));
+});
 
 function addSub() {
   store.addObjectProperty(store.selectedObjectProperty?.iri)

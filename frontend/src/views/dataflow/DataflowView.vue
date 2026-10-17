@@ -64,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+import type { NodeTypesObject, EdgeTypesObject } from "@vue-flow/core"
 import { ref, computed, onMounted, watch, markRaw } from 'vue'
 import { VueFlow, useVueFlow, MarkerType } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -95,8 +96,8 @@ const dataLayerItems = ref<any[]>([])
 const ontologyNodes = ref<Node[]>([])
 const ontologyEdges = ref<Edge[]>([])
 
-const nodeTypes = { ontologyNode: markRaw(OntologyNode), dataNode: markRaw(DataNode) }
-const edgeTypes = { ontologyEdge: markRaw(CanvasEdgeLabel) }
+const nodeTypes = { ontologyNode: markRaw(OntologyNode), dataNode: markRaw(DataNode) } as unknown as NodeTypesObject
+const edgeTypes = { ontologyEdge: markRaw(CanvasEdgeLabel) } as unknown as EdgeTypesObject
 const defaultEdgeOptions = { markerEnd: MarkerType.ArrowClosed, animated: false }
 
 const tierMiniColors: Record<number, string> = { 1: '#4f6ef7', 2: '#a855f7', 3: '#10b981' }

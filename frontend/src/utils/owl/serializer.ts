@@ -82,35 +82,33 @@ function serializeClassExpression(expr: OwlClassExpression): string {
       return `<Class IRI="http://www.w3.org/2002/07/owl#Thing"/>`
   }
 }
-
-function serializeClass(c: OwlClass, ontology: OwlOntology): string {
-  const lines: string[] = []
-  lines.push(`    <Declaration><Class ${iri(c.iri)}/></Declaration>`)
-
-  for (const sup of c.superClassExpressions) {
-    lines.push(`    <SubClassOf>
+function serializeClass(c: OwlClass, _ontology: OwlOntology): string {
+    const lines: string[] = [];
+    lines.push(`    <Declaration><Class ${iri(c.iri)}/></Declaration>`);
+    for (const sup of c.superClassExpressions) {
+        lines.push(`    <SubClassOf>
         <Class ${iri(c.iri)}/>
         ${serializeClassExpression(sup)}
-    </SubClassOf>`)
-  }
-  for (const eq of c.equivalentClassExpressions) {
-    lines.push(`    <EquivalentClasses>
+    </SubClassOf>`);
+    }
+    for (const eq of c.equivalentClassExpressions) {
+        lines.push(`    <EquivalentClasses>
         <Class ${iri(c.iri)}/>
         ${serializeClassExpression(eq)}
-    </EquivalentClasses>`)
-  }
-  if (c.disjointWith.length > 0) {
-    for (const dj of c.disjointWith) {
-      lines.push(`    <DisjointClasses>
+    </EquivalentClasses>`);
+    }
+    if (c.disjointWith.length > 0) {
+        for (const dj of c.disjointWith) {
+            lines.push(`    <DisjointClasses>
         <Class ${iri(c.iri)}/>
         <Class ${iri(dj)}/>
-    </DisjointClasses>`)
+    </DisjointClasses>`);
+        }
     }
-  }
-  for (const a of c.annotations) {
-    lines.push(serializeAnnotation(a, c.iri))
-  }
-  return lines.join('\n')
+    for (const a of c.annotations) {
+        lines.push(serializeAnnotation(a, c.iri));
+    }
+    return lines.join('\n');
 }
 
 function serializeObjectProperty(p: OwlObjectProperty): string {

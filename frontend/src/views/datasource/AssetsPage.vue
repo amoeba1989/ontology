@@ -39,13 +39,13 @@
                description="暂无资产，点击「新建资产」开始登记" style="padding:64px 0" />
       <a-row v-else :gutter="[16, 16]">
         <a-col v-for="record in store.items" :key="record.id" :xs="24" :sm="12" :lg="8" :xl="6">
-          <a-card hoverable class="ap-card" :body-style="{ padding: '16px' }" @click="openDetail(record)">
+          <a-card hoverable class="ap-card" :body-style="{ padding: '16px' }" @click="openDetail(record as Asset)">
             <!-- 第一行：名称 + 类型 + 别名 + 状态 -->
             <div class="ap-card__row">
               <a-typography-text strong class="ap-card__name" :ellipsis="{ tooltip: record.name }">
                 {{ record.name }}
               </a-typography-text>
-              <a-tag :color="kindColor(record.kind)" class="ap-card__tag">{{ kindLabel(record) }}</a-tag>
+              <a-tag :color="kindColor(record.kind)" class="ap-card__tag">{{ kindLabel(record as Asset) }}</a-tag>
             </div>
 
             <div class="ap-card__row" style="margin-top:6px">
@@ -56,7 +56,7 @@
             <!-- 描述（2 行省略） -->
             <a-typography-paragraph type="secondary" class="ap-card__desc"
                                     :ellipsis="{ rows: 2, tooltip: record.description }">
-              {{ record.description || locatorBrief(record) || '—' }}
+              {{ record.description || locatorBrief(record as Asset) || '—' }}
             </a-typography-paragraph>
 
             <!-- 标签 -->
@@ -84,14 +84,14 @@
             <!-- 卡片悬停操作（点击不冒泡）-->
             <div class="ap-card__actions" @click.stop>
               <a-button type="link" size="small"
-                        :disabled="record.kind === 'document'" @click="syncOne(record)">
+                        :disabled="record.kind === 'document'" @click="syncOne(record as Asset)">
                 同步 Schema
               </a-button>
               <a-button type="link" size="small"
-                        :disabled="record.kind === 'document'" @click="profileOne(record)">
+                        :disabled="record.kind === 'document'" @click="profileOne(record as Asset)">
                 Profile
               </a-button>
-              <a-popconfirm :title="`确认删除「${record.name}」？`" @confirm="del(record)">
+              <a-popconfirm :title="`确认删除「${record.name}」？`" @confirm="del(record as Asset)">
                 <a-button type="link" size="small" danger>删除</a-button>
               </a-popconfirm>
             </div>
@@ -105,14 +105,14 @@
              :loading="store.loading" :pagination="{ pageSize: 20 }" row-key="id">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'name'">
-          <a class="ap-name" @click="openDetail(record)">{{ record.name }}</a>
+          <a class="ap-name" @click="openDetail(record as Asset)">{{ record.name }}</a>
           <a-tag v-if="record.alias" color="purple" style="margin-left:8px">@{{ record.alias }}</a-tag>
         </template>
         <template v-else-if="column.key === 'kind'">
-          <a-tag :color="kindColor(record.kind)">{{ kindLabel(record) }}</a-tag>
+          <a-tag :color="kindColor(record.kind)">{{ kindLabel(record as Asset) }}</a-tag>
         </template>
         <template v-else-if="column.key === 'locator'">
-          <code class="ap-mono">{{ locatorBrief(record) }}</code>
+          <code class="ap-mono">{{ locatorBrief(record as Asset) }}</code>
         </template>
         <template v-else-if="column.key === 'connection'">
           {{ connectionName(record.connection_id) }}
@@ -126,16 +126,16 @@
         </template>
         <template v-else-if="column.key === 'actions'">
           <a-space :size="4" wrap>
-            <a-button type="link" size="small" @click="openDetail(record)">详情</a-button>
+            <a-button type="link" size="small" @click="openDetail(record as Asset)">详情</a-button>
             <a-button type="link" size="small"
-                      :disabled="record.kind === 'document'" @click="syncOne(record)">
+                      :disabled="record.kind === 'document'" @click="syncOne(record as Asset)">
               同步 Schema
             </a-button>
             <a-button type="link" size="small"
-                      :disabled="record.kind === 'document'" @click="profileOne(record)">
+                      :disabled="record.kind === 'document'" @click="profileOne(record as Asset)">
               Profile
             </a-button>
-            <a-popconfirm :title="`确认删除「${record.name}」？被引用时会被拒绝。`" @confirm="del(record)">
+            <a-popconfirm :title="`确认删除「${record.name}」？被引用时会被拒绝。`" @confirm="del(record as Asset)">
               <a-button type="link" size="small" danger>删除</a-button>
             </a-popconfirm>
           </a-space>
@@ -170,15 +170,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  Button as AButton, Card as ACard, Col as ACol, Dropdown as ADropdown,
-  Empty as AEmpty, InputSearch as AInputSearch, Menu as AMenu,
-  MenuItem as AMenuItem, MenuDivider as AMenuDivider,
-  Popconfirm as APopconfirm, Row as ARow, Segmented as ASegmented,
-  Select as ASelect, Space as ASpace, Statistic as AStatistic,
-  TabPane as ATabPane, Tabs as ATabs, Table as ATable, Tag as ATag,
-  Typography, message,
-} from 'ant-design-vue'
+import { Button as AButton, Card as ACard, Col as ACol, Empty as AEmpty, InputSearch as AInputSearch, Popconfirm as APopconfirm, Row as ARow, Segmented as ASegmented, Select as ASelect, Space as ASpace, Statistic as AStatistic, TabPane as ATabPane, Tabs as ATabs, Table as ATable, Tag as ATag, Typography, message } from 'ant-design-vue';
 import { useAssetStore } from '../../store/asset'
 import { useConnectionStore } from '../../store/connection'
 import type { Asset, AssetKind, DocumentSourceType } from '../../types/asset'
@@ -188,7 +180,6 @@ import CreateDocumentAssetDrawer from './components/CreateDocumentAssetDrawer.vu
 
 const ATypographyText = Typography.Text
 const ATypographyParagraph = Typography.Paragraph
-const AMenuItemGroup = AMenu.ItemGroup
 
 const store = useAssetStore()
 const connStore = useConnectionStore()
@@ -263,9 +254,6 @@ function openDetail(record: Asset) {
   detail.visible = true
 }
 
-function openCreate(_kind: string) { createTable.open = true }
-function openDoc(kind: DocumentSourceType) { createDoc.kind = kind; createDoc.open = true }
-
 async function syncOne(record: Asset) {
   try {
     const r = await store.syncSchema(record.id)
@@ -295,10 +283,9 @@ async function del(record: Asset) {
     message.error(e.response?.data?.detail || '删除失败（可能被引用）')
   }
 }
-
-function onNavigateToBinding(assetId: string) {
-  // 跳转到本体建模 BindingTab。由调用方实现路由跳转；这里做兜底提示。
-  message.info('请前往本体建模模块的 ObjectType 编辑器进行绑定')
+function onNavigateToBinding(_assetId: string) {
+    // 跳转到本体建模 BindingTab。由调用方实现路由跳转；这里做兜底提示。
+    message.info('请前往本体建模模块的 ObjectType 编辑器进行绑定');
 }
 
 function kindLabel(a: Asset) {

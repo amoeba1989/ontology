@@ -5,6 +5,9 @@
 import { get, post, put, del } from './client'
 
 export interface AipSceneBrief {
+  ontology_stale?: boolean
+  ontology_stale_detail?: { message?: string; breaking_changes?: Array<{ entity_name: string; change_type: string; new_name?: string }> } | null
+  stats_json?: Record<string, unknown>
   id: string
   name: string
   description: string
