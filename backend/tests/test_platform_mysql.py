@@ -1,6 +1,8 @@
 """Migration safety and optional real MySQL round-trip (MYSQL_TEST_URL)."""
 import os
 import sqlite3
+import subprocess
+import sys
 import uuid
 from datetime import datetime
 
@@ -14,6 +16,23 @@ from app.models import OntologyEntity, EntityAttribute, EntityRelation
 from app.models.system_config import SystemConfig
 from app.models.monitor import ServiceMetric
 from app.services.platform_migration import backup_sqlite, migrate_platform
+
+
+def test_model_registry_is_complete_in_a_fresh_migration_process():
+    # Other tests import SystemConfig directly, which used to mask its absence
+    # from the registry loaded by the standalone migration command.
+    result = subprocess.run([sys.executable, "-c", """
+import importlib, pkgutil
+from app.database import Base
+import app.models
+registered = set(Base.metadata.tables)
+for module in pkgutil.iter_modules(app.models.__path__):
+    importlib.import_module('app.models.' + module.name)
+missing = set(Base.metadata.tables) - registered
+assert not missing, 'Missing model registrations: ' + ', '.join(sorted(missing))
+assert 'system_config' in registered
+"""], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
 
 
 def test_mysql_password_is_not_parsed_as_url_syntax():

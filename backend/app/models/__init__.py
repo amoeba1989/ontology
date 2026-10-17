@@ -37,11 +37,13 @@ from app.models.skill_tool import SkillTool
 from app.models.customer_demo import CustomerDemoPack, SkillRun
 from app.models.modeling_draft import ModelingDraft, ModelingDraftEvent
 from app.models.owl_document import OwlDocument
+from app.models.system_config import SystemConfig
+from app.models.datasource import DataSource
 
 __all__ = [
     "OntologyEntity", "EntityAttribute", "EntityRelation",
     "BusinessRule", "EntityAction", "OntologyFunction",
-    "AuditLog", "User",
+    "AuditLog", "User", "SystemConfig",
     "ModelRegistry", "Agent", "PromptTemplate",
     "AgentTrace", "EvalSuite", "EvalCase", "EvalRun", "EvalResult",
     "OntologyVersion", "OntologyVersionEntity",
@@ -51,7 +53,7 @@ __all__ = [
     "SceneRegistry",
     "BusinessDocument",
     # Data Plane
-    "Connection", "Asset", "AssetUsage", "ExecutionLog",
+    "Connection", "DataSource", "Asset", "AssetUsage", "ExecutionLog",
     "LineageEdge", "ObjectBinding", "QualityMetric",
     "QualityRule", "HealthStatus",
     "ServiceMetric", "LLMCallRecord", "Alert",

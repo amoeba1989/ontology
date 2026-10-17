@@ -9,7 +9,7 @@ from app.config import settings
 from app.db_engine import create_platform_engine
 from app.database import Base
 import app.models  # noqa: F401
-from app.services.platform_migration import backup_sqlite, migrate_platform
+from app.services.platform_migration import backup_sqlite, migrate_platform, MigrationValidationError
 
 
 def main():
@@ -44,6 +44,7 @@ def main():
     except Exception as exc:
         # Drivers can include row values, credentials or database URLs in errors.
         print(json.dumps({"status": "failed", "error_type": type(exc).__name__,
+                          "reason": str(exc) if isinstance(exc, MigrationValidationError) else "Driver error details redacted",
                           "message": "Migration/check failed; no automatic cutover. Source remains unchanged. Inspect securely on the server."}))
         raise SystemExit(1)
     finally:

@@ -9,10 +9,14 @@ from pathlib import Path
 from sqlalchemy import MetaData, func, select
 
 
+class MigrationValidationError(ValueError):
+    """Validation messages contain schema names only, never row values or credentials."""
+
+
 def backup_sqlite(source: Path, destination: Path):
     source, destination = source.resolve(), destination.resolve()
     if not source.is_file():
-        raise ValueError("Source SQLite file does not exist")
+        raise MigrationValidationError("Source SQLite file does not exist")
     destination.parent.mkdir(parents=True, exist_ok=True)
     # Exclusive creation prevents accidentally replacing the source or a prior backup.
     fd = os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -22,9 +26,9 @@ def backup_sqlite(source: Path, destination: Path):
             with sqlite3.connect(destination) as dst:
                 src.backup(dst)
                 if dst.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
-                    raise ValueError("SQLite integrity check failed")
+                    raise MigrationValidationError("SQLite integrity check failed")
                 if dst.execute("PRAGMA foreign_key_check").fetchone() is not None:
-                    raise ValueError("SQLite contains broken foreign key references")
+                    raise MigrationValidationError("SQLite contains broken foreign key references")
     except Exception:
         destination.unlink(missing_ok=True)
         raise
@@ -50,20 +54,20 @@ def _digest(connection, table, names):
 
 def migrate_platform(source, target, metadata, *, apply=False):
     if source.dialect.name != "sqlite":
-        raise ValueError("Migration source must be SQLite")
+        raise MigrationValidationError("Migration source must be SQLite")
     if source.url == target.url:
-        raise ValueError("Source and target must be different databases")
+        raise MigrationValidationError("Source and target must be different databases")
     source_meta = MetaData()
     source_meta.reflect(bind=source)
     unknown = set(source_meta.tables) - set(metadata.tables) - {"alembic_version"}
     if unknown:
-        raise ValueError("Unmapped source tables: " + ", ".join(sorted(unknown)))
+        raise MigrationValidationError("Unmapped source tables: " + ", ".join(sorted(unknown)))
     existing_meta = MetaData()
     existing_meta.reflect(bind=target)
     with target.connect() as conn:
         for table in existing_meta.tables.values():
             if conn.scalar(select(func.count()).select_from(table)):
-                raise ValueError("Target must be empty; non-empty table: " + table.name)
+                raise MigrationValidationError("Target must be empty; non-empty table: " + table.name)
     plan = {}
     with source.connect() as conn:
         for table in metadata.sorted_tables:
@@ -72,7 +76,7 @@ def migrate_platform(source, target, metadata, *, apply=False):
             old = source_meta.tables[table.name]
             extra = set(old.c.keys()) - set(table.c.keys())
             if extra:
-                raise ValueError("Unmapped columns in " + table.name + ": " + ", ".join(sorted(extra)))
+                raise MigrationValidationError("Unmapped columns in " + table.name + ": " + ", ".join(sorted(extra)))
             # Decode SQLite values using the platform's declared JSON/date/bool types.
             for col in old.c:
                 col.type = table.c[col.name].type
@@ -92,5 +96,5 @@ def migrate_platform(source, target, metadata, *, apply=False):
             count = dst.scalar(select(func.count()).select_from(table))
             names = sorted(old.c.keys())
             if count != plan[table.name] or _digest(src, old, names) != _digest(dst, table, names):
-                raise ValueError("Row count/content mismatch in " + table.name)
+                raise MigrationValidationError("Row count/content mismatch in " + table.name)
     return {"applied": True, "rows": plan}
