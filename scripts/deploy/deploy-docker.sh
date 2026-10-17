@@ -18,6 +18,10 @@ else
   echo "[deploy] 错误：缺少 docker compose 插件"; exit 1
 fi
 
+if [ "${DEPLOY_PREBUILT_FRONTEND:-0}" = "1" ]; then
+  DC="$DC -f docker-compose.yml -f compose.prebuilt.yml"
+fi
+
 sh "$(dirname "$0")/docker-build.sh"
 # Use SQLite's backup API so live WAL transactions are included. Keep snapshots
 # in the existing persistent data volume before recreating any running backend.

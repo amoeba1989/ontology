@@ -1,0 +1,5 @@
+services:
+  web:
+    build:
+      dockerfile: Dockerfile.web-prebuilt
+      target: ""

@@ -14,6 +14,11 @@ else
   echo "[build] 错误：缺少 docker compose 插件"; exit 1
 fi
 
+if [ "${DEPLOY_PREBUILT_FRONTEND:-0}" = "1" ]; then
+  test -s frontend/dist/index.html || { echo "[build] 缺少已验证的前端产物"; exit 1; }
+  DC="$DC -f docker-compose.yml -f compose.prebuilt.yml"
+fi
+
 echo "[build] 构建镜像（含前端 vite build 编译检查）"
 attempt=1
 while ! $DC build; do

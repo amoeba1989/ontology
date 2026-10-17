@@ -1,0 +1,7 @@
+*
+!frontend/
+!frontend/dist/
+!frontend/dist/**
+!scripts/
+!scripts/deploy/
+!scripts/deploy/nginx-container.conf

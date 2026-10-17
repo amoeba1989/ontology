@@ -86,3 +86,9 @@ ECS 安全组和系统防火墙需要允许 GitHub 托管运行器访问 SSH 端
 - Docker 权限错误：部署账号不能访问 Docker，需要在 ECS 配置权限。
 - 构建失败：查看 Actions 输出；ECS 仍需要能访问 Docker 镜像、npm 和 Python 包镜像站。
 - 健康检查失败：在 Workbench 执行 `cd /opt/ontology && docker compose logs --tail 100`。已有部署脚本默认检查 8088 端口；如 `.env` 配置其他端口，应确保脚本与 Compose 使用同一端口。
+
+## 低配置 ECS：使用 Runner 构建前端
+
+GitHub Actions 在 verify 阶段完成前端构建并上传 `frontend-production` 产物；deploy 下载同一次运行的产物，随源码传到 ECS。部署设置 `DEPLOY_PREBUILT_FRONTEND=1`，使用 `compose.prebuilt.yml` 与 `Dockerfile.web-prebuilt` 将静态文件打包到 Nginx 镜像，避免在 ECS 上重复运行 Node/Vite 构建。手工及 Gitee 部署默认仍使用原 Dockerfile。
+
+GitHub 同一次运行的前端版本标记与源码提交相同。服务更新前通过 SQLite backup API 在持久化 `data/deployment-backups/` 生成一致性快照。该流程不会自动迁移 MySQL；是否切换主库由服务器显式配置决定。前端产物构建通过不代表 vue-tsc 类型检查通过，当前类型问题需要另行清理。
