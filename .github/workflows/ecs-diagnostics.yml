@@ -85,6 +85,29 @@ jobs:
               for demo_pack in db.query(CustomerDemoPack).all():
                   project = db.get(DeliveryProject, demo_pack.project_id)
                   owner = db.get(User, project.owner_id) if project else None
+                  from app.services.delivery import inspect_chain
+                  issues, current = inspect_chain(db, project.release['config'])
+                  expected = project.release
+                  def differences(left, right, path=''):
+                      if type(left) is not type(right):
+                          yield path, type(left).__name__, type(right).__name__, repr(left)[:160], repr(right)[:160]
+                      elif isinstance(left, dict):
+                          for key in sorted(set(left) | set(right)):
+                              if key == 'fingerprint':
+                                  continue
+                              if key not in left or key not in right:
+                                  yield path + '/' + str(key), 'missing' if key not in left else type(left[key]).__name__, 'missing' if key not in right else type(right[key]).__name__, '', ''
+                              else:
+                                  yield from differences(left[key], right[key], path + '/' + str(key))
+                      elif isinstance(left, list):
+                          if len(left) != len(right):
+                              yield path, 'list:' + str(len(left)), 'list:' + str(len(right)), '', ''
+                          for index, (a, b) in enumerate(zip(left, right)):
+                              yield from differences(a, b, path + '/' + str(index))
+                      elif left != right:
+                          yield path, type(left).__name__, type(right).__name__, repr(left)[:160], repr(right)[:160]
+                  print('contract=', demo_pack.key, current['fingerprint'], expected.get('fingerprint'), 'issues=', issues)
+                  print('contract_diff=', demo_pack.key, list(differences(current, expected))[:12])
                   for skill_id in (demo_pack.resources or {}).get('skill_ids', []):
                       skill = db.get(Skill, skill_id)
                       result = run_business_skill(db, skill, skill.test_cases[0]['params'], owner, 'diagnosis')
