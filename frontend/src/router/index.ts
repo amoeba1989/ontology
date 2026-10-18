@@ -9,7 +9,7 @@ const router = createRouter({
     // 工作台
     { path: '/workspace/projects', name: 'delivery-projects', component: () => import('../views/workspace/DeliveryWorkspace.vue'), meta: { title: '业务交付工作区' } },
     { path: '/apps/projects/:id', name: 'delivery-runtime', component: () => import('../views/workspace/DeliveryRuntime.vue'), meta: { title: '业务应用' } },
-    { path: '/workspace/space', name: 'workspace-space', component: () => import('../views/workspace/OntologySpaceView.vue'), meta: { title: '本体态势舱' } },
+    { path: '/workspace/space', name: 'workspace-space', component: () => import('../views/workspace/OntologySpaceView.vue'), meta: { title: '本体拓扑工作台' } },
     { path: '/dashboard', name: 'dashboard', component: () => import('../views/dashboard/SystemDashboardView.vue'), meta: { title: '系统看版' } },
 
     // 数据集成

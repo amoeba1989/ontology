@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { templateCompilerOptions } from '@tresjs/core'
 import { fileURLToPath, URL } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
@@ -18,7 +17,7 @@ const buildInfo = `v${version} · ${builtAt} · ${revision.slice(0, 7)}`
 // https://vite.dev/config/
 export default defineConfig({
   define: { __APP_BUILD_INFO__: JSON.stringify(buildInfo) },
-  plugins: [vue({ ...templateCompilerOptions })],
+  plugins: [vue()],
   optimizeDeps: { include: ['dagre', 'marked'] },
   resolve: {
     alias: {

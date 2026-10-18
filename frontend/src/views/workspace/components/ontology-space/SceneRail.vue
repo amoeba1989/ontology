@@ -36,7 +36,7 @@
     </section>
 
     <div class="rail__foot">
-      <button type="button" class="rail__reset" @click="emit('reset')">复位视角</button>
+      <button type="button" class="rail__reset" @click="emit('reset')">适应画布</button>
       <button type="button" class="rail__reset" @click="emit('refresh')">重载数据</button>
     </div>
   </nav>
@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { OntologyScene, SceneNode } from '../../../../api/ontologyScene'
-import { domainLabel } from './layout'
+import { domainLabel } from './topologyMeta'
 
 const props = defineProps<{
   scene: OntologyScene | null
@@ -87,9 +87,9 @@ const groups = computed(() => {
 .rail {
   position: absolute;
   left: 16px;
-  top: 74px;
+  top: 82px;
   /* 让位给底部停靠区（图例 + 事件时间轴），--dock-h 是父级实测出的停靠区占位高度 */
-  bottom: calc(var(--dock-h) + 8px);
+  bottom: 126px;
   z-index: 8;
   width: 236px;
   overflow-y: auto;

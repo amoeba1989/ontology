@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { SceneEvent } from '../../../../api/ontologyScene'
-import { STUB_ACTION_TYPES, formatTime } from './layout'
+import { STUB_ACTION_TYPES, formatTime } from './topologyMeta'
 
 const props = defineProps<{
   events: SceneEvent[]

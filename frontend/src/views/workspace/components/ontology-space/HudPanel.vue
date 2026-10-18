@@ -3,7 +3,7 @@
     <div v-if="!node" class="hud__empty">
       <div class="hud__empty-title">本体态势总览</div>
       <div class="hud__empty-desc">
-        左侧选择或直接在三维场景中点击任意本体，查看它的<b>关系描述</b>、<b>规则约束</b>与<b>相关事件</b>。
+        左侧选择或直接在拓扑画布中点击任意本体，查看它的<b>关系描述</b>、<b>规则约束</b>与<b>相关事件</b>。
       </div>
       <div class="hud__stats">
         <div class="stat"><span>{{ summary.node_count }}</span>个本体</div>
@@ -13,9 +13,9 @@
         <div class="stat"><span>{{ summary.instance_count }}</span>条实例</div>
       </div>
       <ul class="hud__tips">
-        <li>轨道分层：核心对象在中枢，关联对象走中轨，事件对象走外轨</li>
-        <li>选中后展开属性卫星环，关系线与箭头点亮一跳邻居</li>
-        <li>底部时间轴播放事件，推演连线沿真实关系逐段亮起</li>
+        <li>节点形状区分核心、关联和事件对象，节点尺寸反映实例规模</li>
+        <li>选中对象后突出一跳邻居，关系名称和方向直接显示在线上</li>
+        <li>底部时间轴播放事件，并在拓扑中突出对应对象与关系</li>
       </ul>
     </div>
 
@@ -67,7 +67,7 @@
         <h4>规则约束 <i>{{ node.rules.length }}</i></h4>
         <p v-if="!node.rules.length" class="hud__none">未绑定业务规则</p>
         <p v-else-if="node.rules.length > MAX_RULE_BADGES" class="hud__cap">
-          三维球顶只挂优先级最高的 {{ MAX_RULE_BADGES }} 条，其余 {{ node.rules.length - MAX_RULE_BADGES }} 条在此列出
+          画布仅用橙色边框提示已绑定规则，全部 {{ node.rules.length }} 条规则在此列出
         </p>
         <div v-for="r in node.rules" :key="r.id" class="rule" :class="'p-' + r.priority">
           <div class="rule__top">
@@ -109,7 +109,7 @@
             <b>约束被定义不等于数据已通过验证。</b>
           </p>
         </div>
-        <p v-else class="hud__none">该本体绑定的资产未配置质量规则，三维场景不画约束三角</p>
+        <p v-else class="hud__none">该本体绑定的资产未配置质量规则</p>
       </section>
 
       <section class="hud__block">
@@ -164,7 +164,7 @@
     <details class="hud__how">
       <summary>怎么看这张图 · 视觉通道</summary>
       <ul>
-        <li><i class="chip chip--round" />球体尺寸 = 实例数（少 → 多）</li>
+        <li><i class="chip chip--round" />节点尺寸 = 实例数（按对数缩放）</li>
         <li>
           球体颜色 = 发布状态：
           <i class="chip" :style="{ background: STATUS_COLOR.published }" />已发布
@@ -208,7 +208,7 @@ import {
   domainLabel,
   formatTime,
   type ConstraintStatus,
-} from './layout'
+} from './topologyMeta'
 
 const props = defineProps<{
   node: SceneNode | null
