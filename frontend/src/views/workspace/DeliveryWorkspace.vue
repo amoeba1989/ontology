@@ -4,6 +4,7 @@ import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { Select as ASelect } from 'ant-design-vue'
 import { get, post, put } from '../../api/client'
 import CustomerDemoPanel from '../../components/common/CustomerDemoPanel.vue'
+import CounterUasDemoPanel from '../../components/common/CounterUasDemoPanel.vue'
 
 type Option = { id: string; name: string; status?: string; engine?: string; entity_id?: string }
 type Config = { goal: string; audience: string; questions: string; expected_actions: string; acceptance: string;
@@ -129,6 +130,7 @@ onMounted(async () => {
   <div class="delivery">
     <header class="heading"><div><span class="eyebrow">业务交付工作区 · V1</span><h1>从业务需求，到可运行的本体应用</h1><p>连接已有能力，让每一步都有输入、结果和依据。</p></div>
       <div class="links"><button :disabled="busy" @click="showExamples = !showExamples">非军事验收样例</button><button :disabled="busy" @click="selectProject()">＋ 新建项目</button></div></header>
+    <CounterUasDemoPanel />
     <CustomerDemoPanel />
     <section v-if="showExamples" class="panel"><h3>用完整场景验证六步数据链路</h3><p class="muted">管理员可创建独立合成数据。每次创建得到新的样例项目，业务约束以可执行 SQL 规则实现。</p><div class="example-grid"><article v-for="example in examples" :key="example.key"><strong>{{ example.name }}</strong><p>{{ example.goal }}</p><small>{{ example.boundary }}</small><button :disabled="busy" @click="createExample(example.key)">创建验收项目</button></article></div></section>
     <div v-if="error" class="message error" role="alert">{{ error }}</div>
