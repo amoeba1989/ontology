@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import math
 from datetime import date, datetime
 from pathlib import Path
 
@@ -39,6 +40,16 @@ def _digest(connection, table, names):
     # Database collations can order primary keys differently; compare row multisets.
     checksum = 0
     statement = select(*(table.c[n] for n in names))
+    def canonical(value):
+        if isinstance(value, dict):
+            return {key: canonical(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [canonical(item) for item in value]
+        # MySQL JSON may normalize 1.0 to 1. These values compare equal in JSON
+        # semantics and in Python, so the migration verifier should do the same.
+        if isinstance(value, float) and math.isfinite(value) and value.is_integer():
+            return int(value)
+        return value
     def encode(value):
         if isinstance(value, (date, datetime)):
             return value.isoformat()
@@ -46,7 +57,7 @@ def _digest(connection, table, names):
             return {"bytes_hex": value.hex()}
         raise TypeError("Unsupported migration value type")
     for row in connection.execute(statement).yield_per(500):
-        value = json.dumps(list(row), ensure_ascii=False, sort_keys=True,
+        value = json.dumps(canonical(list(row)), ensure_ascii=False, sort_keys=True,
                            default=encode, separators=(",", ":")).encode()
         checksum = (checksum + int.from_bytes(hashlib.sha256(value).digest())) % (1 << 256)
     return f"{checksum:064x}"
@@ -95,6 +106,11 @@ def migrate_platform(source, target, metadata, *, apply=False):
                 dst.execute(table.insert(), [dict(row) for row in batch])
             count = dst.scalar(select(func.count()).select_from(table))
             names = sorted(old.c.keys())
-            if count != plan[table.name] or _digest(src, old, names) != _digest(dst, table, names):
-                raise MigrationValidationError("Row count/content mismatch in " + table.name)
+            if count != plan[table.name]:
+                raise MigrationValidationError("Row count mismatch in " + table.name)
+            if _digest(src, old, names) != _digest(dst, table, names):
+                differing = [name for name in names
+                              if _digest(src, old, [name]) != _digest(dst, table, [name])]
+                raise MigrationValidationError(
+                    "Content mismatch in " + table.name + " columns: " + ", ".join(differing))
     return {"applied": True, "rows": plan}

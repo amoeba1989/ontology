@@ -1,5 +1,6 @@
 """Migration safety and optional real MySQL round-trip (MYSQL_TEST_URL)."""
 import os
+import json
 import sqlite3
 import subprocess
 import sys
@@ -7,7 +8,7 @@ import uuid
 from datetime import datetime
 
 import pytest
-from sqlalchemy import create_engine, inspect, select, text
+from sqlalchemy import JSON, MetaData, create_engine, inspect, select, text
 from sqlalchemy.engine import make_url
 from app.config import Settings
 from app.db_engine import create_platform_engine, database_url
@@ -15,7 +16,8 @@ from app.database import Base
 from app.models import OntologyEntity, EntityAttribute, EntityRelation
 from app.models.system_config import SystemConfig
 from app.models.monitor import ServiceMetric
-from app.services.platform_migration import backup_sqlite, migrate_platform
+from app.models.scene import AipSceneExecution
+from app.services.platform_migration import backup_sqlite, migrate_platform, _digest
 
 
 def test_model_registry_is_complete_in_a_fresh_migration_process():
@@ -48,6 +50,25 @@ def test_mysql_password_is_not_parsed_as_url_syntax():
 def test_missing_mysql_settings_fail_without_sqlite_fallback():
     with pytest.raises(ValueError, match="MYSQL_HOST"):
         create_platform_engine(Settings(_env_file=None, DATABASE_BACKEND="mysql"))
+
+
+def test_digest_uses_json_numeric_semantics(tmp_path):
+    left = create_engine(f"sqlite:///{tmp_path / 'left.db'}")
+    right = create_engine(f"sqlite:///{tmp_path / 'right.db'}")
+    try:
+        for engine, payload in ((left, {"score": 1.0}), (right, {"score": 1})):
+            with engine.begin() as conn:
+                conn.exec_driver_sql("CREATE TABLE sample (id INTEGER PRIMARY KEY, payload JSON)")
+                conn.exec_driver_sql("INSERT INTO sample VALUES (1, ?)", (json.dumps(payload),))
+        left_table, right_table = MetaData(), MetaData()
+        left_table.reflect(left); right_table.reflect(right)
+        left_table.tables['sample'].c.payload.type = JSON()
+        right_table.tables['sample'].c.payload.type = JSON()
+        with left.connect() as lconn, right.connect() as rconn:
+            assert _digest(lconn, left_table.tables['sample'], ['id', 'payload']) == _digest(
+                rconn, right_table.tables['sample'], ['id', 'payload'])
+    finally:
+        left.dispose(); right.dispose()
 
 
 def test_backup_is_consistent_and_never_overwritten(tmp_path):
@@ -107,6 +128,14 @@ def seed(source):
         c.execute(SystemConfig.__table__.insert(), {"id": "cfg", "group": "basic", "key": "test",
                   "value": "中文配置" * 20000, "updated_at": datetime(2026, 10, 17, 1, 2, 3, 123456)})
         c.execute(ServiceMetric.__table__.insert(), {"service_name": "migration-test", "response_ms": 123.456789012345})
+        c.execute(AipSceneExecution.__table__.insert(), {
+            "id": "execution", "scene_id": "scene", "scene_name": "迁移测试", "scene_version": 1,
+            "status": "success", "triggered_by": "manual",
+            "trigger_payload": {"integer": 1, "whole_float": 1.0, "fraction": 1.25, "nested": [True, None, {"值": 0.0}]},
+            "input_params": {}, "node_results": {"node": {"confidence": 0.8}},
+            "final_output": {"score": 100.0}, "started_at": datetime(2026, 10, 17, 1, 2, 3, 123456),
+            "finished_at": datetime(2026, 10, 17, 1, 2, 4, 654321), "duration_ms": 1531,
+        })
 
 
 def test_dry_run_and_verified_copy(migration_pair):
