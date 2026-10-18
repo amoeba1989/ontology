@@ -87,7 +87,7 @@ jobs:
                       model=config['model'],
                       messages=[{'role': 'user', 'content': '请调用工具读取演示数据。'}],
                       tools=[{'type': 'function', 'function': s} for s in skills],
-                      tool_choice='required', max_tokens=64,
+                      tool_choice='auto', max_tokens=64,
                   )
                   message = response.choices[0].message
                   print('provider_call=PASS', 'tool_calls=', len(message.tool_calls or []))
