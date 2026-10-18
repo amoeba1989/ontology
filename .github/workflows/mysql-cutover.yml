@@ -40,7 +40,7 @@ jobs:
             "$ECS_USER@$ECS_HOST" 'sh -s' <<'REMOTE'
           set -eu
           cd /opt/ontology
-          test "$(cat VERSION)" = "2.1.5"
+          test "$(cat VERSION)" = "2.1.6"
           mysql --login-path=ontology-admin --batch --skip-column-names -e 'SELECT VERSION();' >/dev/null
           current_backend=$(docker exec ontology-backend python -c 'from app.database import engine; print(engine.dialect.name)')
           test "$current_backend" = sqlite
@@ -62,5 +62,5 @@ jobs:
           find /opt/ontology/data/migration-backups -maxdepth 1 -type f -name 'ontology-*.sqlite3' -printf '%T@ %p\n' \
             | sort -nr | tail -n +2 | cut -d' ' -f2- | xargs -r rm -f --
           curl -fsS http://127.0.0.1:8088/api/v1/scene-registry >/dev/null
-          printf 'MYSQL_CUTOVER_OK version=2.1.5 database=%s\n' "$database"
+          printf 'MYSQL_CUTOVER_OK version=2.1.6 database=%s\n' "$database"
           REMOTE
