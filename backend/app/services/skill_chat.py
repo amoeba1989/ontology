@@ -39,8 +39,11 @@ def chat_events(db, agent, user, question, history=None, client=None):
         successful_calls = 0
         calls = 0
         for round_no in range(4):
+            # Some reasoning models reject forced tool selection. The system prompt
+            # requests a tool call, and the checks below still reject any answer
+            # that was produced without a successful skill execution.
             response = client.chat.completions.create(model=config["model"], messages=messages, tools=tools,
-                tool_choice="required" if round_no == 0 else "auto", temperature=0.1, max_tokens=1800)
+                tool_choice="auto", temperature=0.1, max_tokens=1800)
             message = response.choices[0].message
             if not message.tool_calls:
                 if not successful_calls or not message.content:

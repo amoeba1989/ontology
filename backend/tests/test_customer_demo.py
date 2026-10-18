@@ -87,6 +87,7 @@ def test_ai_native_tool_call_uses_database_and_persists_trace(demo):
     assert db.get(SkillRun, results[0]["run_id"]).source == "agent:" + agent.id
     assert db.query(AgentTrace).filter_by(agent_id=agent.id).order_by(AgentTrace.created_at.desc()).first().status == "ok"
     assert client.chat.completions.create.call_args.kwargs["model"] == "deepseek-chat"
+    assert client.chat.completions.create.call_args.kwargs["tool_choice"] == "auto"
     messages = client.chat.completions.create.call_args.kwargs["messages"]
     assert any(m["role"] == "tool" and "DATABASE_CHANGED" in m["content"] for m in messages)
 
