@@ -8,16 +8,22 @@ from types import SimpleNamespace
 import pytest
 
 
-@pytest.mark.parametrize('fail_import', [False, True])
-def test_cutover_preserves_config_and_rolls_back_on_failed_import(tmp_path, monkeypatch, capsys, fail_import):
+@pytest.mark.parametrize('fail_import,use_login_path', [(False, False), (True, False), (False, True)])
+def test_cutover_preserves_config_and_rolls_back_on_failed_import(
+        tmp_path, monkeypatch, capsys, fail_import, use_login_path):
     script = Path(__file__).resolve().parents[2] / 'scripts/deploy/migrate-main-mysql.py'
     spec = importlib.util.spec_from_file_location('mysql_switch_test', script)
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(module, 'ROOT', tmp_path)
     (tmp_path / '.env').write_text('SECRET_KEY=keep-existing-key\n')
-    monkeypatch.setattr('sys.argv', [str(script), '--apply', '--database', 'test_platform'])
-    monkeypatch.setattr(module.getpass, 'getpass', lambda prompt: 'administrator-private-test')
+    argv = [str(script), '--apply', '--database', 'test_platform']
+    if use_login_path:
+        argv += ['--admin-login-path', 'ontology-admin']
+    monkeypatch.setattr('sys.argv', argv)
+    monkeypatch.setattr(module.getpass, 'getpass',
+                        lambda prompt: (_ for _ in ()).throw(AssertionError('unexpected password prompt'))
+                        if use_login_path else 'administrator-private-test')
     monkeypatch.setattr(module.shutil, 'which', lambda command: '/usr/bin/mysql')
     monkeypatch.setattr(module.subprocess, 'check_output', lambda *a, **k: json.dumps({'backend': 'sqlite', 'path': '/app/backend/data/ontology.db'}))
     calls = []
@@ -25,7 +31,11 @@ def test_cutover_preserves_config_and_rolls_back_on_failed_import(tmp_path, monk
         calls.append(command)
         assert 'administrator-private-test' not in ' '.join(command)
         if command[0] == 'mysql':
-            assert kwargs['env']['MYSQL_PWD'] == 'administrator-private-test'
+            if use_login_path:
+                assert '--login-path=ontology-admin' in command
+                assert 'MYSQL_PWD' not in kwargs['env']
+            else:
+                assert kwargs['env']['MYSQL_PWD'] == 'administrator-private-test'
             sql = kwargs['input']
             return SimpleNamespace(stdout='8.4.0' if sql.startswith('SELECT VERSION') else '0' if sql.startswith('SELECT COUNT') else '')
         if fail_import and '--apply' in command:

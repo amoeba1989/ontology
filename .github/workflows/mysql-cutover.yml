@@ -1,0 +1,64 @@
+name: One-time SQLite to MySQL cutover
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ontology-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 20
+    env:
+      ECS_HOST: ${{ secrets.ECS_HOST }}
+      ECS_USER: ${{ secrets.ECS_USER }}
+      ECS_SSH_PORT: ${{ secrets.ECS_SSH_PORT || '22' }}
+      ECS_SSH_KEY: ${{ secrets.ECS_SSH_KEY }}
+      ECS_KNOWN_HOSTS: ${{ secrets.ECS_KNOWN_HOSTS }}
+    steps:
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$ECS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$ECS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Migrate, verify and remove failed attempts
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -p "$ECS_SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=120 \
+            "$ECS_USER@$ECS_HOST" 'sh -s' <<'REMOTE'
+          set -eu
+          cd /opt/ontology
+          test "$(cat VERSION)" = "2.1.4"
+          mysql --login-path=ontology-admin --batch --skip-column-names -e 'SELECT VERSION();' >/dev/null
+          python3 scripts/deploy/migrate-main-mysql.py --apply --with-demo \
+            --database ontology_platform --admin-login-path ontology-admin
+          backend=$(docker exec ontology-backend python -c 'from app.database import engine; print(engine.dialect.name)')
+          database=$(docker exec ontology-backend python -c 'from sqlalchemy import text; from app.database import engine; c=engine.connect(); print(c.scalar(text("SELECT DATABASE()"))); c.close()')
+          test "$backend" = mysql
+          test "$database" = ontology_platform
+          mysql --login-path=ontology-admin -e \
+            'DROP DATABASE IF EXISTS ontology_platform_20261018; DROP DATABASE IF EXISTS ontology_platform_20261018_v2;'
+          active_user=$(docker exec ontology-backend python -c 'from app.database import engine; print(engine.url.username)')
+          case "$active_user" in ontology_[0-9a-f]*) ;; *) exit 1 ;; esac
+          mysql --login-path=ontology-admin --batch --skip-column-names -e \
+            "SELECT CONCAT('DROP USER IF EXISTS \\'', User, '\\'@\\'', Host, '\\';') FROM mysql.user WHERE User LIKE 'ontology\\_%' AND User <> '$active_user'" \
+            | mysql --login-path=ontology-admin
+          find /opt/ontology/data/mysql-migration -maxdepth 1 -type f -name 'config-before-*.env' -printf '%T@ %p\n' \
+            | sort -nr | tail -n +2 | cut -d' ' -f2- | xargs -r rm -f --
+          find /opt/ontology/data/migration-backups -maxdepth 1 -type f -name 'ontology-*.sqlite3' -printf '%T@ %p\n' \
+            | sort -nr | tail -n +2 | cut -d' ' -f2- | xargs -r rm -f --
+          curl -fsS http://127.0.0.1:8088/api/v1/scene-registry >/dev/null
+          printf 'MYSQL_CUTOVER_OK version=2.1.4 database=%s\n' "$database"
+          REMOTE

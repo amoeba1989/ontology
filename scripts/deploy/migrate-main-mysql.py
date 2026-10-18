@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run interactively on ECS. Never send the database administrator password to GitHub."""
+"""Run on ECS using an interactive password or a local mysql_config_editor login path."""
 import argparse
 import fcntl
 import getpass
@@ -27,6 +27,7 @@ def main():
     parser.add_argument('--with-demo', action='store_true', help='Create two NEW synthetic demo scenes after a successful migration')
     parser.add_argument('--database', default='ontology_platform_' + time.strftime('%Y%m%d'))
     parser.add_argument('--admin-user', default='remote_root')
+    parser.add_argument('--admin-login-path', help='ECS-local mysql_config_editor login path; avoids exposing a password')
     parser.add_argument('--mysql-host', default='172.22.22.19', help='MySQL address reachable from the backend container (ECS private IP)')
     parser.add_argument('--port', type=int, default=3306)
     parser.add_argument('--web-port', type=int, default=8088)
@@ -37,6 +38,8 @@ def main():
         parser.error('Database name must contain only ASCII letters, digits and underscores')
     if not re.fullmatch(r'[A-Za-z0-9_.-]+', args.mysql_host) or not 1 <= args.port <= 65535:
         parser.error('Invalid MySQL host or port')
+    if args.admin_login_path and not re.fullmatch(r'[A-Za-z][A-Za-z0-9_.-]{0,63}', args.admin_login_path):
+        parser.error('Invalid MySQL login path name')
     if not shutil.which('mysql'):
         parser.error('Install the MySQL command-line client on ECS first')
     os.chdir(ROOT)
@@ -53,11 +56,19 @@ def main():
     info = json.loads(subprocess.check_output(['docker', 'exec', 'ontology-backend', 'python', '-c', info_code], text=True))
     if info['backend'] != 'sqlite' or not info['path'].startswith('/app/backend/data/'):
         parser.error('Expected a running SQLite backend with its main database in the persistent data volume')
-    password = getpass.getpass('MySQL administrator password (entered only on ECS, not printed): ')
-    admin_env = {**os.environ, 'MYSQL_PWD': password, 'MYSQL_HISTFILE': '/dev/null'}
+    password = None if args.admin_login_path else getpass.getpass(
+        'MySQL administrator password (entered only on ECS, not printed): ')
+    admin_env = {**os.environ, 'MYSQL_HISTFILE': '/dev/null'}
+    if password is not None:
+        admin_env['MYSQL_PWD'] = password
+    admin_command = ['mysql']
+    if args.admin_login_path:
+        admin_command.append(f'--login-path={args.admin_login_path}')
+    else:
+        admin_command.append(f'--user={args.admin_user}')
     def sql(statement):
-        result = run(['mysql', '--protocol=tcp', '--host=127.0.0.1', f'--port={args.port}',
-                      f'--user={args.admin_user}', '--batch', '--skip-column-names'],
+        result = run([*admin_command, '--protocol=tcp', '--host=127.0.0.1', f'--port={args.port}',
+                      '--batch', '--skip-column-names'],
                      input=statement, capture_output=True, env=admin_env)
         return result.stdout.strip()
     try:
