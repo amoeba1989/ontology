@@ -11,7 +11,9 @@ const revision = process.env.GITHUB_SHA || (existsSync(revisionFile) ? readFileS
   catch { return 'unknown' }
 })())
 const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
-const buildInfo = `v2.1.2 · ${builtAt} · ${revision.slice(0, 7)}`
+const version = readFileSync(fileURLToPath(new URL('../VERSION', import.meta.url)), 'utf8').trim()
+if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid product VERSION')
+const buildInfo = `v${version} · ${builtAt} · ${revision.slice(0, 7)}`
 
 // https://vite.dev/config/
 export default defineConfig({

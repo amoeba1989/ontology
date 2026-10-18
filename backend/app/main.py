@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.version import APP_VERSION
 from app.database import engine, SessionLocal
 from app.db_compat import ensure_legacy_schema_compat
 from app.models import *  # noqa: F401,F403 — 确保所有模型注册
@@ -563,7 +564,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="本体驱动智能策略平台 API",
-    version="0.1.0",
+    version=APP_VERSION,
     lifespan=lifespan,
 )
 

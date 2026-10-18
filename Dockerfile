@@ -23,6 +23,7 @@ EXPOSE 80
 # ── 阶段 3：后端 FastAPI + uvicorn ──
 FROM python:3.11-slim AS backend
 WORKDIR /app/backend
+COPY VERSION /app/VERSION
 # 直连 pypi.org 只有 17kB/s，依赖回溯会多花十几分钟，改走阿里云镜像
 ENV PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
 COPY backend/requirements.txt .
