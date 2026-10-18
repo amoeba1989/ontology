@@ -56,7 +56,7 @@ jobs:
           echo '--- Platform database backend (no credentials) ---'
           docker exec ontology-backend python -c 'from app.config import settings; from app.db_engine import database_url; u=database_url(settings); print(u.get_backend_name()); print(u.database)'
           echo '--- Customer demo model diagnosis (credentials omitted) ---'
-          docker exec ontology-backend python - <<'PY'
+          docker exec -i ontology-backend python - <<'PY'
           import json
           from urllib.parse import urlsplit
           from app.database import SessionLocal
