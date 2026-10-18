@@ -17,7 +17,9 @@ from app.models import OntologyEntity, EntityAttribute, EntityRelation
 from app.models.system_config import SystemConfig
 from app.models.monitor import ServiceMetric
 from app.models.scene import AipSceneExecution
-from app.services.platform_migration import backup_sqlite, migrate_platform, _digest, _difference_kind
+from app.services.platform_migration import (
+    backup_sqlite, migrate_platform, _digest, _difference_kind, _values_equivalent,
+)
 
 
 def test_model_registry_is_complete_in_a_fresh_migration_process():
@@ -77,6 +79,15 @@ def test_difference_description_never_exposes_values():
         {"private-node-id": [{"secret": "target-private-value"}]})
     assert description == "object child > array item > object child > str value"
     assert "private" not in description
+
+
+def test_json_numeric_comparison_allows_only_insignificant_round_trip_delta():
+    assert _values_equivalent({"node": {"score": 0.30000000000000004}},
+                              {"node": {"score": 0.3}})
+    assert not _values_equivalent({"node": {"score": 0.300001}},
+                                  {"node": {"score": 0.3}})
+    assert not _values_equivalent({"node": {"status": "success"}},
+                                  {"node": {"status": "failed"}})
 
 
 def test_backup_is_consistent_and_never_overwritten(tmp_path):

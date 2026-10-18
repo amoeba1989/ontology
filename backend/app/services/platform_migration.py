@@ -7,7 +7,7 @@ import math
 from datetime import date, datetime
 from pathlib import Path
 
-from sqlalchemy import MetaData, func, select
+from sqlalchemy import JSON, MetaData, func, select
 
 
 class MigrationValidationError(ValueError):
@@ -63,9 +63,24 @@ def _digest(connection, table, names):
     return f"{checksum:064x}"
 
 
+def _values_equivalent(left, right, depth=0):
+    if depth >= 20:
+        return left == right
+    if isinstance(left, (int, float)) and not isinstance(left, bool) \
+            and isinstance(right, (int, float)) and not isinstance(right, bool):
+        return math.isclose(left, right, rel_tol=1e-12, abs_tol=1e-12)
+    if isinstance(left, dict) and isinstance(right, dict):
+        return set(left) == set(right) and all(
+            _values_equivalent(left[key], right[key], depth + 1) for key in left)
+    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        return len(left) == len(right) and all(
+            _values_equivalent(litem, ritem, depth + 1) for litem, ritem in zip(left, right))
+    return left == right
+
+
 def _difference_kind(left, right, depth=0):
     """Describe structure/type of a difference without returning either value."""
-    if left == right:
+    if _values_equivalent(left, right):
         return None
     if depth >= 8:
         return "nested value"
@@ -108,6 +123,19 @@ def _column_difference_summary(source_conn, source_table, target_conn, target_ta
         if kind and kind not in kinds:
             kinds.append(kind)
     return ", ".join(kinds[:5]) or "serialized representation"
+
+
+def _json_column_equivalent(source_conn, source_table, target_conn, target_table, column):
+    primary_keys = [c.name for c in source_table.primary_key.columns]
+    if not primary_keys:
+        return False
+    names = [*primary_keys, column]
+    source_rows = source_conn.execute(select(*(source_table.c[n] for n in names))).all()
+    target_rows = target_conn.execute(select(*(target_table.c[n] for n in names))).all()
+    source_map = {tuple(row[:-1]): row[-1] for row in source_rows}
+    target_map = {tuple(row[:-1]): row[-1] for row in target_rows}
+    return set(source_map) == set(target_map) and all(
+        _values_equivalent(source_map[key], target_map[key]) for key in source_map)
 
 
 def migrate_platform(source, target, metadata, *, apply=False):
@@ -156,8 +184,16 @@ def migrate_platform(source, target, metadata, *, apply=False):
             if count != plan[table.name]:
                 raise MigrationValidationError("Row count mismatch in " + table.name)
             if _digest(src, old, names) != _digest(dst, table, names):
-                differing = [name for name in names
-                              if _digest(src, old, [name]) != _digest(dst, table, [name])]
+                differing = []
+                for name in names:
+                    if _digest(src, old, [name]) == _digest(dst, table, [name]):
+                        continue
+                    if isinstance(table.c[name].type, JSON) and _json_column_equivalent(
+                            src, old, dst, table, name):
+                        continue
+                    differing.append(name)
+                if not differing:
+                    continue
                 details = [name + " (" + _column_difference_summary(src, old, dst, table, name) + ")"
                            for name in differing]
                 raise MigrationValidationError(
