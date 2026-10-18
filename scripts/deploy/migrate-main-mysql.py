@@ -26,6 +26,8 @@ def main():
     parser.add_argument('--apply', action='store_true', help='Required to create a dedicated database/user and switch the backend')
     parser.add_argument('--with-demo', action='store_true', help='Create two NEW synthetic demo scenes after a successful migration')
     parser.add_argument('--database', default='ontology_platform_' + time.strftime('%Y%m%d'))
+    parser.add_argument('--reuse-empty-database', action='store_true',
+                        help='Reuse an existing target only if the migration verifies every existing table is empty')
     parser.add_argument('--admin-user', default='remote_root')
     parser.add_argument('--admin-login-path', help='ECS-local mysql_config_editor login path; avoids exposing a password')
     parser.add_argument('--mysql-host', default='172.22.22.19', help='MySQL address reachable from the backend container (ECS private IP)')
@@ -75,12 +77,15 @@ def main():
         version = sql('SELECT VERSION();')
         if not version.startswith('8.'):
             parser.error('This migration has been verified with MySQL 8; detected another major version')
-        if sql(f"SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='{args.database}';") != '0':
-            parser.error('Target database already exists. Choose a NEW name; no tables will be cleared')
+        database_exists = sql(
+            f"SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='{args.database}';") != '0'
+        if database_exists and not args.reuse_empty_database:
+            parser.error('Target database already exists. Choose a NEW name or explicitly reuse an empty target')
         app_user = 'ontology_' + secrets.token_hex(5)
         app_password = secrets.token_urlsafe(32)
-        sql(f"CREATE DATABASE `{args.database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;\n"
-            f"CREATE USER '{app_user}'@'%' IDENTIFIED BY '{app_password}';\n"
+        create_database = (f"CREATE DATABASE `{args.database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;\n"
+                           if not database_exists else "")
+        sql(create_database + f"CREATE USER '{app_user}'@'%' IDENTIFIED BY '{app_password}';\n"
             f"GRANT ALL PRIVILEGES ON `{args.database}`.* TO '{app_user}'@'%';")
     except subprocess.CalledProcessError:
         print('MySQL administration failed. Backend was not stopped. Check username, password and database/user creation permissions locally.')

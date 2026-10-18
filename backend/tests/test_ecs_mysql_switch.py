@@ -8,9 +8,10 @@ from types import SimpleNamespace
 import pytest
 
 
-@pytest.mark.parametrize('fail_import,use_login_path', [(False, False), (True, False), (False, True)])
+@pytest.mark.parametrize('fail_import,use_login_path,reuse_existing', [
+    (False, False, False), (True, False, False), (False, True, False), (False, True, True)])
 def test_cutover_preserves_config_and_rolls_back_on_failed_import(
-        tmp_path, monkeypatch, capsys, fail_import, use_login_path):
+        tmp_path, monkeypatch, capsys, fail_import, use_login_path, reuse_existing):
     script = Path(__file__).resolve().parents[2] / 'scripts/deploy/migrate-main-mysql.py'
     spec = importlib.util.spec_from_file_location('mysql_switch_test', script)
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
@@ -20,6 +21,8 @@ def test_cutover_preserves_config_and_rolls_back_on_failed_import(
     argv = [str(script), '--apply', '--database', 'test_platform']
     if use_login_path:
         argv += ['--admin-login-path', 'ontology-admin']
+    if reuse_existing:
+        argv += ['--reuse-empty-database']
     monkeypatch.setattr('sys.argv', argv)
     monkeypatch.setattr(module.getpass, 'getpass',
                         lambda prompt: (_ for _ in ()).throw(AssertionError('unexpected password prompt'))
@@ -27,6 +30,7 @@ def test_cutover_preserves_config_and_rolls_back_on_failed_import(
     monkeypatch.setattr(module.shutil, 'which', lambda command: '/usr/bin/mysql')
     monkeypatch.setattr(module.subprocess, 'check_output', lambda *a, **k: json.dumps({'backend': 'sqlite', 'path': '/app/backend/data/ontology.db'}))
     calls = []
+    admin_sql = []
     def run(command, **kwargs):
         calls.append(command)
         assert 'administrator-private-test' not in ' '.join(command)
@@ -37,7 +41,10 @@ def test_cutover_preserves_config_and_rolls_back_on_failed_import(
             else:
                 assert kwargs['env']['MYSQL_PWD'] == 'administrator-private-test'
             sql = kwargs['input']
-            return SimpleNamespace(stdout='8.4.0' if sql.startswith('SELECT VERSION') else '0' if sql.startswith('SELECT COUNT') else '')
+            admin_sql.append(sql)
+            return SimpleNamespace(stdout='8.4.0' if sql.startswith('SELECT VERSION') else
+                                   '1' if reuse_existing and sql.startswith('SELECT COUNT') else
+                                   '0' if sql.startswith('SELECT COUNT') else '')
         if fail_import and '--apply' in command:
             raise subprocess.CalledProcessError(1, command)
         return SimpleNamespace(stdout='')
@@ -49,3 +56,5 @@ def test_cutover_preserves_config_and_rolls_back_on_failed_import(
     assert ('DATABASE_BACKEND=mysql' in text) is (not fail_import)
     assert 'administrator-private-test' not in capsys.readouterr().out
     assert all('administrator-private-test' not in p.read_text() for p in tmp_path.rglob('*.env'))
+    if reuse_existing:
+        assert not any('CREATE DATABASE' in statement for statement in admin_sql)

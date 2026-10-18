@@ -63,6 +63,53 @@ def _digest(connection, table, names):
     return f"{checksum:064x}"
 
 
+def _difference_kind(left, right, depth=0):
+    """Describe structure/type of a difference without returning either value."""
+    if left == right:
+        return None
+    if depth >= 8:
+        return "nested value"
+    if isinstance(left, dict) and isinstance(right, dict):
+        if set(left) != set(right):
+            return "object keys"
+        for key in sorted(left):
+            if kind := _difference_kind(left[key], right[key], depth + 1):
+                return "object child > " + kind
+        return "object value"
+    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        if len(left) != len(right):
+            return "array length"
+        for litem, ritem in zip(left, right):
+            if kind := _difference_kind(litem, ritem, depth + 1):
+                return "array item > " + kind
+        return "array value"
+    if isinstance(left, (int, float)) and not isinstance(left, bool) \
+            and isinstance(right, (int, float)) and not isinstance(right, bool):
+        return "numeric value"
+    if type(left) is not type(right):
+        return f"type {type(left).__name__}/{type(right).__name__}"
+    return type(left).__name__ + " value"
+
+
+def _column_difference_summary(source_conn, source_table, target_conn, target_table, column):
+    primary_keys = [c.name for c in source_table.primary_key.columns]
+    if not primary_keys:
+        return "unkeyed values"
+    names = [*primary_keys, column]
+    source_rows = source_conn.execute(select(*(source_table.c[n] for n in names))).all()
+    target_rows = target_conn.execute(select(*(target_table.c[n] for n in names))).all()
+    source_map = {tuple(row[:-1]): row[-1] for row in source_rows}
+    target_map = {tuple(row[:-1]): row[-1] for row in target_rows}
+    if set(source_map) != set(target_map):
+        return "primary-key membership"
+    kinds = []
+    for key in source_map:
+        kind = _difference_kind(source_map[key], target_map[key])
+        if kind and kind not in kinds:
+            kinds.append(kind)
+    return ", ".join(kinds[:5]) or "serialized representation"
+
+
 def migrate_platform(source, target, metadata, *, apply=False):
     if source.dialect.name != "sqlite":
         raise MigrationValidationError("Migration source must be SQLite")
@@ -111,6 +158,8 @@ def migrate_platform(source, target, metadata, *, apply=False):
             if _digest(src, old, names) != _digest(dst, table, names):
                 differing = [name for name in names
                               if _digest(src, old, [name]) != _digest(dst, table, [name])]
+                details = [name + " (" + _column_difference_summary(src, old, dst, table, name) + ")"
+                           for name in differing]
                 raise MigrationValidationError(
-                    "Content mismatch in " + table.name + " columns: " + ", ".join(differing))
+                    "Content mismatch in " + table.name + " columns: " + ", ".join(details))
     return {"applied": True, "rows": plan}

@@ -17,7 +17,7 @@ from app.models import OntologyEntity, EntityAttribute, EntityRelation
 from app.models.system_config import SystemConfig
 from app.models.monitor import ServiceMetric
 from app.models.scene import AipSceneExecution
-from app.services.platform_migration import backup_sqlite, migrate_platform, _digest
+from app.services.platform_migration import backup_sqlite, migrate_platform, _digest, _difference_kind
 
 
 def test_model_registry_is_complete_in_a_fresh_migration_process():
@@ -69,6 +69,14 @@ def test_digest_uses_json_numeric_semantics(tmp_path):
                 rconn, right_table.tables['sample'], ['id', 'payload'])
     finally:
         left.dispose(); right.dispose()
+
+
+def test_difference_description_never_exposes_values():
+    description = _difference_kind(
+        {"private-node-id": [{"secret": "source-private-value"}]},
+        {"private-node-id": [{"secret": "target-private-value"}]})
+    assert description == "object child > array item > object child > str value"
+    assert "private" not in description
 
 
 def test_backup_is_consistent_and_never_overwritten(tmp_path):
