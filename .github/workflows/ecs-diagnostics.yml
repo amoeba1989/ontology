@@ -55,4 +55,54 @@ jobs:
           fi
           echo '--- Platform database backend (no credentials) ---'
           docker exec ontology-backend python -c 'from app.config import settings; from app.db_engine import database_url; u=database_url(settings); print(u.get_backend_name()); print(u.database)'
+          echo '--- Customer demo model diagnosis (credentials omitted) ---'
+          docker exec ontology-backend python - <<'PY'
+          import json
+          from urllib.parse import urlsplit
+          from app.database import SessionLocal
+          from app.models import Agent, Skill
+          from app.models.customer_demo import CustomerDemoPack
+          from app.services.llm_resolver import resolve_agent_model, _create_client
+
+          db = SessionLocal()
+          try:
+              pack = db.get(CustomerDemoPack, 'health')
+              agent = db.get(Agent, (pack.resources or {}).get('agent_id')) if pack else None
+              print('pack=', bool(pack), 'agent=', bool(agent))
+              config = resolve_agent_model(db, agent)
+              print('model=', config.get('model'))
+              print('host=', urlsplit(config.get('base_url') or '').hostname)
+              print('credential_configured=', bool(config.get('api_key')))
+              skills = []
+              for skill_id in (agent.tools_config or {}).get('skill_ids', []):
+                  skill = db.get(Skill, skill_id)
+                  if skill:
+                      skills.append({'name': 'skill_' + skill.id.replace('-', ''),
+                                     'description': skill.name + '：' + skill.description,
+                                     'parameters': skill.input_schema or {'type': 'object', 'properties': {}, 'additionalProperties': False}})
+              print('tool_count=', len(skills), 'tool_names=', [s['name'] for s in skills])
+              client = _create_client(config['api_key'], config['base_url']).with_options(timeout=30, max_retries=0)
+              try:
+                  response = client.chat.completions.create(
+                      model=config['model'],
+                      messages=[{'role': 'user', 'content': '请调用工具读取演示数据。'}],
+                      tools=[{'type': 'function', 'function': s} for s in skills],
+                      tool_choice='required', max_tokens=64,
+                  )
+                  message = response.choices[0].message
+                  print('provider_call=PASS', 'tool_calls=', len(message.tool_calls or []))
+              except Exception as exc:
+                  print('provider_call=FAIL')
+                  print('error_type=', type(exc).__name__)
+                  print('status_code=', getattr(exc, 'status_code', None))
+                  body = getattr(exc, 'body', None)
+                  if isinstance(body, dict):
+                      safe = {k: body.get(k) for k in ('code', 'type', 'message') if body.get(k) is not None}
+                      nested = body.get('error')
+                      if isinstance(nested, dict):
+                          safe['error'] = {k: nested.get(k) for k in ('code', 'type', 'message') if nested.get(k) is not None}
+                      print('provider_error=', json.dumps(safe, ensure_ascii=False)[:1200])
+          finally:
+              db.close()
+          PY
           REMOTE
