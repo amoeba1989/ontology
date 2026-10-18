@@ -53,6 +53,10 @@ def test_skill_reads_changed_database_and_rejects_scope_override(demo):
     pack = db.get(CustomerDemoPack, "supply")
     skill = db.get(Skill, pack.resources["skill_ids"][0])
     project = db.get(DeliveryProject, pack.project_id)
+    # SQL databases do not guarantee relationship row order. A migrated release
+    # remains the same contract when only this unordered list is rearranged.
+    project.release = {**project.release, "relations": list(reversed(project.release["relations"]))}
+    db.commit()
     asset = db.get(Asset, project.config["output_asset_ids"][-1])
     conn = db.get(Connection, asset.connection_id)
     with sqlite3.connect(conn.database) as raw:

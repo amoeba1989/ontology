@@ -30,6 +30,16 @@ def asset_contract(asset):
             "sensitivity_tags": asset.sensitivity_tags}
 
 
+def contract_fingerprint(snapshot: dict) -> str:
+    """Hash contract content with deterministic ordering for unordered relations."""
+    contract = {key: deepcopy(snapshot.get(key)) for key in
+                ("config", "objects", "actions", "relations", "pipelines", "version_id")}
+    contract["relations"] = sorted(contract.get("relations") or [], key=lambda relation: (
+        relation.get("from_id") or "", relation.get("name") or "",
+        relation.get("to_id") or "", relation.get("cardinality") or ""))
+    return hashlib.sha256(json.dumps(contract, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+
+
 def inspect_chain(db: Session, config: dict):
     issues = [[] for _ in STEPS]
     for key, label in [("goal", "业务目标"), ("audience", "使用者"),
@@ -154,7 +164,7 @@ def inspect_chain(db: Session, config: dict):
     snapshot = {"config": deepcopy(config), "objects": specs, "actions": actions, "relations": relations,
                 "pipelines": [{"id": p.id, "config": p.config_json} for p in pipelines if p],
                 "version_id": config.get("version_id")}
-    snapshot["fingerprint"] = hashlib.sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    snapshot["fingerprint"] = contract_fingerprint(snapshot)
     return issues, snapshot
 
 

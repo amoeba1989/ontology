@@ -3,7 +3,7 @@ import time
 from fastapi import HTTPException
 from app.models import Skill, DeliveryProject, User
 from app.models.customer_demo import SkillRun
-from app.services.delivery import inspect_chain, query_object
+from app.services.delivery import inspect_chain, query_object, contract_fingerprint
 
 
 def check_access(db, skill, user):
@@ -40,7 +40,7 @@ def run_business_skill(db, skill: Skill, params: dict, user: User, source="manua
         if not project.release:
             raise ValueError("请先发布业务应用")
         issues, snapshot = inspect_chain(db, project.release["config"])
-        if any(issues[:5]) or snapshot["fingerprint"] != project.release["fingerprint"]:
+        if any(issues[:5]) or contract_fingerprint(snapshot) != contract_fingerprint(project.release):
             raise ValueError("发布后的数据契约已改变，请重新校验并发布")
         specs = project.release["objects"]
         mode = (skill.config_json or {}).get("operation")
