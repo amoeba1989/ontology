@@ -60,7 +60,7 @@ jobs:
           import json
           from urllib.parse import urlsplit
           from app.database import SessionLocal
-          from app.models import Agent, Skill
+          from app.models import Agent, Skill, User, DeliveryProject
           from app.models.customer_demo import CustomerDemoPack
           from app.services.llm_resolver import resolve_agent_model, _create_client
 
@@ -81,6 +81,14 @@ jobs:
                                      'description': skill.name + '：' + skill.description,
                                      'parameters': skill.input_schema or {'type': 'object', 'properties': {}, 'additionalProperties': False}})
               print('tool_count=', len(skills), 'tool_names=', [s['name'] for s in skills])
+              from app.services.business_skills import run_business_skill
+              for demo_pack in db.query(CustomerDemoPack).all():
+                  project = db.get(DeliveryProject, demo_pack.project_id)
+                  owner = db.get(User, project.owner_id) if project else None
+                  for skill_id in (demo_pack.resources or {}).get('skill_ids', []):
+                      skill = db.get(Skill, skill_id)
+                      result = run_business_skill(db, skill, skill.test_cases[0]['params'], owner, 'diagnosis')
+                      print('skill_check=', demo_pack.key, skill.code_ref, result.get('success'), result.get('summary'))
               client = _create_client(config['api_key'], config['base_url']).with_options(timeout=30, max_retries=0)
               try:
                   response = client.chat.completions.create(
