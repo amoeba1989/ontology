@@ -133,6 +133,16 @@ jobs:
                       if isinstance(nested, dict):
                           safe['error'] = {k: nested.get(k) for k in ('code', 'type', 'message') if nested.get(k) is not None}
                       print('provider_error=', json.dumps(safe, ensure_ascii=False)[:1200])
+              from app.services.skill_chat import chat_events
+              project = db.get(DeliveryProject, pack.project_id)
+              owner = db.get(User, project.owner_id)
+              events = list(chat_events(db, agent, owner,
+                  '请调用业务风险与规则结果技能，概括当前数据库中的结果，标明数据范围及需人工复核的内容。'))
+              print('full_chat_event_types=', [event.get('type') for event in events])
+              print('full_chat_model=', next((event.get('model') for event in events if event.get('type') == 'model_status'), None))
+              print('full_chat_tool_results=', [(event.get('success'), event.get('summary')) for event in events if event.get('type') == 'tool_result'])
+              print('full_chat_answer_length=', max([len(event.get('content') or '') for event in events if event.get('type') == 'answer'] or [0]))
+              print('full_chat_error=', next((event.get('content') for event in events if event.get('type') == 'error'), None))
           finally:
               db.close()
           PY
